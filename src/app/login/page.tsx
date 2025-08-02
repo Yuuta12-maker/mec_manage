@@ -5,6 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
@@ -139,15 +140,18 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="text-center">
+          <div className="text-center space-y-2">
             <button
               type="button"
               onClick={handleResetPassword}
               disabled={loading}
-              className="text-sm text-primary hover:text-primary/80 disabled:opacity-50"
+              className="block w-full text-sm text-primary hover:text-primary/80 disabled:opacity-50"
             >
               パスワードを忘れた場合
             </button>
+            <Link href="/signup" className="block text-sm text-primary hover:text-primary/80">
+              新規アカウント登録
+            </Link>
           </div>
         </form>
       </div>
