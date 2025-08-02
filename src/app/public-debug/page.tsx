@@ -7,7 +7,7 @@ import { useState, useEffect } from 'react'
 export default function PublicDebugPage() {
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
-  const [supabase, setSupabase] = useState(null)
+  const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
     // ページロード時に環境変数をチェック

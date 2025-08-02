@@ -9,7 +9,7 @@ export default function DebugPage() {
   const [loading, setLoading] = useState(false)
 
   // Supabaseクライアントを動的にインポート
-  const [supabase, setSupabase] = useState(null)
+  const [supabase, setSupabase] = useState<any>(null)
 
   useEffect(() => {
     const initSupabase = async () => {
