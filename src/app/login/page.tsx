@@ -25,7 +25,8 @@ export default function LoginPage() {
       })
 
       if (error) {
-        setError('認証に失敗しました。メールアドレスとパスワードを確認してください。')
+        console.error('Supabase認証エラー:', error)
+        setError(`認証に失敗しました: ${error.message}`)
         return
       }
 
@@ -33,7 +34,12 @@ export default function LoginPage() {
         router.push('/dashboard')
       }
     } catch (err) {
-      setError('ログインエラーが発生しました。')
+      console.error('ログインエラー:', err)
+      if (err instanceof Error) {
+        setError(`ログインエラー: ${err.message}`)
+      } else {
+        setError('予期しないエラーが発生しました。')
+      }
     } finally {
       setLoading(false)
     }
