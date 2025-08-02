@@ -33,12 +33,10 @@ export default function SignupPage() {
     setError('')
 
     try {
+      // メール確認なしで直接サインアップを試す
       const { data, error } = await supabase.auth.signUp({
         email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/login`
-        }
+        password
       })
 
       if (error) {
