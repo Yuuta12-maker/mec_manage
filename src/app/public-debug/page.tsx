@@ -91,7 +91,7 @@ export default function PublicDebugPage() {
     setLoading(true)
     setResult(prev => prev + `\n=== Signup Test ===\n`)
 
-    const testEmail = `test-${Date.now()}@example.com`
+    const testEmail = `test${Date.now()}@gmail.com`
     
     try {
       setResult(prev => prev + `Testing signup with: ${testEmail}\n`)
