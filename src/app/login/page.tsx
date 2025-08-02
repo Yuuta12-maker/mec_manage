@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [resetSent, setResetSent] = useState(false)
   const router = useRouter()
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -40,6 +41,32 @@ export default function LoginPage() {
       } else {
         setError('予期しないエラーが発生しました。')
       }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError('パスワードリセットするにはメールアドレスを入力してください')
+      return
+    }
+
+    setLoading(true)
+    setError('')
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      })
+
+      if (error) {
+        setError(`パスワードリセットエラー: ${error.message}`)
+      } else {
+        setResetSent(true)
+      }
+    } catch (err) {
+      setError('パスワードリセット中にエラーが発生しました')
     } finally {
       setLoading(false)
     }
@@ -96,6 +123,12 @@ export default function LoginPage() {
             <div className="text-red-600 text-sm text-center">{error}</div>
           )}
 
+          {resetSent && (
+            <div className="text-green-600 text-sm text-center">
+              パスワードリセットメールを送信しました。メールを確認してください。
+            </div>
+          )}
+
           <div>
             <button
               type="submit"
@@ -103,6 +136,17 @@ export default function LoginPage() {
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50"
             >
               {loading ? 'ログイン中...' : 'ログイン'}
+            </button>
+          </div>
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={handleResetPassword}
+              disabled={loading}
+              className="text-sm text-primary hover:text-primary/80 disabled:opacity-50"
+            >
+              パスワードを忘れた場合
             </button>
           </div>
         </form>
