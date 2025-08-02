@@ -11,7 +11,11 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
 
   useEffect(() => {
     if (!loading) {
-      if (!user && pathname !== '/login') {
+      // 認証不要なページのリスト
+      const publicPaths = ['/login', '/signup', '/debug', '/public-debug', '/test-signup']
+      const isPublicPath = publicPaths.includes(pathname)
+      
+      if (!user && !isPublicPath) {
         router.push('/login')
       } else if (user && pathname === '/login') {
         router.push('/dashboard')
