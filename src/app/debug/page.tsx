@@ -2,28 +2,57 @@
 
 export const dynamic = 'force-dynamic'
 
-import { useState } from 'react'
-import { supabase } from '@/lib/supabase'
+import { useState, useEffect } from 'react'
 
 export default function DebugPage() {
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
 
+  // Supabaseクライアントを動的にインポート
+  const [supabase, setSupabase] = useState(null)
+
+  useEffect(() => {
+    const initSupabase = async () => {
+      try {
+        const { createClient } = await import('@supabase/supabase-js')
+        const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+        const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+        
+        setResult(prev => prev + `Environment check:\n`)
+        setResult(prev => prev + `- URL: ${supabaseUrl || 'MISSING'}\n`)
+        setResult(prev => prev + `- Key: ${supabaseAnonKey ? 'EXISTS' : 'MISSING'}\n`)
+        
+        if (supabaseUrl && supabaseAnonKey) {
+          const client = createClient(supabaseUrl, supabaseAnonKey)
+          setSupabase(client)
+          setResult(prev => prev + `- Client created successfully\n`)
+        } else {
+          setResult(prev => prev + `- Cannot create client: missing env vars\n`)
+        }
+      } catch (err) {
+        setResult(prev => prev + `- Error creating client: ${err.message}\n`)
+      }
+    }
+    
+    initSupabase()
+  }, [])
+
   const testConnection = async () => {
+    if (!supabase) {
+      setResult(prev => prev + `Cannot test: Supabase client not available\n`)
+      return
+    }
+
     setLoading(true)
-    setResult('')
+    setResult(prev => prev + `\nTesting authentication...\n`)
 
     try {
-      // 1. Supabaseクライアントの基本テスト
+      // 1. 現在のユーザー確認
       const { data: { user } } = await supabase.auth.getUser()
       setResult(prev => prev + `1. Current user: ${user ? user.email : 'none'}\n`)
 
-      // 2. 環境変数の確認
-      setResult(prev => prev + `2. Supabase URL: ${process.env.NEXT_PUBLIC_SUPABASE_URL}\n`)
-      setResult(prev => prev + `3. Anon Key exists: ${!!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY}\n`)
-
-      // 3. 直接パスワード認証テスト
-      setResult(prev => prev + `4. Testing sign in...\n`)
+      // 2. 直接パスワード認証テスト
+      setResult(prev => prev + `2. Testing sign in...\n`)
       
       const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
         email: 'mindengineeringcoaching@gmail.com',
@@ -31,23 +60,15 @@ export default function DebugPage() {
       })
 
       if (signInError) {
-        setResult(prev => prev + `5. Sign in ERROR: ${signInError.message}\n`)
+        setResult(prev => prev + `3. Sign in ERROR: ${signInError.message}\n`)
         setResult(prev => prev + `   Error code: ${signInError.name}\n`)
-        setResult(prev => prev + `   Full error: ${JSON.stringify(signInError, null, 2)}\n`)
+        setResult(prev => prev + `   Status: ${signInError.status}\n`)
       } else {
-        setResult(prev => prev + `5. Sign in SUCCESS: ${signInData.user?.email}\n`)
-      }
-
-      // 4. Supabaseサービス自体のテスト
-      const { data: healthData, error: healthError } = await supabase.from('_supabase_migrations').select('*').limit(1)
-      if (healthError) {
-        setResult(prev => prev + `6. Health check ERROR: ${healthError.message}\n`)
-      } else {
-        setResult(prev => prev + `6. Health check OK\n`)
+        setResult(prev => prev + `3. Sign in SUCCESS: ${signInData.user?.email}\n`)
       }
 
     } catch (err) {
-      setResult(prev => prev + `CATCH ERROR: ${err}\n`)
+      setResult(prev => prev + `CATCH ERROR: ${err.message}\n`)
     } finally {
       setLoading(false)
     }
