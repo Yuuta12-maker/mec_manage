@@ -33,7 +33,7 @@ export default function PublicDebugPage() {
           setResult(prev => prev + `- Supabase client: FAILED (missing env vars)\n`)
         }
       } catch (err) {
-        setResult(prev => prev + `- Supabase client: ERROR - ${err.message}\n`)
+        setResult(prev => prev + `- Supabase client: ERROR - ${err instanceof Error ? err.message : String(err)}\n`)
       }
     }
     
@@ -73,8 +73,10 @@ export default function PublicDebugPage() {
       }
 
     } catch (err) {
-      setResult(prev => prev + `❌ UNEXPECTED ERROR: ${err.message}\n`)
-      setResult(prev => prev + `Stack: ${err.stack}\n`)
+      setResult(prev => prev + `❌ UNEXPECTED ERROR: ${err instanceof Error ? err.message : String(err)}\n`)
+      if (err instanceof Error && err.stack) {
+        setResult(prev => prev + `Stack: ${err.stack}\n`)
+      }
     } finally {
       setLoading(false)
     }
@@ -107,7 +109,7 @@ export default function PublicDebugPage() {
       }
 
     } catch (err) {
-      setResult(prev => prev + `❌ SIGNUP ERROR: ${err.message}\n`)
+      setResult(prev => prev + `❌ SIGNUP ERROR: ${err instanceof Error ? err.message : String(err)}\n`)
     } finally {
       setLoading(false)
     }

@@ -30,7 +30,7 @@ export default function DebugPage() {
           setResult(prev => prev + `- Cannot create client: missing env vars\n`)
         }
       } catch (err) {
-        setResult(prev => prev + `- Error creating client: ${err.message}\n`)
+        setResult(prev => prev + `- Error creating client: ${err instanceof Error ? err.message : String(err)}\n`)
       }
     }
     
@@ -68,7 +68,7 @@ export default function DebugPage() {
       }
 
     } catch (err) {
-      setResult(prev => prev + `CATCH ERROR: ${err.message}\n`)
+      setResult(prev => prev + `CATCH ERROR: ${err instanceof Error ? err.message : String(err)}\n`)
     } finally {
       setLoading(false)
     }
@@ -93,7 +93,7 @@ export default function DebugPage() {
         setResult(prev => prev + `Confirmation required: ${!data.session}\n`)
       }
     } catch (err) {
-      setResult(prev => prev + `CATCH ERROR: ${err}\n`)
+      setResult(prev => prev + `CATCH ERROR: ${err instanceof Error ? err.message : String(err)}\n`)
     } finally {
       setLoading(false)
     }
