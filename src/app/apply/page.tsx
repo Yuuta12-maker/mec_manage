@@ -19,6 +19,10 @@ export default function ApplyPage() {
     notes: '',
   })
 
+  const [birthYear, setBirthYear] = useState('')
+  const [birthMonth, setBirthMonth] = useState('')
+  const [birthDay, setBirthDay] = useState('')
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -46,11 +50,8 @@ export default function ApplyPage() {
 
     try {
       // 生年月日データの正規化
-      const birthDate = formData.birth_date && 
-        formData.birth_date.includes('-') && 
-        formData.birth_date.split('-').length === 3 &&
-        formData.birth_date.split('-').every(part => part.trim() !== '') 
-        ? formData.birth_date 
+      const birthDate = birthYear && birthMonth && birthDay 
+        ? `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}` 
         : null
 
       const { data, error } = await supabase
@@ -238,17 +239,8 @@ export default function ApplyPage() {
                       <select
                         name="birth_year"
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        value={formData.birth_date ? formData.birth_date.split('-')[0] : ''}
-                        onChange={(e) => {
-                          const year = e.target.value
-                          const month = formData.birth_date ? formData.birth_date.split('-')[1] : ''
-                          const day = formData.birth_date ? formData.birth_date.split('-')[2] : ''
-                          
-                          setFormData(prev => ({
-                            ...prev,
-                            birth_date: `${year || ''}-${month || ''}-${day || ''}`
-                          }))
-                        }}
+                        value={birthYear}
+                        onChange={(e) => setBirthYear(e.target.value)}
                       >
                         <option value="">年</option>
                         {Array.from({ length: 100 }, (_, i) => {
@@ -263,17 +255,8 @@ export default function ApplyPage() {
                       <select
                         name="birth_month"
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        value={formData.birth_date ? formData.birth_date.split('-')[1] : ''}
-                        onChange={(e) => {
-                          const year = formData.birth_date ? formData.birth_date.split('-')[0] : ''
-                          const month = e.target.value ? String(e.target.value).padStart(2, '0') : ''
-                          const day = formData.birth_date ? formData.birth_date.split('-')[2] : ''
-                          
-                          setFormData(prev => ({
-                            ...prev,
-                            birth_date: `${year || ''}-${month || ''}-${day || ''}`
-                          }))
-                        }}
+                        value={birthMonth}
+                        onChange={(e) => setBirthMonth(e.target.value)}
                       >
                         <option value="">月</option>
                         {Array.from({ length: 12 }, (_, i) => {
@@ -288,17 +271,8 @@ export default function ApplyPage() {
                       <select
                         name="birth_day"
                         className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        value={formData.birth_date ? formData.birth_date.split('-')[2] : ''}
-                        onChange={(e) => {
-                          const year = formData.birth_date ? formData.birth_date.split('-')[0] : ''
-                          const month = formData.birth_date ? formData.birth_date.split('-')[1] : ''
-                          const day = e.target.value ? String(e.target.value).padStart(2, '0') : ''
-                          
-                          setFormData(prev => ({
-                            ...prev,
-                            birth_date: `${year || ''}-${month || ''}-${day || ''}`
-                          }))
-                        }}
+                        value={birthDay}
+                        onChange={(e) => setBirthDay(e.target.value)}
                       >
                         <option value="">日</option>
                         {Array.from({ length: 31 }, (_, i) => {
