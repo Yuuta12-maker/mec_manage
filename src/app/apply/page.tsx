@@ -139,14 +139,14 @@ export default function ApplyPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* ヘッダー */}
-      <header className="bg-white shadow">
+      <header className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/50 transition-colors">
         <div className="max-w-4xl mx-auto px-4 py-6">
-          <h1 className="text-3xl font-bold text-gray-900 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white text-center transition-colors">
             マインドエンジニアリング・コーチング
           </h1>
-          <p className="mt-2 text-lg text-gray-600 text-center">
+          <p className="mt-2 text-lg text-gray-600 dark:text-gray-300 text-center transition-colors">
             プログラム申し込みフォーム
           </p>
         </div>
@@ -154,7 +154,7 @@ export default function ApplyPage() {
 
       <main className="max-w-4xl mx-auto py-8 px-4">
         {/* プログラム概要 */}
-        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-700/50 p-6 mb-8 transition-colors">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">プログラム概要</h2>
           <div className="grid md:grid-cols-2 gap-6">
             <div>
@@ -181,7 +181,7 @@ export default function ApplyPage() {
         </div>
 
         {/* 申し込みフォーム */}
-        <div className="bg-white rounded-lg shadow-sm">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-700/50 transition-colors">
           <div className="px-6 py-4 border-b border-gray-200">
             <h2 className="text-xl font-semibold text-gray-900">申し込み情報</h2>
             <p className="mt-1 text-sm text-gray-600">

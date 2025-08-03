@@ -120,12 +120,12 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Navigation />
 
       <main className="max-w-7xl mx-auto py-6 px-4">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">ダッシュボード</h2>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">ダッシュボード</h2>
           
           {/* クライアント状況 */}
           <div className="bg-white overflow-hidden shadow rounded-lg mb-8">
