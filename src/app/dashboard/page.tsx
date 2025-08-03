@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Client, Session } from '@/types'
 import Navigation from '@/components/Navigation'
+import Link from 'next/link'
 
 export default function Dashboard() {
   const { user } = useAuth()
@@ -178,22 +179,33 @@ export default function Dashboard() {
                             </div>
                             <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                               <div>
-                                <p className="text-sm text-gray-500">
+                                <Link
+                                  href={`/sessions/${session.id}`}
+                                  className="text-sm text-gray-500 hover:text-gray-700"
+                                >
                                   {session.client.name} - {getTypeLabel(session.type)}
-                                </p>
+                                </Link>
                                 <p className="text-sm text-gray-900 font-medium">
                                   {new Date(session.scheduled_date).toLocaleString('ja-JP')}
                                 </p>
-                                {session.meet_link && (
-                                  <a 
-                                    href={session.meet_link} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                                <div className="flex space-x-4">
+                                  {session.meet_link && (
+                                    <a 
+                                      href={session.meet_link} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 text-sm underline"
+                                    >
+                                      Google Meet に参加
+                                    </a>
+                                  )}
+                                  <Link
+                                    href={`/sessions/${session.id}`}
+                                    className="text-primary hover:text-primary/90 text-sm underline"
                                   >
-                                    Google Meet に参加
-                                  </a>
-                                )}
+                                    詳細を見る
+                                  </Link>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -236,22 +248,33 @@ export default function Dashboard() {
                             </div>
                             <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                               <div>
-                                <p className="text-sm text-gray-500">
+                                <Link
+                                  href={`/sessions/${session.id}`}
+                                  className="text-sm text-gray-500 hover:text-gray-700"
+                                >
                                   {session.client.name} - {getTypeLabel(session.type)}
-                                </p>
+                                </Link>
                                 <p className="text-sm text-gray-900">
                                   {new Date(session.scheduled_date).toLocaleString('ja-JP')}
                                 </p>
-                                {session.meet_link && (
-                                  <a 
-                                    href={session.meet_link} 
-                                    target="_blank" 
-                                    rel="noopener noreferrer"
-                                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                                <div className="flex space-x-4">
+                                  {session.meet_link && (
+                                    <a 
+                                      href={session.meet_link} 
+                                      target="_blank" 
+                                      rel="noopener noreferrer"
+                                      className="text-blue-600 hover:text-blue-800 text-sm underline"
+                                    >
+                                      Google Meet リンク
+                                    </a>
+                                  )}
+                                  <Link
+                                    href={`/sessions/${session.id}`}
+                                    className="text-primary hover:text-primary/90 text-sm underline"
                                   >
-                                    Google Meet リンク
-                                  </a>
-                                )}
+                                    詳細を見る
+                                  </Link>
+                                </div>
                               </div>
                             </div>
                           </div>
