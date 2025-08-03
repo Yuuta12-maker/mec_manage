@@ -227,23 +227,6 @@ export default function BookingPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">セッション情報</h3>
                 <div className="space-y-6">
                   <div>
-                    <label htmlFor="type" className="block text-sm font-medium text-gray-700">
-                      セッション種別 <span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      id="type"
-                      name="type"
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={formData.type}
-                      onChange={handleChange}
-                    >
-                      <option value="trial">トライアルセッション</option>
-                      <option value="regular">通常セッション</option>
-                    </select>
-                  </div>
-
-                  <div>
                     <label htmlFor="selected_date" className="block text-sm font-medium text-gray-700">
                       希望日 <span className="text-red-500">*</span>
                     </label>
@@ -314,12 +297,6 @@ export default function BookingPage() {
               {/* 予約者情報 */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">予約者情報</h3>
-                <div className="bg-blue-50 rounded-lg p-4 mb-6">
-                  <p className="text-sm text-blue-800">
-                    <strong>既存のお客様：</strong> 以前にご登録いただいたメールアドレスとお名前を入力してください。<br />
-                    <strong>新規のお客様：</strong> 下記の情報をご入力ください。システムが自動的に判定いたします。
-                  </p>
-                </div>
                 
                 <div className="space-y-6">
                   <div>
