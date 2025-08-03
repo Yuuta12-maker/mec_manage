@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Session, Client } from '@/types'
 import Navigation from '@/components/Navigation'
+import Calendar from '@/components/Calendar'
 import Link from 'next/link'
 
 type SessionWithClient = Session & { client: Client }
@@ -16,6 +17,7 @@ export default function SessionsPage() {
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
 
   useEffect(() => {
     fetchSessions()
@@ -116,7 +118,29 @@ export default function SessionsPage() {
                 全セッションの予約と実施状況を管理します。
               </p>
             </div>
-            <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none">
+            <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex items-center space-x-3">
+              <div className="flex rounded-md shadow-sm">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`px-3 py-2 text-sm font-medium rounded-l-md border ${
+                    viewMode === 'list'
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  リスト
+                </button>
+                <button
+                  onClick={() => setViewMode('calendar')}
+                  className={`px-3 py-2 text-sm font-medium rounded-r-md border-t border-r border-b ${
+                    viewMode === 'calendar'
+                      ? 'bg-primary text-white border-primary'
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  カレンダー
+                </button>
+              </div>
               <Link
                 href="/sessions/new"
                 className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:w-auto"
@@ -126,7 +150,8 @@ export default function SessionsPage() {
             </div>
           </div>
 
-          {/* フィルター */}
+          {/* フィルター（リスト表示時のみ） */}
+          {viewMode === 'list' && (
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div>
               <label htmlFor="type" className="block text-sm font-medium text-gray-700">
@@ -178,10 +203,15 @@ export default function SessionsPage() {
               </select>
             </div>
           </div>
+          )}
         </div>
 
-        {/* セッション一覧 */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-md">
+        {viewMode === 'calendar' ? (
+          /* カレンダービュー */
+          <Calendar sessions={sessions} />
+        ) : (
+          /* セッション一覧 */
+          <div className="bg-white shadow overflow-hidden sm:rounded-md">
           <ul className="divide-y divide-gray-200">
             {filteredSessions.map((session) => (
               <li key={session.id}>
@@ -266,6 +296,7 @@ export default function SessionsPage() {
             </div>
           )}
         </div>
+        )}
       </main>
     </div>
   )

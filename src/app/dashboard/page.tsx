@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import { Client, Session } from '@/types'
 import Navigation from '@/components/Navigation'
+import Calendar from '@/components/Calendar'
 import Link from 'next/link'
 
 export default function Dashboard() {
@@ -14,6 +15,8 @@ export default function Dashboard() {
   const [clients, setClients] = useState<Client[]>([])
   const [todaySessions, setTodaySessions] = useState<(Session & { client: Client })[]>([])
   const [upcomingSessions, setUpcomingSessions] = useState<(Session & { client: Client })[]>([])
+  const [allSessions, setAllSessions] = useState<(Session & { client: Client })[]>([])
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list')
   const [stats, setStats] = useState({
     total: 0,
     applied: 0,
@@ -86,6 +89,19 @@ export default function Dashboard() {
     if (sessionData) {
       setUpcomingSessions(sessionData as any)
     }
+
+    // 全セッションを取得（カレンダー表示用）
+    const { data: allSessionData } = await supabase
+      .from('sessions')
+      .select(`
+        *,
+        client:clients(*)
+      `)
+      .order('scheduled_date', { ascending: true })
+
+    if (allSessionData) {
+      setAllSessions(allSessionData as any)
+    }
   }
 
   const getStatusLabel = (status: string) => {
@@ -151,8 +167,44 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* 本日のセッション */}
-          <div className="bg-white overflow-hidden shadow rounded-lg mb-8">
+          {/* ビューモード切り替え */}
+          <div className="mb-6">
+            <div className="bg-white rounded-lg shadow p-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-medium text-gray-900">セッション表示</h3>
+                <div className="flex rounded-md shadow-sm">
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`px-4 py-2 text-sm font-medium rounded-l-md border ${
+                      viewMode === 'list'
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    リスト表示
+                  </button>
+                  <button
+                    onClick={() => setViewMode('calendar')}
+                    className={`px-4 py-2 text-sm font-medium rounded-r-md border-t border-r border-b ${
+                      viewMode === 'calendar'
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    カレンダー表示
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {viewMode === 'calendar' ? (
+            /* カレンダービュー */
+            <Calendar sessions={allSessions} />
+          ) : (
+            <>
+              {/* 本日のセッション */}
+              <div className="bg-white overflow-hidden shadow rounded-lg mb-8">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
                 本日のセッション
@@ -288,6 +340,8 @@ export default function Dashboard() {
               )}
             </div>
           </div>
+            </>
+          )}
         </div>
       </main>
     </div>

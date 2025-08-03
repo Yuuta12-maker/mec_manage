@@ -134,7 +134,7 @@ export default function NewSessionPage() {
                     <option value="">選択してください</option>
                     {clients.map((client) => (
                       <option key={client.id} value={client.id}>
-                        {client.name} ({client.email})
+                        {client.name}{client.name_kana ? ` (${client.name_kana})` : ''} - {client.email}
                       </option>
                     ))}
                   </select>
