@@ -83,11 +83,19 @@ export default function ApplySuccessPage() {
 
           <div className="space-y-4">
             <Link
-              href="/"
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              href="/apply"
+              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors mr-4"
             >
-              ホームページに戻る
+              別の申し込みをする
             </Link>
+            <a
+              href="https://yourcompanywebsite.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
+            >
+              公式サイトに戻る
+            </a>
           </div>
         </div>
       </main>

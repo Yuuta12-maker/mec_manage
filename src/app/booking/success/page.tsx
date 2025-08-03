@@ -108,12 +108,14 @@ export default function BookingSuccessPage() {
             >
               別の予約をする
             </Link>
-            <Link
-              href="/"
+            <a
+              href="https://yourcompanywebsite.com"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-block px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
             >
-              ホームページに戻る
-            </Link>
+              公式サイトに戻る
+            </a>
           </div>
         </div>
       </main>
