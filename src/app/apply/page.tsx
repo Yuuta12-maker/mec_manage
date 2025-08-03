@@ -49,10 +49,43 @@ export default function ApplyPage() {
     }
 
     try {
-      // 生年月日データの正規化
-      const birthDate = birthYear && birthMonth && birthDay 
-        ? `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}` 
-        : null
+      // メールアドレス重複チェック
+      const { data: existingClient, error: checkError } = await supabase
+        .from('clients')
+        .select('email')
+        .eq('email', formData.email.trim())
+        .single()
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking email:', checkError)
+        alert('メールアドレスの確認中にエラーが発生しました。再度お試しください。')
+        setLoading(false)
+        return
+      }
+
+      if (existingClient) {
+        alert('このメールアドレスは既に登録されています。別のメールアドレスをご使用ください。')
+        setLoading(false)
+        return
+      }
+
+      // 生年月日データの正規化と妥当性チェック
+      let birthDate = null
+      if (birthYear && birthMonth && birthDay) {
+        const dateStr = `${birthYear}-${birthMonth.padStart(2, '0')}-${birthDay.padStart(2, '0')}`
+        const dateObj = new Date(dateStr)
+        
+        // 日付の妥当性チェック
+        if (dateObj.getFullYear() == parseInt(birthYear) && 
+            (dateObj.getMonth() + 1) == parseInt(birthMonth) && 
+            dateObj.getDate() == parseInt(birthDay)) {
+          birthDate = dateStr
+        } else {
+          alert('生年月日が正しくありません。正しい日付を入力してください。')
+          setLoading(false)
+          return
+        }
+      }
 
       const { data, error } = await supabase
         .from('clients')
@@ -72,7 +105,18 @@ export default function ApplyPage() {
 
       if (error) {
         console.error('Error creating application:', error)
-        alert('申し込みの送信に失敗しました。再度お試しください。')
+        
+        // エラーの詳細に応じたメッセージ
+        if (error.code === '23505') {
+          alert('このメールアドレスは既に登録されています。別のメールアドレスをご使用ください。')
+        } else if (error.code === '23502') {
+          alert('必須項目が入力されていません。すべての必須項目を入力してください。')
+        } else if (error.code === '22001') {
+          alert('入力内容が長すぎます。文字数を減らしてください。')
+        } else {
+          alert('申し込みの送信に失敗しました。入力内容をご確認の上、再度お試しください。')
+        }
+        setLoading(false)
         return
       }
 
@@ -81,8 +125,7 @@ export default function ApplyPage() {
       }
     } catch (err) {
       console.error('Error:', err)
-      alert('エラーが発生しました。再度お試しください。')
-    } finally {
+      alert('ネットワークエラーが発生しました。インターネット接続をご確認の上、再度お試しください。')
       setLoading(false)
     }
   }
