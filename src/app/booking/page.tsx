@@ -1,15 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 
 export default function BookingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [selectedDate, setSelectedDate] = useState('')
+  const [selectedTime, setSelectedTime] = useState('')
+  const [existingSessions, setExistingSessions] = useState<any[]>([])
   const [formData, setFormData] = useState({
     // セッション情報
-    scheduled_date: '',
     type: 'trial' as 'trial' | 'regular',
     notes: '',
     // クライアント照合・新規情報
@@ -20,10 +22,67 @@ export default function BookingPage() {
     preferred_session_format: 'online',
   })
 
+  useEffect(() => {
+    if (selectedDate) {
+      fetchExistingSessions(selectedDate)
+    }
+  }, [selectedDate])
+
+  const fetchExistingSessions = async (date: string) => {
+    const startDate = new Date(date + 'T00:00:00')
+    const endDate = new Date(date + 'T23:59:59')
+    
+    const { data, error } = await supabase
+      .from('sessions')
+      .select('scheduled_date')
+      .gte('scheduled_date', startDate.toISOString())
+      .lte('scheduled_date', endDate.toISOString())
+      .eq('status', 'scheduled')
+
+    if (error) {
+      console.error('Error fetching sessions:', error)
+    } else {
+      setExistingSessions(data || [])
+    }
+  }
+
+  const getAvailableTimeSlots = () => {
+    const timeSlots = []
+    for (let hour = 12; hour <= 19; hour++) {
+      const timeString = `${hour.toString().padStart(2, '0')}:00`
+      const dateTimeString = selectedDate ? `${selectedDate}T${timeString}:00` : ''
+      
+      const isBooked = existingSessions.some(session => {
+        const sessionTime = new Date(session.scheduled_date)
+        const slotTime = new Date(dateTimeString)
+        return sessionTime.getTime() === slotTime.getTime()
+      })
+
+      timeSlots.push({
+        time: timeString,
+        displayTime: `${hour}:00`,
+        value: dateTimeString,
+        isAvailable: !isBooked && selectedDate !== ''
+      })
+    }
+    return timeSlots
+  }
+
+  const getMinDate = () => {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    return tomorrow.toISOString().split('T')[0]
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
+
+    if (!selectedDate || !selectedTime) {
+      alert('日付と時間を選択してください。')
+      setLoading(false)
+      return
+    }
 
     try {
       let clientId = null
@@ -81,7 +140,7 @@ export default function BookingPage() {
         .from('sessions')
         .insert([{
           client_id: clientId,
-          scheduled_date: new Date(formData.scheduled_date).toISOString(),
+          scheduled_date: new Date(selectedTime).toISOString(),
           type: formData.type,
           status: 'scheduled',
           notes: formData.notes,
@@ -115,12 +174,6 @@ export default function BookingPage() {
   }
 
 
-  // 現在時刻から24時間後を最小時刻として設定
-  const getMinDateTime = () => {
-    const now = new Date()
-    now.setHours(now.getHours() + 24)
-    return now.toISOString().slice(0, 16)
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -191,23 +244,55 @@ export default function BookingPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="scheduled_date" className="block text-sm font-medium text-gray-700">
-                      希望日時 <span className="text-red-500">*</span>
+                    <label htmlFor="selected_date" className="block text-sm font-medium text-gray-700">
+                      希望日 <span className="text-red-500">*</span>
                     </label>
                     <input
-                      type="datetime-local"
-                      name="scheduled_date"
-                      id="scheduled_date"
+                      type="date"
+                      id="selected_date"
                       required
-                      min={getMinDateTime()}
+                      min={getMinDate()}
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={formData.scheduled_date}
-                      onChange={handleChange}
+                      value={selectedDate}
+                      onChange={(e) => setSelectedDate(e.target.value)}
                     />
                     <p className="mt-1 text-xs text-gray-500">
-                      ※ 24時間前までにご予約ください
+                      ※ 翌日以降の日付を選択してください
                     </p>
                   </div>
+
+                  {selectedDate && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        希望時間 <span className="text-red-500">*</span>
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {getAvailableTimeSlots().map((slot) => (
+                          <button
+                            key={slot.time}
+                            type="button"
+                            disabled={!slot.isAvailable}
+                            onClick={() => setSelectedTime(slot.value)}
+                            className={`p-3 text-sm font-medium rounded-md border transition-colors ${
+                              selectedTime === slot.value
+                                ? 'bg-blue-600 text-white border-blue-600'
+                                : slot.isAvailable
+                                ? 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50 hover:border-blue-300'
+                                : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                            }`}
+                          >
+                            {slot.displayTime}
+                            {!slot.isAvailable && selectedDate && (
+                              <div className="text-xs mt-1">予約済</div>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="mt-2 text-xs text-gray-500">
+                        営業時間: 12:00 〜 20:00（1時間単位）
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6">
