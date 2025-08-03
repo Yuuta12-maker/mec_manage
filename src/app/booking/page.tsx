@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import BookingCalendar from '@/components/BookingCalendar'
 
 export default function BookingPage() {
   const router = useRouter()
@@ -227,19 +228,15 @@ export default function BookingPage() {
                 <h3 className="text-lg font-medium text-gray-900 mb-4">セッション情報</h3>
                 <div className="space-y-6">
                   <div>
-                    <label htmlFor="selected_date" className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                       希望日 <span className="text-red-500">*</span>
                     </label>
-                    <input
-                      type="date"
-                      id="selected_date"
-                      required
-                      min={getMinDate()}
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={selectedDate}
-                      onChange={(e) => setSelectedDate(e.target.value)}
+                    <BookingCalendar
+                      selectedDate={selectedDate}
+                      onDateSelect={setSelectedDate}
+                      minDate={getMinDate()}
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-2 text-xs text-gray-500">
                       ※ 翌日以降の日付を選択してください
                     </p>
                   </div>
