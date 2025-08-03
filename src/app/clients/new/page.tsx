@@ -156,17 +156,83 @@ export default function NewClientPage() {
                 </div>
 
                 <div className="col-span-6 sm:col-span-3">
-                  <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
                     生年月日
                   </label>
-                  <input
-                    type="date"
-                    name="birth_date"
-                    id="birth_date"
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
-                    value={formData.birth_date}
-                    onChange={handleChange}
-                  />
+                  <div className="grid grid-cols-3 gap-2">
+                    <select
+                      name="birth_year"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      value={formData.birth_date ? formData.birth_date.split('-')[0] : ''}
+                      onChange={(e) => {
+                        const year = e.target.value
+                        const month = formData.birth_date ? formData.birth_date.split('-')[1] : ''
+                        const day = formData.birth_date ? formData.birth_date.split('-')[2] : ''
+                        setFormData(prev => ({
+                          ...prev,
+                          birth_date: year && month && day ? `${year}-${month}-${day}` : ''
+                        }))
+                      }}
+                    >
+                      <option value="">年</option>
+                      {Array.from({ length: 100 }, (_, i) => {
+                        const year = new Date().getFullYear() - i
+                        return (
+                          <option key={year} value={year}>
+                            {year}年
+                          </option>
+                        )
+                      })}
+                    </select>
+                    <select
+                      name="birth_month"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      value={formData.birth_date ? formData.birth_date.split('-')[1] : ''}
+                      onChange={(e) => {
+                        const year = formData.birth_date ? formData.birth_date.split('-')[0] : ''
+                        const month = e.target.value.padStart(2, '0')
+                        const day = formData.birth_date ? formData.birth_date.split('-')[2] : ''
+                        setFormData(prev => ({
+                          ...prev,
+                          birth_date: year && month && day ? `${year}-${month}-${day}` : ''
+                        }))
+                      }}
+                    >
+                      <option value="">月</option>
+                      {Array.from({ length: 12 }, (_, i) => {
+                        const month = i + 1
+                        return (
+                          <option key={month} value={month}>
+                            {month}月
+                          </option>
+                        )
+                      })}
+                    </select>
+                    <select
+                      name="birth_day"
+                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      value={formData.birth_date ? formData.birth_date.split('-')[2] : ''}
+                      onChange={(e) => {
+                        const year = formData.birth_date ? formData.birth_date.split('-')[0] : ''
+                        const month = formData.birth_date ? formData.birth_date.split('-')[1] : ''
+                        const day = e.target.value.padStart(2, '0')
+                        setFormData(prev => ({
+                          ...prev,
+                          birth_date: year && month && day ? `${year}-${month}-${day}` : ''
+                        }))
+                      }}
+                    >
+                      <option value="">日</option>
+                      {Array.from({ length: 31 }, (_, i) => {
+                        const day = i + 1
+                        return (
+                          <option key={day} value={day}>
+                            {day}日
+                          </option>
+                        )
+                      })}
+                    </select>
+                  </div>
                 </div>
 
                 <div className="col-span-6 sm:col-span-3">

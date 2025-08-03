@@ -190,7 +190,7 @@ export default function BookingPage() {
               {/* セッション情報 */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">セッション情報</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   <div>
                     <label htmlFor="type" className="block text-sm font-medium text-gray-700">
                       セッション種別 <span className="text-red-500">*</span>
@@ -307,67 +307,65 @@ export default function BookingPage() {
                 ) : (
                   /* 新規クライアント情報入力 */
                   <div className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">
-                          お名前 <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          name="client_name"
-                          id="client_name"
-                          required={showClientForm}
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                          value={formData.client_name}
-                          onChange={handleChange}
-                        />
-                      </div>
+                    <div>
+                      <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">
+                        お名前 <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        name="client_name"
+                        id="client_name"
+                        required={showClientForm}
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        value={formData.client_name}
+                        onChange={handleChange}
+                      />
+                    </div>
 
-                      <div>
-                        <label htmlFor="client_name_kana" className="block text-sm font-medium text-gray-700">
-                          お名前（カナ）
-                        </label>
-                        <input
-                          type="text"
-                          name="client_name_kana"
-                          id="client_name_kana"
-                          placeholder="ヤマダタロウ"
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                          value={formData.client_name_kana}
-                          onChange={handleChange}
-                        />
-                      </div>
+                    <div>
+                      <label htmlFor="client_name_kana" className="block text-sm font-medium text-gray-700">
+                        お名前（カナ）
+                      </label>
+                      <input
+                        type="text"
+                        name="client_name_kana"
+                        id="client_name_kana"
+                        placeholder="ヤマダタロウ"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        value={formData.client_name_kana}
+                        onChange={handleChange}
+                      />
+                    </div>
 
-                      <div>
-                        <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
-                          メールアドレス <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="email"
-                          name="client_email"
-                          id="client_email"
-                          required={showClientForm}
-                          placeholder="example@email.com"
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                          value={formData.client_email}
-                          onChange={handleChange}
-                        />
-                      </div>
+                    <div>
+                      <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
+                        メールアドレス <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        name="client_email"
+                        id="client_email"
+                        required={showClientForm}
+                        placeholder="example@email.com"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        value={formData.client_email}
+                        onChange={handleChange}
+                      />
+                    </div>
 
-                      <div>
-                        <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">
-                          電話番号
-                        </label>
-                        <input
-                          type="tel"
-                          name="client_phone"
-                          id="client_phone"
-                          placeholder="090-1234-5678"
-                          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                          value={formData.client_phone}
-                          onChange={handleChange}
-                        />
-                      </div>
+                    <div>
+                      <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">
+                        電話番号
+                      </label>
+                      <input
+                        type="tel"
+                        name="client_phone"
+                        id="client_phone"
+                        placeholder="090-1234-5678"
+                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        value={formData.client_phone}
+                        onChange={handleChange}
+                      />
                     </div>
 
                     <div>

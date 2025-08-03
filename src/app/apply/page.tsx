@@ -18,7 +18,6 @@ export default function ApplyPage() {
     preferred_session_format: 'online',
     notes: '',
     motivation: '',
-    experience: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,7 +37,7 @@ export default function ApplyPage() {
           address: formData.address,
           preferred_session_format: formData.preferred_session_format,
           status: 'applied',
-          notes: `【申し込み動機】\n${formData.motivation}\n\n【コーチング経験】\n${formData.experience}\n\n【その他】\n${formData.notes}`,
+          notes: `【申し込み動機】\n${formData.motivation}\n\n【その他】\n${formData.notes}`,
         }])
         .select()
 
@@ -119,11 +118,11 @@ export default function ApplyPage() {
           </div>
 
           <form onSubmit={handleSubmit} className="px-6 py-6">
-            <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-8">
               {/* 基本情報 */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">基本情報</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   <div>
                     <label htmlFor="name" className="block text-sm font-medium text-gray-700">
                       お名前 <span className="text-red-500">*</span>
@@ -204,34 +203,99 @@ export default function ApplyPage() {
                   </div>
 
                   <div>
-                    <label htmlFor="birth_date" className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       生年月日
                     </label>
+                    <div className="grid grid-cols-3 gap-2">
+                      <select
+                        name="birth_year"
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        value={formData.birth_date ? formData.birth_date.split('-')[0] : ''}
+                        onChange={(e) => {
+                          const year = e.target.value
+                          const month = formData.birth_date ? formData.birth_date.split('-')[1] : ''
+                          const day = formData.birth_date ? formData.birth_date.split('-')[2] : ''
+                          setFormData(prev => ({
+                            ...prev,
+                            birth_date: year && month && day ? `${year}-${month}-${day}` : ''
+                          }))
+                        }}
+                      >
+                        <option value="">年</option>
+                        {Array.from({ length: 100 }, (_, i) => {
+                          const year = new Date().getFullYear() - i
+                          return (
+                            <option key={year} value={year}>
+                              {year}年
+                            </option>
+                          )
+                        })}
+                      </select>
+                      <select
+                        name="birth_month"
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        value={formData.birth_date ? formData.birth_date.split('-')[1] : ''}
+                        onChange={(e) => {
+                          const year = formData.birth_date ? formData.birth_date.split('-')[0] : ''
+                          const month = e.target.value.padStart(2, '0')
+                          const day = formData.birth_date ? formData.birth_date.split('-')[2] : ''
+                          setFormData(prev => ({
+                            ...prev,
+                            birth_date: year && month && day ? `${year}-${month}-${day}` : ''
+                          }))
+                        }}
+                      >
+                        <option value="">月</option>
+                        {Array.from({ length: 12 }, (_, i) => {
+                          const month = i + 1
+                          return (
+                            <option key={month} value={month}>
+                              {month}月
+                            </option>
+                          )
+                        })}
+                      </select>
+                      <select
+                        name="birth_day"
+                        className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                        value={formData.birth_date ? formData.birth_date.split('-')[2] : ''}
+                        onChange={(e) => {
+                          const year = formData.birth_date ? formData.birth_date.split('-')[0] : ''
+                          const month = formData.birth_date ? formData.birth_date.split('-')[1] : ''
+                          const day = e.target.value.padStart(2, '0')
+                          setFormData(prev => ({
+                            ...prev,
+                            birth_date: year && month && day ? `${year}-${month}-${day}` : ''
+                          }))
+                        }}
+                      >
+                        <option value="">日</option>
+                        {Array.from({ length: 31 }, (_, i) => {
+                          const day = i + 1
+                          return (
+                            <option key={day} value={day}>
+                              {day}日
+                            </option>
+                          )
+                        })}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label htmlFor="address" className="block text-sm font-medium text-gray-700">
+                      住所
+                    </label>
                     <input
-                      type="date"
-                      name="birth_date"
-                      id="birth_date"
+                      type="text"
+                      name="address"
+                      id="address"
+                      placeholder="東京都渋谷区..."
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={formData.birth_date}
+                      value={formData.address}
                       onChange={handleChange}
                     />
                   </div>
-                </div>
-
-                <div className="mt-6">
-                  <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                    住所
-                  </label>
-                  <input
-                    type="text"
-                    name="address"
-                    id="address"
-                    placeholder="東京都渋谷区..."
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                    value={formData.address}
-                    onChange={handleChange}
-                  />
-                </div>
               </div>
 
               {/* セッション希望 */}
@@ -255,7 +319,7 @@ export default function ApplyPage() {
                 </div>
               </div>
 
-              {/* 申し込み理由・経験 */}
+              {/* 申し込み動機 */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">申し込みについて</h3>
                 <div className="space-y-6">
@@ -263,29 +327,16 @@ export default function ApplyPage() {
                     <label htmlFor="motivation" className="block text-sm font-medium text-gray-700">
                       申し込み動機 <span className="text-red-500">*</span>
                     </label>
+                    <p className="mt-1 text-sm text-gray-600 mb-2">
+                      なぜこのプログラムに申し込もうと思ったのか、どのような目標をお持ちかなどをお聞かせください。
+                    </p>
                     <textarea
                       name="motivation"
                       id="motivation"
                       rows={4}
                       required
-                      placeholder="なぜこのプログラムに申し込もうと思ったのか、どのような目標をお持ちかなどをお聞かせください。"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       value={formData.motivation}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="experience" className="block text-sm font-medium text-gray-700">
-                      コーチング・カウンセリング経験
-                    </label>
-                    <textarea
-                      name="experience"
-                      id="experience"
-                      rows={3}
-                      placeholder="過去にコーチングやカウンセリングを受けた経験があればお聞かせください。（初回の方も歓迎です）"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={formData.experience}
                       onChange={handleChange}
                     />
                   </div>
