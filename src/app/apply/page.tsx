@@ -23,20 +23,49 @@ export default function ApplyPage() {
     e.preventDefault()
     setLoading(true)
 
+    // 必須項目のバリデーション
+    if (!formData.name.trim()) {
+      alert('お名前を入力してください。')
+      setLoading(false)
+      return
+    }
+
+    if (!formData.email.trim()) {
+      alert('メールアドレスを入力してください。')
+      setLoading(false)
+      return
+    }
+
+    // メールアドレス形式のバリデーション
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(formData.email)) {
+      alert('正しいメールアドレスを入力してください。')
+      setLoading(false)
+      return
+    }
+
     try {
+      // 生年月日データの正規化
+      const birthDate = formData.birth_date && 
+        formData.birth_date.includes('-') && 
+        formData.birth_date.split('-').length === 3 &&
+        formData.birth_date.split('-').every(part => part.trim() !== '') 
+        ? formData.birth_date 
+        : null
+
       const { data, error } = await supabase
         .from('clients')
         .insert([{
-          name: formData.name,
-          name_kana: formData.name_kana,
-          email: formData.email,
-          gender: formData.gender,
-          birth_date: formData.birth_date,
-          phone: formData.phone,
-          address: formData.address,
+          name: formData.name.trim(),
+          name_kana: formData.name_kana.trim() || null,
+          email: formData.email.trim(),
+          gender: formData.gender || null,
+          birth_date: birthDate,
+          phone: formData.phone.trim() || null,
+          address: formData.address.trim() || null,
           preferred_session_format: formData.preferred_session_format,
           status: 'applied',
-          notes: formData.notes,
+          notes: formData.notes.trim() || null,
         }])
         .select()
 
@@ -214,10 +243,17 @@ export default function ApplyPage() {
                           const year = e.target.value
                           const month = formData.birth_date ? formData.birth_date.split('-')[1] : ''
                           const day = formData.birth_date ? formData.birth_date.split('-')[2] : ''
-                          setFormData(prev => ({
-                            ...prev,
-                            birth_date: year && month && day ? `${year}-${month}-${day}` : ''
-                          }))
+                          if (year && month && day) {
+                            setFormData(prev => ({
+                              ...prev,
+                              birth_date: `${year}-${month}-${day}`
+                            }))
+                          } else if (year || month || day) {
+                            setFormData(prev => ({
+                              ...prev,
+                              birth_date: `${year || ''}-${month || ''}-${day || ''}`
+                            }))
+                          }
                         }}
                       >
                         <option value="">年</option>
@@ -236,12 +272,19 @@ export default function ApplyPage() {
                         value={formData.birth_date ? formData.birth_date.split('-')[1] : ''}
                         onChange={(e) => {
                           const year = formData.birth_date ? formData.birth_date.split('-')[0] : ''
-                          const month = e.target.value.padStart(2, '0')
+                          const month = e.target.value ? String(e.target.value).padStart(2, '0') : ''
                           const day = formData.birth_date ? formData.birth_date.split('-')[2] : ''
-                          setFormData(prev => ({
-                            ...prev,
-                            birth_date: year && month && day ? `${year}-${month}-${day}` : ''
-                          }))
+                          if (year && month && day) {
+                            setFormData(prev => ({
+                              ...prev,
+                              birth_date: `${year}-${month}-${day}`
+                            }))
+                          } else if (year || month || day) {
+                            setFormData(prev => ({
+                              ...prev,
+                              birth_date: `${year || ''}-${month || ''}-${day || ''}`
+                            }))
+                          }
                         }}
                       >
                         <option value="">月</option>
@@ -261,11 +304,18 @@ export default function ApplyPage() {
                         onChange={(e) => {
                           const year = formData.birth_date ? formData.birth_date.split('-')[0] : ''
                           const month = formData.birth_date ? formData.birth_date.split('-')[1] : ''
-                          const day = e.target.value.padStart(2, '0')
-                          setFormData(prev => ({
-                            ...prev,
-                            birth_date: year && month && day ? `${year}-${month}-${day}` : ''
-                          }))
+                          const day = e.target.value ? String(e.target.value).padStart(2, '0') : ''
+                          if (year && month && day) {
+                            setFormData(prev => ({
+                              ...prev,
+                              birth_date: `${year}-${month}-${day}`
+                            }))
+                          } else if (year || month || day) {
+                            setFormData(prev => ({
+                              ...prev,
+                              birth_date: `${year || ''}-${month || ''}-${day || ''}`
+                            }))
+                          }
                         }}
                       >
                         <option value="">日</option>
