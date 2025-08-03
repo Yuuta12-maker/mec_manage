@@ -51,10 +51,19 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
   }
 
   const getSessionsForDate = (date: Date) => {
-    const dateStr = date.toISOString().split('T')[0]
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    const dateStr = `${year}-${month}-${day}`
+    
     return sessions.filter(session => {
-      const sessionDate = new Date(session.scheduled_date).toISOString().split('T')[0]
-      return sessionDate === dateStr
+      const sessionDate = new Date(session.scheduled_date)
+      const sessionYear = sessionDate.getFullYear()
+      const sessionMonth = String(sessionDate.getMonth() + 1).padStart(2, '0')
+      const sessionDay = String(sessionDate.getDate()).padStart(2, '0')
+      const sessionDateStr = `${sessionYear}-${sessionMonth}-${sessionDay}`
+      
+      return sessionDateStr === dateStr
     })
   }
 
@@ -99,17 +108,17 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
   const days = getDaysInMonth(viewDate)
 
   return (
-    <div className="bg-white shadow rounded-lg overflow-hidden">
+    <div className="bg-white dark:bg-gray-800 shadow dark:shadow-gray-700/50 rounded-lg overflow-hidden transition-colors">
       {/* ヘッダー */}
-      <div className="px-6 py-4 border-b border-gray-200">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-600">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {viewDate.getFullYear()}年 {monthNames[viewDate.getMonth()]}
           </h2>
           <div className="flex items-center space-x-2">
             <button
               onClick={() => navigateMonth('prev')}
-              className="p-2 rounded-md hover:bg-gray-100"
+              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
@@ -117,13 +126,13 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
             </button>
             <button
               onClick={goToToday}
-              className="px-3 py-1 text-sm bg-primary text-white rounded-md hover:bg-primary/90"
+              className="px-3 py-1 text-sm bg-primary text-white rounded-md hover:bg-primary/90 transition-colors"
             >
               今日
             </button>
             <button
               onClick={() => navigateMonth('next')}
-              className="p-2 rounded-md hover:bg-gray-100"
+              className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -134,12 +143,12 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
       </div>
 
       {/* 曜日ヘッダー */}
-      <div className="grid grid-cols-7 bg-gray-50">
+      <div className="grid grid-cols-7 bg-gray-50 dark:bg-gray-700">
         {daysOfWeek.map((day, index) => (
           <div
             key={day}
             className={`px-2 py-3 text-center text-sm font-medium ${
-              index === 0 ? 'text-red-600' : index === 6 ? 'text-blue-600' : 'text-gray-500'
+              index === 0 ? 'text-red-600 dark:text-red-400' : index === 6 ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-300'
             }`}
           >
             {day}
@@ -158,9 +167,9 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
           return (
             <div
               key={index}
-              className={`min-h-[120px] border-r border-b border-gray-200 p-2 ${
-                !isCurrentMonthDay ? 'bg-gray-50' : 'bg-white'
-              } ${onDateClick ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+              className={`min-h-[120px] border-r border-b border-gray-200 dark:border-gray-600 p-2 ${
+                !isCurrentMonthDay ? 'bg-gray-50 dark:bg-gray-700' : 'bg-white dark:bg-gray-800'
+              } ${onDateClick ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700' : ''} transition-colors`}
               onClick={() => onDateClick && onDateClick(day)}
             >
               <div className="flex items-center justify-between mb-1">
@@ -174,7 +183,7 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
                       ? 'text-red-600 font-medium'
                       : index % 7 === 6
                       ? 'text-blue-600 font-medium'
-                      : 'text-gray-900'
+                      : 'text-gray-900 dark:text-white'
                   }`}
                 >
                   {dayNumber}
@@ -183,23 +192,31 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
 
               {/* セッション表示 */}
               <div className="space-y-1">
-                {daySessions.slice(0, 3).map((session) => (
-                  <Link
-                    key={session.id}
-                    href={`/sessions/${session.id}`}
-                    className={`block px-2 py-1 text-xs rounded border transition-colors hover:shadow-sm ${getTypeColor(session.type)}`}
-                  >
-                    <div className="truncate font-medium">
-                      {session.client.name}
-                    </div>
-                    <div className="truncate">
-                      {new Date(session.scheduled_date).toLocaleTimeString('ja-JP', {
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </div>
-                  </Link>
-                ))}
+                {daySessions.slice(0, 3).map((session) => {
+                  const baseColor = session.status === 'completed' 
+                    ? getStatusColor(session.status)
+                    : session.status === 'cancelled'
+                    ? getStatusColor(session.status)
+                    : getTypeColor(session.type)
+                  
+                  return (
+                    <Link
+                      key={session.id}
+                      href={`/sessions/${session.id}`}
+                      className={`block px-2 py-1 text-xs rounded border transition-colors hover:shadow-sm ${baseColor}`}
+                    >
+                      <div className="truncate font-medium">
+                        {session.client.name}
+                      </div>
+                      <div className="truncate">
+                        {new Date(session.scheduled_date).toLocaleTimeString('ja-JP', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </div>
+                    </Link>
+                  )
+                })}
                 {daySessions.length > 3 && (
                   <div className="text-xs text-gray-500 px-2">
                     +{daySessions.length - 3}件
@@ -212,23 +229,23 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
       </div>
 
       {/* 凡例 */}
-      <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+      <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
         <div className="flex items-center space-x-6 text-sm">
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded bg-orange-100 border border-orange-200"></div>
-            <span className="text-gray-600">トライアル</span>
+            <span className="text-gray-600 dark:text-gray-300">トライアル</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded bg-blue-100 border border-blue-200"></div>
-            <span className="text-gray-600">通常セッション</span>
+            <span className="text-gray-600 dark:text-gray-300">通常セッション</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded bg-green-100 border border-green-200"></div>
-            <span className="text-gray-600">実施済み</span>
+            <span className="text-gray-600 dark:text-gray-300">実施済み</span>
           </div>
           <div className="flex items-center space-x-2">
             <div className="w-3 h-3 rounded bg-red-100 border border-red-200"></div>
-            <span className="text-gray-600">キャンセル</span>
+            <span className="text-gray-600 dark:text-gray-300">キャンセル</span>
           </div>
         </div>
       </div>
