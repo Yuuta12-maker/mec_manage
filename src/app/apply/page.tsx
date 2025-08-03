@@ -296,6 +296,7 @@ export default function ApplyPage() {
                       onChange={handleChange}
                     />
                   </div>
+                </div>
               </div>
 
               {/* セッション希望 */}
