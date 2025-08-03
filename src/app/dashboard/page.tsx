@@ -11,6 +11,7 @@ import Navigation from '@/components/Navigation'
 export default function Dashboard() {
   const { user } = useAuth()
   const [clients, setClients] = useState<Client[]>([])
+  const [todaySessions, setTodaySessions] = useState<(Session & { client: Client })[]>([])
   const [upcomingSessions, setUpcomingSessions] = useState<(Session & { client: Client })[]>([])
   const [stats, setStats] = useState({
     total: 0,
@@ -45,7 +46,27 @@ export default function Dashboard() {
       })
     }
 
-    // 今後7日以内のセッションを取得
+    // 本日のセッションを取得
+    const today = new Date()
+    const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString()
+    const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1).toISOString()
+
+    const { data: todaySessionData } = await supabase
+      .from('sessions')
+      .select(`
+        *,
+        client:clients(*)
+      `)
+      .gte('scheduled_date', startOfDay)
+      .lt('scheduled_date', endOfDay)
+      .eq('status', 'scheduled')
+      .order('scheduled_date', { ascending: true })
+
+    if (todaySessionData) {
+      setTodaySessions(todaySessionData as any)
+    }
+
+    // 今後7日以内のセッションを取得（本日を除く）
     const sevenDaysFromNow = new Date()
     sevenDaysFromNow.setDate(sevenDaysFromNow.getDate() + 7)
 
@@ -55,11 +76,11 @@ export default function Dashboard() {
         *,
         client:clients(*)
       `)
-      .gte('scheduled_date', new Date().toISOString())
+      .gte('scheduled_date', endOfDay)
       .lte('scheduled_date', sevenDaysFromNow.toISOString())
       .eq('status', 'scheduled')
       .order('scheduled_date', { ascending: true })
-      .limit(5)
+      .limit(10)
 
     if (sessionData) {
       setUpcomingSessions(sessionData as any)
@@ -129,7 +150,65 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* 今週のセッション */}
+          {/* 本日のセッション */}
+          <div className="bg-white overflow-hidden shadow rounded-lg mb-8">
+            <div className="px-4 py-5 sm:p-6">
+              <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
+                本日のセッション
+              </h3>
+              {todaySessions.length > 0 ? (
+                <div className="flow-root">
+                  <ul className="-mb-8">
+                    {todaySessions.map((session, index) => (
+                      <li key={session.id}>
+                        <div className="relative pb-8">
+                          {index !== todaySessions.length - 1 && (
+                            <span
+                              className="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"
+                              aria-hidden="true"
+                            />
+                          )}
+                          <div className="relative flex space-x-3">
+                            <div>
+                              <span className="h-8 w-8 rounded-full bg-red-500 flex items-center justify-center ring-8 ring-white">
+                                <span className="text-white text-sm font-medium">
+                                  {getTypeLabel(session.type)[0]}
+                                </span>
+                              </span>
+                            </div>
+                            <div className="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                              <div>
+                                <p className="text-sm text-gray-500">
+                                  {session.client.name} - {getTypeLabel(session.type)}
+                                </p>
+                                <p className="text-sm text-gray-900 font-medium">
+                                  {new Date(session.scheduled_date).toLocaleString('ja-JP')}
+                                </p>
+                                {session.meet_link && (
+                                  <a 
+                                    href={session.meet_link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                                  >
+                                    Google Meet に参加
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-gray-500 text-sm">本日のセッションはありません。</p>
+              )}
+            </div>
+          </div>
+
+          {/* 今後7日以内のセッション */}
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
               <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">
@@ -163,6 +242,16 @@ export default function Dashboard() {
                                 <p className="text-sm text-gray-900">
                                   {new Date(session.scheduled_date).toLocaleString('ja-JP')}
                                 </p>
+                                {session.meet_link && (
+                                  <a 
+                                    href={session.meet_link} 
+                                    target="_blank" 
+                                    rel="noopener noreferrer"
+                                    className="text-blue-600 hover:text-blue-800 text-sm underline"
+                                  >
+                                    Google Meet リンク
+                                  </a>
+                                )}
                               </div>
                             </div>
                           </div>
@@ -172,7 +261,7 @@ export default function Dashboard() {
                   </ul>
                 </div>
               ) : (
-                <p className="text-gray-500 text-sm">予定されているセッションはありません。</p>
+                <p className="text-gray-500 text-sm">今後7日以内に予定されているセッションはありません。</p>
               )}
             </div>
           </div>
