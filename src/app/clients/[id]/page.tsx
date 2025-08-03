@@ -219,12 +219,10 @@ export default function ClientDetailPage() {
                       <dd className="mt-1 text-sm text-gray-900">{client.phone}</dd>
                     </div>
                   )}
-                  {client.address && (
-                    <div>
-                      <dt className="text-sm font-medium text-gray-500">住所</dt>
-                      <dd className="mt-1 text-sm text-gray-900">{client.address}</dd>
-                    </div>
-                  )}
+                  <div>
+                    <dt className="text-sm font-medium text-gray-500">住所</dt>
+                    <dd className="mt-1 text-sm text-gray-900">{client.address || '未設定'}</dd>
+                  </div>
                   <div>
                     <dt className="text-sm font-medium text-gray-500">希望セッション形式</dt>
                     <dd className="mt-1 text-sm text-gray-900">
