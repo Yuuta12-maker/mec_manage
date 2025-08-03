@@ -17,7 +17,6 @@ export default function ApplyPage() {
     address: '',
     preferred_session_format: 'online',
     notes: '',
-    motivation: '',
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -37,7 +36,7 @@ export default function ApplyPage() {
           address: formData.address,
           preferred_session_format: formData.preferred_session_format,
           status: 'applied',
-          notes: `【申し込み動機】\n${formData.motivation}\n\n【その他】\n${formData.notes}`,
+          notes: formData.notes,
         }])
         .select()
 
@@ -320,42 +319,22 @@ export default function ApplyPage() {
                 </div>
               </div>
 
-              {/* 申し込み動機 */}
+              {/* その他・備考 */}
               <div>
-                <h3 className="text-lg font-medium text-gray-900 mb-4">申し込みについて</h3>
-                <div className="space-y-6">
-                  <div>
-                    <label htmlFor="motivation" className="block text-sm font-medium text-gray-700">
-                      申し込み動機 <span className="text-red-500">*</span>
-                    </label>
-                    <p className="mt-1 text-sm text-gray-600 mb-2">
-                      なぜこのプログラムに申し込もうと思ったのか、どのような目標をお持ちかなどをお聞かせください。
-                    </p>
-                    <textarea
-                      name="motivation"
-                      id="motivation"
-                      rows={4}
-                      required
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={formData.motivation}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
-                      その他・ご質問
-                    </label>
-                    <textarea
-                      name="notes"
-                      id="notes"
-                      rows={3}
-                      placeholder="その他お聞かせいただきたいことやご質問があればご記入ください。"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={formData.notes}
-                      onChange={handleChange}
-                    />
-                  </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">その他</h3>
+                <div>
+                  <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                    備考・ご質問
+                  </label>
+                  <textarea
+                    name="notes"
+                    id="notes"
+                    rows={4}
+                    placeholder="その他お聞かせいただきたいことやご質問があればご記入ください。"
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                    value={formData.notes}
+                    onChange={handleChange}
+                  />
                 </div>
               </div>
 

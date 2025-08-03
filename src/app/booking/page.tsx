@@ -1,55 +1,57 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Client } from '@/types'
 
 export default function BookingPage() {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [clients, setClients] = useState<Client[]>([])
-  const [showClientForm, setShowClientForm] = useState(false)
   const [formData, setFormData] = useState({
     // セッション情報
-    client_id: '',
     scheduled_date: '',
     type: 'trial' as 'trial' | 'regular',
     notes: '',
-    // 新規クライアント情報
+    // クライアント照合・新規情報
     client_name: '',
-    client_name_kana: '',
     client_email: '',
+    client_name_kana: '',
     client_phone: '',
     preferred_session_format: 'online',
   })
 
-  useEffect(() => {
-    fetchClients()
-  }, [])
-
-  const fetchClients = async () => {
-    const { data, error } = await supabase
-      .from('clients')
-      .select('*')
-      .order('name')
-
-    if (error) {
-      console.error('Error fetching clients:', error)
-    } else {
-      setClients(data || [])
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
 
     try {
-      let clientId = formData.client_id
+      let clientId = null
 
-      // 新規クライアントの場合
-      if (showClientForm) {
+      // メールアドレスと氏名でクライアントを検索
+      const { data: existingClients, error: searchError } = await supabase
+        .from('clients')
+        .select('*')
+        .eq('email', formData.client_email)
+        .eq('name', formData.client_name)
+
+      if (searchError) {
+        console.error('Error searching client:', searchError)
+        alert('クライアント検索に失敗しました。')
+        return
+      }
+
+      if (existingClients && existingClients.length > 0) {
+        // 既存クライアントが見つかった場合
+        clientId = existingClients[0].id
+        
+        // ステータス更新
+        await supabase
+          .from('clients')
+          .update({ status: 'trial_booked' })
+          .eq('id', clientId)
+      } else {
+        // 新規クライアント作成
         const { data: newClient, error: clientError } = await supabase
           .from('clients')
           .insert([{
@@ -72,12 +74,6 @@ export default function BookingPage() {
         if (newClient && newClient[0]) {
           clientId = newClient[0].id
         }
-      } else {
-        // 既存クライアントのステータス更新
-        await supabase
-          .from('clients')
-          .update({ status: 'trial_booked' })
-          .eq('id', clientId)
       }
 
       // セッション作成
@@ -118,20 +114,6 @@ export default function BookingPage() {
     }))
   }
 
-  const handleClientTypeChange = (isNewClient: boolean) => {
-    setShowClientForm(isNewClient)
-    if (isNewClient) {
-      setFormData(prev => ({ ...prev, client_id: '' }))
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        client_name: '',
-        client_name_kana: '',
-        client_email: '',
-        client_phone: '',
-      }))
-    }
-  }
 
   // 現在時刻から24時間後を最小時刻として設定
   const getMinDateTime = () => {
@@ -244,147 +226,94 @@ export default function BookingPage() {
                 </div>
               </div>
 
-              {/* クライアント選択 */}
+              {/* 予約者情報 */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">予約者情報</h3>
-                
-                <div className="mb-6">
-                  <fieldset>
-                    <legend className="text-sm font-medium text-gray-700 mb-2">予約者の種別</legend>
-                    <div className="space-y-2">
-                      <div className="flex items-center">
-                        <input
-                          id="existing-client"
-                          name="client-type"
-                          type="radio"
-                          checked={!showClientForm}
-                          onChange={() => handleClientTypeChange(false)}
-                          className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                        />
-                        <label htmlFor="existing-client" className="ml-3 block text-sm font-medium text-gray-700">
-                          既存のクライアント
-                        </label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          id="new-client"
-                          name="client-type"
-                          type="radio"
-                          checked={showClientForm}
-                          onChange={() => handleClientTypeChange(true)}
-                          className="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300"
-                        />
-                        <label htmlFor="new-client" className="ml-3 block text-sm font-medium text-gray-700">
-                          新規のお客様
-                        </label>
-                      </div>
-                    </div>
-                  </fieldset>
+                <div className="bg-blue-50 rounded-lg p-4 mb-6">
+                  <p className="text-sm text-blue-800">
+                    <strong>既存のお客様：</strong> 以前にご登録いただいたメールアドレスとお名前を入力してください。<br />
+                    <strong>新規のお客様：</strong> 下記の情報をご入力ください。システムが自動的に判定いたします。
+                  </p>
                 </div>
-
-                {!showClientForm ? (
-                  /* 既存クライアント選択 */
+                
+                <div className="space-y-6">
                   <div>
-                    <label htmlFor="client_id" className="block text-sm font-medium text-gray-700">
-                      クライアント選択 <span className="text-red-500">*</span>
+                    <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">
+                      お名前 <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="client_name"
+                      id="client_name"
+                      required
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      value={formData.client_name}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
+                      メールアドレス <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="email"
+                      name="client_email"
+                      id="client_email"
+                      required
+                      placeholder="example@email.com"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      value={formData.client_email}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="client_name_kana" className="block text-sm font-medium text-gray-700">
+                      お名前（カナ）
+                    </label>
+                    <input
+                      type="text"
+                      name="client_name_kana"
+                      id="client_name_kana"
+                      placeholder="ヤマダタロウ"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      value={formData.client_name_kana}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">
+                      電話番号
+                    </label>
+                    <input
+                      type="tel"
+                      name="client_phone"
+                      id="client_phone"
+                      placeholder="090-1234-5678"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      value={formData.client_phone}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="preferred_session_format" className="block text-sm font-medium text-gray-700">
+                      希望セッション形式 <span className="text-red-500">*</span>
                     </label>
                     <select
-                      id="client_id"
-                      name="client_id"
-                      required={!showClientForm}
+                      id="preferred_session_format"
+                      name="preferred_session_format"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={formData.client_id}
+                      value={formData.preferred_session_format}
                       onChange={handleChange}
                     >
-                      <option value="">選択してください</option>
-                      {clients.map((client) => (
-                        <option key={client.id} value={client.id}>
-                          {client.name}{client.name_kana ? ` (${client.name_kana})` : ''} - {client.email}
-                        </option>
-                      ))}
+                      <option value="online">オンライン（Google Meet）</option>
+                      <option value="face-to-face">対面</option>
                     </select>
                   </div>
-                ) : (
-                  /* 新規クライアント情報入力 */
-                  <div className="space-y-6">
-                    <div>
-                      <label htmlFor="client_name" className="block text-sm font-medium text-gray-700">
-                        お名前 <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="client_name"
-                        id="client_name"
-                        required={showClientForm}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        value={formData.client_name}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="client_name_kana" className="block text-sm font-medium text-gray-700">
-                        お名前（カナ）
-                      </label>
-                      <input
-                        type="text"
-                        name="client_name_kana"
-                        id="client_name_kana"
-                        placeholder="ヤマダタロウ"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        value={formData.client_name_kana}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
-                        メールアドレス <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="email"
-                        name="client_email"
-                        id="client_email"
-                        required={showClientForm}
-                        placeholder="example@email.com"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        value={formData.client_email}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="client_phone" className="block text-sm font-medium text-gray-700">
-                        電話番号
-                      </label>
-                      <input
-                        type="tel"
-                        name="client_phone"
-                        id="client_phone"
-                        placeholder="090-1234-5678"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        value={formData.client_phone}
-                        onChange={handleChange}
-                      />
-                    </div>
-
-                    <div>
-                      <label htmlFor="preferred_session_format" className="block text-sm font-medium text-gray-700">
-                        希望セッション形式 <span className="text-red-500">*</span>
-                      </label>
-                      <select
-                        id="preferred_session_format"
-                        name="preferred_session_format"
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                        value={formData.preferred_session_format}
-                        onChange={handleChange}
-                      >
-                        <option value="online">オンライン（Google Meet）</option>
-                        <option value="face-to-face">対面</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
+                </div>
               </div>
 
               {/* 注意事項 */}
