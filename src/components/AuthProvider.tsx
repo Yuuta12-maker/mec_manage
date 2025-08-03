@@ -12,7 +12,7 @@ export default function AuthProvider({ children }: { children: React.ReactNode }
   useEffect(() => {
     if (!loading) {
       // 認証不要なページのリスト
-      const publicPaths = ['/login', '/signup', '/debug', '/public-debug', '/test-signup']
+      const publicPaths = ['/login', '/signup', '/debug', '/public-debug', '/test-signup', '/apply', '/apply/success', '/booking', '/booking/success']
       const isPublicPath = publicPaths.includes(pathname)
       
       if (!user && !isPublicPath) {
