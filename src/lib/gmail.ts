@@ -32,13 +32,16 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
   try {
     // Gmail SMTP設定
     const transporter = nodemailer.createTransport({
-      service: 'gmail',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // TLS使用
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
-      secure: true,
-      port: 465,
+      tls: {
+        rejectUnauthorized: false
+      }
     })
 
     const mailOptions = {

@@ -160,10 +160,10 @@ export default function BookingPage() {
         console.log('Session ID:', session[0].id)
         console.log('Starting email send process...')
         
-        // セッション予約完了メール送信（API Route経由）
+        // セッション予約完了メール送信（Resend API経由）
         try {
-          console.log('Calling sendBookingEmails...')
-          const emailResponse = await fetch('/api/send-booking-email', {
+          console.log('Calling sendBookingEmails with Resend...')
+          const emailResponse = await fetch('/api/send-booking-email-resend', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
