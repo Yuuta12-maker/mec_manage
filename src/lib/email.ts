@@ -21,7 +21,7 @@ export async function sendEmail({ to, subject, content, type, related_id }: Emai
   
   try {
     const { data, error } = await resend.emails.send({
-      from: 'MEC管理システム <onboarding@resend.dev>', // テスト用：実際のドメインに変更してください
+      from: 'onboarding@resend.dev', // Resendの認証済みドメインを使用
       to: [to],
       subject,
       text: content,
