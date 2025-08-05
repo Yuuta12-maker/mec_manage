@@ -40,8 +40,15 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
         pass: process.env.GMAIL_APP_PASSWORD,
       },
       tls: {
-        rejectUnauthorized: false
-      }
+        rejectUnauthorized: false,
+        ciphers: 'SSLv3'
+      },
+      // メール送信の信頼性を向上
+      pool: true,
+      maxConnections: 1,
+      maxMessages: 10,
+      rateDelta: 1000,
+      rateLimit: 1
     })
 
     const mailOptions = {
@@ -49,6 +56,12 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
       to: to,
       subject: subject,
       text: content,
+      headers: {
+        'X-Mailer': 'MEC Management System',
+        'X-Priority': '1',
+        'Importance': 'high',
+        'Reply-To': process.env.GMAIL_USER,
+      }
     }
 
     console.log('Sending email with Gmail SMTP...')
@@ -149,8 +162,8 @@ Email: ${adminEmail}
       related_id: applicationId,
     })
     
-    // 少し待機
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // より長い待機時間でレート制限を回避
+    await new Promise(resolve => setTimeout(resolve, 2000))
     
     // 管理者向けメールを送信
     const adminResult = await sendEmailWithGmail({
@@ -256,8 +269,8 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
       related_id: sessionId,
     })
     
-    // 少し待機
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // より長い待機時間でレート制限を回避
+    await new Promise(resolve => setTimeout(resolve, 2000))
     
     // 管理者向けメールを送信
     const adminResult = await sendEmailWithGmail({
