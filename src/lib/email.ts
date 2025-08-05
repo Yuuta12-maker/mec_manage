@@ -47,7 +47,8 @@ export async function sendEmail({ to, subject, content, type, related_id }: Emai
 
     if (error) {
       console.error('Resend API Error:', error)
-      throw new Error(`Email sending failed: ${error.message}`)
+      console.error('Full error object:', JSON.stringify(error, null, 2))
+      throw new Error(`Email sending failed: ${error.message || JSON.stringify(error)}`)
     }
 
     console.log('Email sent successfully:', data)
@@ -115,27 +116,31 @@ Email: ${adminEmail}
 
 管理画面URL: ${process.env.NEXT_PUBLIC_BASE_URL}/clients`
 
-  // 両方のメールを並列送信
+  // 両方のメールを逐次送信（並列ではなく）
   console.log('=== Sending Application Emails ===')
   console.log('Applicant email:', applicantEmail)
   console.log('Admin email:', adminEmail)
   
-  const [applicantResult, adminResult] = await Promise.all([
-    sendEmail({
-      to: applicantEmail,
-      subject: applicantSubject,
-      content: applicantContent,
-      type: 'application',
-      related_id: applicationId,
-    }),
-    sendEmail({
-      to: adminEmail,
-      subject: adminSubject,
-      content: adminContent,
-      type: 'application',
-      related_id: applicationId,
-    }),
-  ])
+  // 応募者向けメールを先に送信
+  const applicantResult = await sendEmail({
+    to: applicantEmail,
+    subject: applicantSubject,
+    content: applicantContent,
+    type: 'application',
+    related_id: applicationId,
+  })
+  
+  // 少し待機
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  
+  // 管理者向けメールを送信
+  const adminResult = await sendEmail({
+    to: adminEmail,
+    subject: adminSubject,
+    content: adminContent,
+    type: 'application',
+    related_id: applicationId,
+  })
 
   console.log('Applicant email result:', applicantResult)
   console.log('Admin email result:', adminResult)
