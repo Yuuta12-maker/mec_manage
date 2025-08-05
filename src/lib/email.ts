@@ -18,14 +18,19 @@ export async function sendEmail({ to, subject, content, type, related_id }: Emai
   console.log('API Key:', process.env.RESEND_API_KEY ? 'Set' : 'Missing')
   console.log('To:', to)
   console.log('Subject:', subject)
+  console.log('From:', 'onboarding@resend.dev')
   
   try {
+    console.log('Sending email with Resend API...')
     const { data, error } = await resend.emails.send({
-      from: 'onboarding@resend.dev', // Resendの認証済みドメインを使用
+      from: 'Acme <onboarding@resend.dev>', // Resendの公式サンプル形式
       to: [to],
       subject,
       text: content,
     })
+    
+    console.log('Resend API response - data:', data)
+    console.log('Resend API response - error:', error)
 
     // メール送信履歴を保存
     const { error: logError } = await supabase
