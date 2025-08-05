@@ -28,40 +28,63 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
     console.error(error)
     return { success: false, error }
   }
+
+  // キャリアメール判定
+  const isCarrierEmail = to.includes('@docomo.ne.jp') || to.includes('@ezweb.ne.jp') || to.includes('@softbank.ne.jp') || to.includes('@au.com')
+  console.log('Is carrier email:', isCarrierEmail)
   
   try {
     // Gmail SMTP設定
     const transporter = nodemailer.createTransport({
       host: 'smtp.gmail.com',
-      port: 587,
-      secure: false, // TLS使用
+      port: isCarrierEmail ? 465 : 587, // キャリアメールには465を使用
+      secure: isCarrierEmail ? true : false, // キャリアメールにはSSL使用
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
       tls: {
         rejectUnauthorized: false,
-        ciphers: 'SSLv3'
+        ciphers: isCarrierEmail ? 'HIGH:MEDIUM:!aNULL:!eNULL' : 'SSLv3'
       },
       // メール送信の信頼性を向上
       pool: true,
       maxConnections: 1,
-      maxMessages: 10,
-      rateDelta: 1000,
+      maxMessages: isCarrierEmail ? 1 : 10, // キャリアメールは1通ずつ
+      rateDelta: isCarrierEmail ? 5000 : 1000, // キャリアメールは5秒間隔
       rateLimit: 1
     })
 
+    // キャリアメール向けにコンテンツを最適化
+    const optimizedContent = isCarrierEmail 
+      ? content
+          .replace(/━━━━━━━━━━━━━━━━━━━━━━━━━━/g, '========================================') // 罫線を標準文字に
+          .replace(/・/g, '* ') // 中点を標準記号に
+          .substring(0, 2000) // 文字数制限
+      : content
+
     const mailOptions = {
-      from: `"MEC管理システム" <${process.env.GMAIL_USER}>`,
+      from: isCarrierEmail 
+        ? `MEC管理システム <${process.env.GMAIL_USER}>` // キャリアメールは装飾なし
+        : `"MEC管理システム" <${process.env.GMAIL_USER}>`,
       to: to,
-      subject: subject,
-      text: content,
-      headers: {
-        'X-Mailer': 'MEC Management System',
-        'X-Priority': '1',
-        'Importance': 'high',
-        'Reply-To': process.env.GMAIL_USER,
-      }
+      subject: isCarrierEmail 
+        ? subject.replace(/【/g, '[').replace(/】/g, ']') // 装飾文字を標準に
+        : subject,
+      text: optimizedContent,
+      headers: isCarrierEmail 
+        ? {
+            'X-Mailer': 'MEC-System',
+            'Message-ID': `<${Date.now()}.${Math.random().toString(36).substr(2, 9)}@${process.env.GMAIL_USER?.split('@')[1]}>`,
+            'Content-Type': 'text/plain; charset=UTF-8',
+            'Content-Transfer-Encoding': '8bit'
+          }
+        : {
+            'X-Mailer': 'MEC Management System',
+            'X-Priority': '1',
+            'Importance': 'high',
+            'Reply-To': process.env.GMAIL_USER,
+          }
     }
 
     console.log('Sending email with Gmail SMTP...')
@@ -269,8 +292,13 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
       related_id: sessionId,
     })
     
-    // より長い待機時間でレート制限を回避
-    await new Promise(resolve => setTimeout(resolve, 2000))
+    // キャリアメールの場合はより長い待機時間
+    const waitTime = (clientEmail.includes('@docomo.ne.jp') || clientEmail.includes('@ezweb.ne.jp') || 
+                     clientEmail.includes('@softbank.ne.jp') || clientEmail.includes('@au.com') ||
+                     adminEmail.includes('@docomo.ne.jp') || adminEmail.includes('@ezweb.ne.jp') || 
+                     adminEmail.includes('@softbank.ne.jp') || adminEmail.includes('@au.com')) ? 5000 : 2000
+    console.log('Wait time for next email:', waitTime)
+    await new Promise(resolve => setTimeout(resolve, waitTime))
     
     // 管理者向けメールを送信
     const adminResult = await sendEmailWithGmail({
