@@ -18,7 +18,7 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
   
   try {
     // Gmail SMTP設定
-    const transporter = nodemailer.createTransporter({
+    const transporter = nodemailer.createTransport({
       service: 'gmail',
       auth: {
         user: process.env.GMAIL_USER,
