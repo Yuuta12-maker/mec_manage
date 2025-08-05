@@ -62,6 +62,22 @@ export default function SessionDetailPage() {
   }
 
   const handleSave = async () => {
+    // キャンセル変更時の確認
+    if (formData.status === 'cancelled' && session?.status !== 'cancelled') {
+      const confirmed = window.confirm(
+        '⚠️ セッションをキャンセルしますか？\n\n' +
+        'この操作により：\n' +
+        '• セッションが取り消されます\n' +
+        '• クライアントへの連絡が必要になります\n' +
+        '• この操作は慎重に行ってください\n\n' +
+        '本当にキャンセルしますか？'
+      )
+      
+      if (!confirmed) {
+        return
+      }
+    }
+
     await handleAsync(async () => {
       const { error } = await supabase
         .from('sessions')

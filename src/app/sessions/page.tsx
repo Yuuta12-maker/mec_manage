@@ -83,19 +83,19 @@ export default function SessionsPage() {
     return matchesType && matchesStatus && matchesDate
   })
 
-  const updateSessionStatus = async (sessionId: string, newStatus: 'completed' | 'cancelled') => {
-    const { error } = await supabase
-      .from('sessions')
-      .update({ status: newStatus })
-      .eq('id', sessionId)
+  const updateSessionStatus = async (sessionId: string, newStatus: 'completed') => {
+    await handleAsync(async () => {
+      const { error } = await supabase
+        .from('sessions')
+        .update({ status: newStatus })
+        .eq('id', sessionId)
 
-    if (error) {
-      console.error('Error updating session:', error)
-      alert('セッションステータスの更新に失敗しました。')
-    } else {
-      fetchSessions()
-      alert('セッションステータスを更新しました。')
-    }
+      if (error) {
+        throw new Error(`セッションステータスの更新に失敗しました: ${error.message}`)
+      }
+
+      await fetchSessions()
+    }, 'セッションステータスの更新に失敗しました')
   }
 
   if (isLoading) {
@@ -270,20 +270,12 @@ export default function SessionsPage() {
                         {getStatusLabel(session.status)}
                       </span>
                       {session.status === 'scheduled' && (
-                        <div className="flex space-x-2">
-                          <button
-                            onClick={() => updateSessionStatus(session.id, 'completed')}
-                            className="text-green-600 hover:text-green-900 text-sm font-medium"
-                          >
-                            完了
-                          </button>
-                          <button
-                            onClick={() => updateSessionStatus(session.id, 'cancelled')}
-                            className="text-red-600 hover:text-red-900 text-sm font-medium"
-                          >
-                            キャンセル
-                          </button>
-                        </div>
+                        <button
+                          onClick={() => updateSessionStatus(session.id, 'completed')}
+                          className="text-green-600 hover:text-green-900 text-sm font-medium"
+                        >
+                          完了
+                        </button>
                       )}
                       <Link
                         href={`/sessions/${session.id}`}
