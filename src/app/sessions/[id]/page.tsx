@@ -5,19 +5,20 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Session, Client } from '@/types'
+import { SessionWithClient } from '@/types'
 import Navigation from '@/components/Navigation'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import ErrorMessage from '@/components/ErrorMessage'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 import Link from 'next/link'
-
-type SessionWithClient = Session & { client: Client }
 
 export default function SessionDetailPage() {
   const params = useParams()
   const router = useRouter()
   const sessionId = params.id as string
   const [session, setSession] = useState<SessionWithClient | null>(null)
-  const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
+  const { isLoading, error, handleAsync, clearError } = useErrorHandler()
   const [formData, setFormData] = useState({
     notes: '',
     summary: '',
@@ -32,20 +33,24 @@ export default function SessionDetailPage() {
   }, [sessionId])
 
   const fetchSession = async () => {
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('sessions')
-      .select(`
-        *,
-        client:clients(*)
-      `)
-      .eq('id', sessionId)
-      .single()
+    await handleAsync(async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select(`
+          *,
+          client:clients(*)
+        `)
+        .eq('id', sessionId)
+        .single()
 
-    if (error) {
-      console.error('Error fetching session:', error)
-      router.push('/sessions')
-    } else {
+      if (error) {
+        throw new Error(`セッションの取得に失敗しました: ${error.message}`)
+      }
+      
+      if (!data) {
+        throw new Error('セッションが見つかりません')
+      }
+
       setSession(data as SessionWithClient)
       setFormData({
         notes: data.notes || '',
@@ -53,30 +58,29 @@ export default function SessionDetailPage() {
         meet_link: data.meet_link || '',
         status: data.status
       })
-    }
-    setLoading(false)
+    }, 'セッション情報の取得に失敗しました')
   }
 
   const handleSave = async () => {
-    const { error } = await supabase
-      .from('sessions')
-      .update({
-        notes: formData.notes,
-        summary: formData.summary,
-        meet_link: formData.meet_link,
-        status: formData.status,
-        updated_at: new Date().toISOString()
-      })
-      .eq('id', sessionId)
+    await handleAsync(async () => {
+      const { error } = await supabase
+        .from('sessions')
+        .update({
+          notes: formData.notes,
+          summary: formData.summary,
+          meet_link: formData.meet_link,
+          status: formData.status,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', sessionId)
 
-    if (error) {
-      console.error('Error updating session:', error)
-      alert('セッションの更新に失敗しました。')
-    } else {
+      if (error) {
+        throw new Error(`セッションの更新に失敗しました: ${error.message}`)
+      }
+
       setEditing(false)
-      fetchSession()
-      alert('セッションを更新しました。')
-    }
+      await fetchSession()
+    }, 'セッションの更新に失敗しました')
   }
 
   const getStatusLabel = (status: string) => {
@@ -101,26 +105,35 @@ export default function SessionDetailPage() {
     return type === 'trial' ? 'トライアル' : '通常セッション'
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         <Navigation />
         <main className="max-w-7xl mx-auto py-6 px-4">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <LoadingSpinner size="lg" />
+            <span className="ml-3 text-gray-600 dark:text-gray-300">セッション情報を読み込み中...</span>
           </div>
         </main>
       </div>
     )
   }
 
-  if (!session) {
+  if (error || !session) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         <Navigation />
         <main className="max-w-7xl mx-auto py-6 px-4">
+          {error && (
+            <ErrorMessage 
+              message={error} 
+              onRetry={fetchSession}
+              onDismiss={clearError}
+              className="mb-6"
+            />
+          )}
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-900">セッションが見つかりません</h2>
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">セッションが見つかりません</h2>
             <Link href="/sessions" className="mt-4 text-primary hover:underline">
               セッション一覧に戻る
             </Link>
@@ -131,20 +144,29 @@ export default function SessionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       <Navigation />
 
       <main className="max-w-4xl mx-auto py-6 px-4">
+        {error && (
+          <ErrorMessage 
+            message={error} 
+            onRetry={fetchSession}
+            onDismiss={clearError}
+            className="mb-6"
+          />
+        )}
+        
         <div className="mb-6">
           <Link
             href="/sessions"
-            className="inline-flex items-center text-sm text-gray-500 hover:text-gray-700"
+            className="inline-flex items-center text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
             ← セッション一覧に戻る
           </Link>
         </div>
 
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+        <div className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg transition-colors">
           <div className="px-4 py-5 sm:px-6">
             <div className="flex items-center justify-between">
               <div>
@@ -257,7 +279,7 @@ export default function SessionDetailPage() {
                       value={formData.meet_link}
                       onChange={(e) => setFormData({ ...formData, meet_link: e.target.value })}
                       placeholder="https://meet.google.com/..."
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     />
                   ) : session.meet_link ? (
                     <a
@@ -288,7 +310,7 @@ export default function SessionDetailPage() {
                       value={formData.notes}
                       onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                       placeholder="セッションに関するメモ..."
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     />
                   ) : session.notes ? (
                     <p className="whitespace-pre-wrap">{session.notes}</p>
@@ -306,7 +328,7 @@ export default function SessionDetailPage() {
                       value={formData.summary}
                       onChange={(e) => setFormData({ ...formData, summary: e.target.value })}
                       placeholder="セッションの内容や成果をまとめてください..."
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      className="block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     />
                   ) : session.summary ? (
                     <p className="whitespace-pre-wrap">{session.summary}</p>

@@ -66,13 +66,13 @@ export default function Dashboard() {
           .select('*, client:clients(*)')
           .gte('scheduled_date', startOfDay)
           .lt('scheduled_date', endOfDay)
-          .eq('status', 'scheduled')
+          .in('status', ['scheduled'])
           .order('scheduled_date', { ascending: true }),
         supabase.from('sessions')
           .select('*, client:clients(*)')
           .gte('scheduled_date', endOfDay)
           .lte('scheduled_date', sevenDaysFromNow.toISOString())
-          .eq('status', 'scheduled')
+          .in('status', ['scheduled'])
           .order('scheduled_date', { ascending: true })
           .limit(10),
         supabase.from('sessions')
