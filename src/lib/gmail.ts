@@ -17,6 +17,15 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
   console.log('Subject:', subject)
   console.log('Gmail User:', process.env.GMAIL_USER ? 'Set' : 'Missing')
   console.log('Gmail Password:', process.env.GMAIL_APP_PASSWORD ? 'Set' : 'Missing')
+  console.log('Gmail User Value:', process.env.GMAIL_USER)
+  console.log('Gmail Password Value:', process.env.GMAIL_APP_PASSWORD ? 'Length: ' + process.env.GMAIL_APP_PASSWORD.length : 'undefined')
+  
+  // Check if credentials are available
+  if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
+    const error = 'Missing Gmail SMTP credentials. Please check GMAIL_USER and GMAIL_APP_PASSWORD environment variables.'
+    console.error(error)
+    return { success: false, error }
+  }
   
   try {
     // Gmail SMTP設定
@@ -26,6 +35,8 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
+      secure: true,
+      port: 465,
     })
 
     const mailOptions = {
