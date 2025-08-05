@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { sendApplicationEmails } from '@/lib/email'
+import { sendApplicationEmailsWithGmail } from '@/lib/gmail'
 
 export default function ApplyPage() {
   const router = useRouter()
@@ -129,7 +129,7 @@ export default function ApplyPage() {
         // メール送信
         try {
           console.log('Calling sendApplicationEmails...')
-          const emailResult = await sendApplicationEmails(
+          const emailResult = await sendApplicationEmailsWithGmail(
             formData.email,
             formData.name,
             data[0].id

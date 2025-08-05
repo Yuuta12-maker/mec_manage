@@ -23,7 +23,7 @@ export async function sendEmail({ to, subject, content, type, related_id }: Emai
   try {
     console.log('Sending email with Resend API...')
     const { data, error } = await resend.emails.send({
-      from: 'Acme <onboarding@resend.dev>', // Resendの公式サンプル形式
+      from: 'onboarding@resend.dev', // Resendの標準テスト用アドレス
       to: [to],
       subject,
       text: content,
