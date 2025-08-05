@@ -15,6 +15,8 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
   console.log('=== Gmail Email Debug Info ===')
   console.log('To:', to)
   console.log('Subject:', subject)
+  console.log('Gmail User:', process.env.GMAIL_USER ? 'Set' : 'Missing')
+  console.log('Gmail Password:', process.env.GMAIL_APP_PASSWORD ? 'Set' : 'Missing')
   
   try {
     // Gmail SMTP設定
