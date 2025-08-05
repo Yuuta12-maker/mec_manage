@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { sendBookingEmailsWithGmail } from '@/lib/gmail'
 import BookingCalendar from '@/components/BookingCalendar'
 
 export default function BookingPage() {
@@ -161,17 +160,25 @@ export default function BookingPage() {
         console.log('Session ID:', session[0].id)
         console.log('Starting email send process...')
         
-        // セッション予約完了メール送信
+        // セッション予約完了メール送信（API Route経由）
         try {
           console.log('Calling sendBookingEmails...')
-          const emailResult = await sendBookingEmailsWithGmail(
-            formData.client_email,
-            formData.client_name,
-            selectedTime,
-            formData.type,
-            undefined,
-            session[0].id
-          )
+          const emailResponse = await fetch('/api/send-booking-email', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              clientEmail: formData.client_email,
+              clientName: formData.client_name,
+              sessionDate: selectedTime,
+              sessionType: formData.type,
+              meetLink: undefined,
+              sessionId: session[0].id,
+            }),
+          })
+          
+          const emailResult = await emailResponse.json()
           console.log('sendBookingEmails returned:', emailResult)
           
           if (!emailResult.success) {
