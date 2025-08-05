@@ -65,6 +65,11 @@ export default function SessionsPage() {
   }
 
   const filteredSessions = sessions.filter(session => {
+    // リストビューでは予定セッションのみ表示
+    if (viewMode === 'list' && session.status !== 'scheduled') {
+      return false
+    }
+    
     const matchesType = typeFilter === 'all' || session.type === typeFilter
     const matchesStatus = statusFilter === 'all' || session.status === statusFilter
     
@@ -193,8 +198,6 @@ export default function SessionsPage() {
               >
                 <option value="all">すべて</option>
                 <option value="scheduled">予定</option>
-                <option value="completed">実施済み</option>
-                <option value="cancelled">キャンセル</option>
               </select>
             </div>
             <div>
