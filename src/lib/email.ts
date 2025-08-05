@@ -54,6 +54,11 @@ export async function sendEmail({ to, subject, content, type, related_id }: Emai
     return { success: true, data }
   } catch (error) {
     console.error('Email sending error:', error)
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    })
     
     // エラーの場合もログに記録
     await supabase
@@ -111,6 +116,10 @@ Email: ${adminEmail}
 管理画面URL: ${process.env.NEXT_PUBLIC_BASE_URL}/clients`
 
   // 両方のメールを並列送信
+  console.log('=== Sending Application Emails ===')
+  console.log('Applicant email:', applicantEmail)
+  console.log('Admin email:', adminEmail)
+  
   const [applicantResult, adminResult] = await Promise.all([
     sendEmail({
       to: applicantEmail,
@@ -127,6 +136,9 @@ Email: ${adminEmail}
       related_id: applicationId,
     }),
   ])
+
+  console.log('Applicant email result:', applicantResult)
+  console.log('Admin email result:', adminResult)
 
   return {
     applicantResult,
