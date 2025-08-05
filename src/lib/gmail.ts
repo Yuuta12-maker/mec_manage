@@ -36,31 +36,39 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
   try {
     // Gmail SMTP設定
     const transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
-      port: isCarrierEmail ? 465 : 587, // キャリアメールには465を使用
-      secure: isCarrierEmail ? true : false, // キャリアメールにはSSL使用
+      service: isCarrierEmail ? undefined : 'gmail',
+      host: isCarrierEmail ? 'smtp.gmail.com' : undefined,
+      port: isCarrierEmail ? 465 : 587,
+      secure: isCarrierEmail ? true : false,
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_APP_PASSWORD,
       },
       tls: {
         rejectUnauthorized: false,
-        ciphers: isCarrierEmail ? 'HIGH:MEDIUM:!aNULL:!eNULL' : 'SSLv3'
+        ciphers: isCarrierEmail ? 'ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256' : 'SSLv3'
       },
-      // メール送信の信頼性を向上
-      pool: true,
+      // キャリアメール向けの厳格な設定
+      pool: isCarrierEmail ? false : true,
       maxConnections: 1,
-      maxMessages: isCarrierEmail ? 1 : 10, // キャリアメールは1通ずつ
-      rateDelta: isCarrierEmail ? 5000 : 1000, // キャリアメールは5秒間隔
-      rateLimit: 1
-    })
+      maxMessages: 1,
+      rateDelta: isCarrierEmail ? 10000 : 1000,
+      rateLimit: 1,
+      // 追加のオプション
+      connectionTimeout: isCarrierEmail ? 60000 : 30000,
+      greetingTimeout: isCarrierEmail ? 30000 : 15000,
+      socketTimeout: isCarrierEmail ? 60000 : 30000
+    } as any)
 
     // キャリアメール向けにコンテンツを最適化
     const optimizedContent = isCarrierEmail 
       ? content
-          .replace(/━━━━━━━━━━━━━━━━━━━━━━━━━━/g, '========================================') // 罫線を標準文字に
+          .replace(/━━━━━━━━━━━━━━━━━━━━━━━━━━/g, '') // 罫線を削除
           .replace(/・/g, '* ') // 中点を標準記号に
-          .substring(0, 2000) // 文字数制限
+          .replace(/【/g, '[').replace(/】/g, ']') // 装飾文字を標準に
+          .replace(/\n\n+/g, '\n') // 余分な改行を削除
+          .trim()
+          .substring(0, 500) // 文字数を大幅に制限
       : content
 
     const mailOptions = {
@@ -69,13 +77,15 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
         : `"MEC管理システム" <${process.env.GMAIL_USER}>`,
       to: to,
       subject: isCarrierEmail 
-        ? subject.replace(/【/g, '[').replace(/】/g, ']') // 装飾文字を標準に
+        ? subject.replace(/【/g, '').replace(/】/g, '') // 装飾文字を削除
+                 .replace(/MEC/g, 'MEC') // 英数字のみ
+                 .substring(0, 20) // 件名を短く
         : subject,
       text: optimizedContent,
       headers: isCarrierEmail 
         ? {
-            'X-Mailer': 'MEC-System',
-            'Message-ID': `<${Date.now()}.${Math.random().toString(36).substr(2, 9)}@${process.env.GMAIL_USER?.split('@')[1]}>`,
+            'X-Mailer': 'MEC',
+            'Reply-To': process.env.GMAIL_USER || '',
           } as { [key: string]: string }
         : {
             'X-Mailer': 'MEC Management System',
@@ -294,8 +304,8 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
     const waitTime = (clientEmail.includes('@docomo.ne.jp') || clientEmail.includes('@ezweb.ne.jp') || 
                      clientEmail.includes('@softbank.ne.jp') || clientEmail.includes('@au.com') ||
                      adminEmail.includes('@docomo.ne.jp') || adminEmail.includes('@ezweb.ne.jp') || 
-                     adminEmail.includes('@softbank.ne.jp') || adminEmail.includes('@au.com')) ? 5000 : 2000
-    console.log('Wait time for next email:', waitTime)
+                     adminEmail.includes('@softbank.ne.jp') || adminEmail.includes('@au.com')) ? 10000 : 2000
+    console.log('Wait time for next email:', waitTime, 'ms')
     await new Promise(resolve => setTimeout(resolve, waitTime))
     
     // 管理者向けメールを送信
