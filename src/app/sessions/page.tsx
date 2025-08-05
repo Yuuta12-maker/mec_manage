@@ -4,16 +4,17 @@ export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
-import { Session, Client } from '@/types'
+import { SessionWithClient } from '@/types'
 import Navigation from '@/components/Navigation'
 import Calendar from '@/components/Calendar'
+import LoadingSpinner from '@/components/LoadingSpinner'
+import ErrorMessage from '@/components/ErrorMessage'
+import { useErrorHandler } from '@/hooks/useErrorHandler'
 import Link from 'next/link'
-
-type SessionWithClient = Session & { client: Client }
 
 export default function SessionsPage() {
   const [sessions, setSessions] = useState<SessionWithClient[]>([])
-  const [loading, setLoading] = useState(true)
+  const { isLoading, error, handleAsync, clearError } = useErrorHandler()
   const [typeFilter, setTypeFilter] = useState<string>('all')
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [dateFilter, setDateFilter] = useState<string>('all')
@@ -24,21 +25,21 @@ export default function SessionsPage() {
   }, [])
 
   const fetchSessions = async () => {
-    setLoading(true)
-    const { data, error } = await supabase
-      .from('sessions')
-      .select(`
-        *,
-        client:clients(*)
-      `)
-      .order('scheduled_date', { ascending: false })
+    await handleAsync(async () => {
+      const { data, error } = await supabase
+        .from('sessions')
+        .select(`
+          *,
+          client:clients(*)
+        `)
+        .order('scheduled_date', { ascending: true })
 
-    if (error) {
-      console.error('Error fetching sessions:', error)
-    } else {
+      if (error) {
+        throw new Error(`セッションの取得に失敗しました: ${error.message}`)
+      }
+
       setSessions(data as SessionWithClient[] || [])
-    }
-    setLoading(false)
+    }, 'セッション一覧の取得に失敗しました')
   }
 
   const getStatusLabel = (status: string) => {
@@ -92,13 +93,14 @@ export default function SessionsPage() {
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         <Navigation />
         <main className="max-w-7xl mx-auto py-6 px-4">
           <div className="flex items-center justify-center h-64">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <LoadingSpinner size="lg" />
+            <span className="ml-3 text-gray-600 dark:text-gray-300">セッション一覧を読み込み中...</span>
           </div>
         </main>
       </div>
@@ -111,6 +113,15 @@ export default function SessionsPage() {
 
       <main className="max-w-7xl mx-auto py-6 px-4">
         <div className="mb-8">
+          {error && (
+            <ErrorMessage 
+              message={error} 
+              onRetry={fetchSessions}
+              onDismiss={clearError}
+              className="mb-6"
+            />
+          )}
+          
           <div className="sm:flex sm:items-center">
             <div className="sm:flex-auto">
               <h1 className="text-2xl font-semibold text-gray-900 dark:text-white">セッション管理</h1>
