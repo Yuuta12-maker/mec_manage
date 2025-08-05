@@ -163,6 +163,7 @@ export default function BookingPage() {
         
         // セッション予約完了メール送信
         try {
+          console.log('Calling sendBookingEmails...')
           const emailResult = await sendBookingEmails(
             formData.client_email,
             formData.client_name,
@@ -171,6 +172,7 @@ export default function BookingPage() {
             undefined,
             session[0].id
           )
+          console.log('sendBookingEmails returned:', emailResult)
           
           if (!emailResult.success) {
             console.warn('Email sending failed, but booking was successful')
@@ -178,7 +180,11 @@ export default function BookingPage() {
             console.log('Email sending completed successfully')
           }
         } catch (emailError) {
-          console.error('Email error:', emailError)
+          console.error('Email error in catch block:', emailError)
+          console.error('Email error details:', {
+            message: emailError instanceof Error ? emailError.message : 'Unknown error',
+            stack: emailError instanceof Error ? emailError.stack : undefined
+          })
           // メール送信失敗でも予約は完了しているので処理を続行
         }
         

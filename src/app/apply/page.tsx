@@ -128,11 +128,13 @@ export default function ApplyPage() {
         
         // メール送信
         try {
+          console.log('Calling sendApplicationEmails...')
           const emailResult = await sendApplicationEmails(
             formData.email,
             formData.name,
             data[0].id
           )
+          console.log('sendApplicationEmails returned:', emailResult)
           
           if (!emailResult.success) {
             console.warn('Email sending failed, but application was successful')
@@ -140,7 +142,11 @@ export default function ApplyPage() {
             console.log('Email sending completed successfully')
           }
         } catch (emailError) {
-          console.error('Email error:', emailError)
+          console.error('Email error in catch block:', emailError)
+          console.error('Email error details:', {
+            message: emailError instanceof Error ? emailError.message : 'Unknown error',
+            stack: emailError instanceof Error ? emailError.stack : undefined
+          })
           // メール送信失敗でも申し込みは完了しているので処理を続行
         }
         

@@ -81,7 +81,9 @@ export async function sendEmail({ to, subject, content, type, related_id }: Emai
 
 // 申し込み完了メール
 export async function sendApplicationEmails(applicantEmail: string, applicantName: string, applicationId: string) {
-  const adminEmail = 'mindengineeringcoaching@gmail.com'
+  try {
+    console.log('=== sendApplicationEmails called ===')
+    const adminEmail = 'mindengineeringcoaching@gmail.com'
 
   // 応募者向けメール
   const applicantSubject = '【MEC】お申し込みを受け付けました'
@@ -145,10 +147,18 @@ Email: ${adminEmail}
   console.log('Applicant email result:', applicantResult)
   console.log('Admin email result:', adminResult)
 
-  return {
-    applicantResult,
-    adminResult,
-    success: applicantResult.success && adminResult.success,
+    return {
+      applicantResult,
+      adminResult,
+      success: applicantResult.success && adminResult.success,
+    }
+  } catch (error) {
+    console.error('sendApplicationEmails error:', error)
+    return {
+      applicantResult: { success: false, error: 'Function error' },
+      adminResult: { success: false, error: 'Function error' },
+      success: false,
+    }
   }
 }
 
@@ -161,7 +171,9 @@ export async function sendBookingEmails(
   meetLink?: string,
   sessionId?: string
 ) {
-  const adminEmail = 'mindengineeringcoaching@gmail.com'
+  try {
+    console.log('=== sendBookingEmails called ===')
+    const adminEmail = 'mindengineeringcoaching@gmail.com'
 
   // 応募者向けメール
   const clientSubject = '【MEC】セッション予約が完了しました'
@@ -211,27 +223,46 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
 
 管理画面URL: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions`
 
-  // 両方のメールを並列送信
-  const [clientResult, adminResult] = await Promise.all([
-    sendEmail({
-      to: clientEmail,
-      subject: clientSubject,
-      content: clientContent,
-      type: 'booking',
-      related_id: sessionId,
-    }),
-    sendEmail({
-      to: adminEmail,
-      subject: adminSubject,
-      content: adminContent,
-      type: 'booking',
-      related_id: sessionId,
-    }),
-  ])
+  // 両方のメールを逐次送信
+  console.log('=== Sending Booking Emails ===')
+  console.log('Client email:', clientEmail)
+  console.log('Admin email:', adminEmail)
+  
+  // クライアント向けメールを先に送信
+  const clientResult = await sendEmail({
+    to: clientEmail,
+    subject: clientSubject,
+    content: clientContent,
+    type: 'booking',
+    related_id: sessionId,
+  })
+  
+  // 少し待機
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  
+  // 管理者向けメールを送信
+  const adminResult = await sendEmail({
+    to: adminEmail,
+    subject: adminSubject,
+    content: adminContent,
+    type: 'booking',
+    related_id: sessionId,
+  })
+  
+  console.log('Client email result:', clientResult)
+  console.log('Admin email result:', adminResult)
 
-  return {
-    clientResult,
-    adminResult,
-    success: clientResult.success && adminResult.success,
+    return {
+      clientResult,
+      adminResult,
+      success: clientResult.success && adminResult.success,
+    }
+  } catch (error) {
+    console.error('sendBookingEmails error:', error)
+    return {
+      clientResult: { success: false, error: 'Function error' },
+      adminResult: { success: false, error: 'Function error' },
+      success: false,
+    }
   }
 }
