@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { sendBookingEmails } from '@/lib/email'
+import { sendBookingEmailsWithGmail } from '@/lib/gmail'
 import BookingCalendar from '@/components/BookingCalendar'
 
 export default function BookingPage() {
@@ -164,7 +164,7 @@ export default function BookingPage() {
         // セッション予約完了メール送信
         try {
           console.log('Calling sendBookingEmails...')
-          const emailResult = await sendBookingEmails(
+          const emailResult = await sendBookingEmailsWithGmail(
             formData.client_email,
             formData.client_name,
             selectedTime,

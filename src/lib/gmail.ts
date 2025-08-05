@@ -160,3 +160,108 @@ Email: ${adminEmail}
     }
   }
 }
+
+// セッション予約完了メール（Gmail版）
+export async function sendBookingEmailsWithGmail(
+  clientEmail: string,
+  clientName: string,
+  sessionDate: string,
+  sessionType: string,
+  meetLink?: string,
+  sessionId?: string
+) {
+  try {
+    console.log('=== sendBookingEmailsWithGmail called ===')
+    const adminEmail = process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'
+
+    // クライアント向けメール
+    const clientSubject = '【MEC】セッション予約が完了しました'
+    const clientContent = `${clientName} 様
+
+セッションのご予約が完了いたしました。
+
+【予約内容】
+・セッション種別: ${sessionType === 'trial' ? 'トライアル' : '通常セッション'}
+・予定日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit'
+})}
+${meetLink ? `・Google Meet URL: ${meetLink}` : ''}
+
+【セッション前の準備】
+・静かな環境でご参加ください
+・カメラとマイクの動作確認をお願いします
+・筆記用具をご準備ください
+
+ご質問やご不明な点がございましたら、お気軽にお問い合わせください。
+
+当日お会いできることを楽しみにしております。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+マインドエンジニアリング・コーチング
+Email: ${adminEmail}
+━━━━━━━━━━━━━━━━━━━━━━━━━━`
+
+    // 管理者向けメール
+    const adminSubject = '【MEC】新規セッション予約がありました'
+    const adminContent = `新規セッション予約がありました。
+
+【予約情報】
+・お名前: ${clientName}
+・メールアドレス: ${clientEmail}
+・セッション種別: ${sessionType === 'trial' ? 'トライアル' : '通常セッション'}
+・予定日時: ${new Date(sessionDate).toLocaleString('ja-JP')}
+${meetLink ? `・Google Meet URL: ${meetLink}` : ''}
+${sessionId ? `・セッションID: ${sessionId}` : ''}
+
+管理画面から詳細を確認してください。
+
+管理画面URL: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions`
+
+    // 両方のメールを逐次送信
+    console.log('=== Sending Booking Emails with Gmail ===')
+    console.log('Client email:', clientEmail)
+    console.log('Admin email:', adminEmail)
+    
+    // クライアント向けメールを先に送信
+    const clientResult = await sendEmailWithGmail({
+      to: clientEmail,
+      subject: clientSubject,
+      content: clientContent,
+      type: 'booking',
+      related_id: sessionId,
+    })
+    
+    // 少し待機
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    // 管理者向けメールを送信
+    const adminResult = await sendEmailWithGmail({
+      to: adminEmail,
+      subject: adminSubject,
+      content: adminContent,
+      type: 'booking',
+      related_id: sessionId,
+    })
+    
+    console.log('Client email result:', clientResult)
+    console.log('Admin email result:', adminResult)
+
+    return {
+      clientResult,
+      adminResult,
+      success: clientResult.success && adminResult.success,
+    }
+  } catch (error) {
+    console.error('sendBookingEmailsWithGmail error:', error)
+    return {
+      clientResult: { success: false, error: 'Function error' },
+      adminResult: { success: false, error: 'Function error' },
+      success: false,
+    }
+  }
+}
