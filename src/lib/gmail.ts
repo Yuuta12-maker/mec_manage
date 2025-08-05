@@ -76,15 +76,13 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
         ? {
             'X-Mailer': 'MEC-System',
             'Message-ID': `<${Date.now()}.${Math.random().toString(36).substr(2, 9)}@${process.env.GMAIL_USER?.split('@')[1]}>`,
-            'Content-Type': 'text/plain; charset=UTF-8',
-            'Content-Transfer-Encoding': '8bit'
-          }
+          } as { [key: string]: string }
         : {
             'X-Mailer': 'MEC Management System',
             'X-Priority': '1',
             'Importance': 'high',
-            'Reply-To': process.env.GMAIL_USER,
-          }
+            'Reply-To': process.env.GMAIL_USER || '',
+          } as { [key: string]: string }
     }
 
     console.log('Sending email with Gmail SMTP...')
