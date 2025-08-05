@@ -72,3 +72,16 @@ export interface LoadingState {
   isLoading: boolean;
   error: string | null;
 }
+
+export interface EmailLog {
+  id: string;
+  recipient: string;
+  subject: string;
+  content: string;
+  type: 'application' | 'booking' | 'session_update';
+  related_id?: string;
+  status: 'sent' | 'failed';
+  error_message?: string;
+  sent_at: string;
+  created_at: string;
+}

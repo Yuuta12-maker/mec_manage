@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { sendApplicationEmails } from '@/lib/email'
 
 export default function ApplyPage() {
   const router = useRouter()
@@ -120,7 +121,23 @@ export default function ApplyPage() {
         return
       }
 
-      if (data) {
+      if (data && data[0]) {
+        // メール送信
+        try {
+          const emailResult = await sendApplicationEmails(
+            formData.email,
+            formData.name,
+            data[0].id
+          )
+          
+          if (!emailResult.success) {
+            console.warn('Email sending failed, but application was successful')
+          }
+        } catch (emailError) {
+          console.error('Email error:', emailError)
+          // メール送信失敗でも申し込みは完了しているので処理を続行
+        }
+        
         router.push('/apply/success')
       }
     } catch (err) {

@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { sendBookingEmails } from '@/lib/email'
 import BookingCalendar from '@/components/BookingCalendar'
 
 export default function BookingPage() {
@@ -155,7 +156,26 @@ export default function BookingPage() {
         return
       }
 
-      if (session) {
+      if (session && session[0]) {
+        // セッション予約完了メール送信
+        try {
+          const emailResult = await sendBookingEmails(
+            formData.client_email,
+            formData.client_name,
+            selectedTime,
+            formData.type,
+            undefined,
+            session[0].id
+          )
+          
+          if (!emailResult.success) {
+            console.warn('Email sending failed, but booking was successful')
+          }
+        } catch (emailError) {
+          console.error('Email error:', emailError)
+          // メール送信失敗でも予約は完了しているので処理を続行
+        }
+        
         router.push('/booking/success')
       }
     } catch (err) {
