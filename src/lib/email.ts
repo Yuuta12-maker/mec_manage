@@ -14,9 +14,14 @@ interface EmailData {
 }
 
 export async function sendEmail({ to, subject, content, type, related_id }: EmailData) {
+  console.log('=== Email Debug Info ===')
+  console.log('API Key:', process.env.RESEND_API_KEY ? 'Set' : 'Missing')
+  console.log('To:', to)
+  console.log('Subject:', subject)
+  
   try {
     const { data, error } = await resend.emails.send({
-      from: 'MEC管理システム <noreply@yourdomain.com>', // 実際のドメインに変更してください
+      from: 'MEC管理システム <onboarding@resend.dev>', // テスト用：実際のドメインに変更してください
       to: [to],
       subject,
       text: content,
@@ -41,9 +46,11 @@ export async function sendEmail({ to, subject, content, type, related_id }: Emai
     }
 
     if (error) {
+      console.error('Resend API Error:', error)
       throw new Error(`Email sending failed: ${error.message}`)
     }
 
+    console.log('Email sent successfully:', data)
     return { success: true, data }
   } catch (error) {
     console.error('Email sending error:', error)

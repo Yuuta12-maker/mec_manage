@@ -157,6 +157,10 @@ export default function BookingPage() {
       }
 
       if (session && session[0]) {
+        console.log('=== Booking Success ===')
+        console.log('Session ID:', session[0].id)
+        console.log('Starting email send process...')
+        
         // セッション予約完了メール送信
         try {
           const emailResult = await sendBookingEmails(
@@ -170,6 +174,8 @@ export default function BookingPage() {
           
           if (!emailResult.success) {
             console.warn('Email sending failed, but booking was successful')
+          } else {
+            console.log('Email sending completed successfully')
           }
         } catch (emailError) {
           console.error('Email error:', emailError)

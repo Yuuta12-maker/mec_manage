@@ -122,6 +122,10 @@ export default function ApplyPage() {
       }
 
       if (data && data[0]) {
+        console.log('=== Application Success ===')
+        console.log('Application ID:', data[0].id)
+        console.log('Starting email send process...')
+        
         // メール送信
         try {
           const emailResult = await sendApplicationEmails(
@@ -132,6 +136,8 @@ export default function ApplyPage() {
           
           if (!emailResult.success) {
             console.warn('Email sending failed, but application was successful')
+          } else {
+            console.log('Email sending completed successfully')
           }
         } catch (emailError) {
           console.error('Email error:', emailError)
