@@ -44,7 +44,31 @@ export interface Payment {
 export interface Settings {
   id: string;
   key: string;
-  value: any;
+  value: string | number | boolean | object;
   created_at: string;
   updated_at: string;
+}
+
+export interface SessionWithClient extends Session {
+  client: Client;
+}
+
+export interface DashboardStats {
+  total: number;
+  applied: number;
+  trial_booked: number;
+  trial_completed: number;
+  active: number;
+  completed: number;
+  inactive: number;
+}
+
+export interface ApiResponse<T> {
+  data: T | null;
+  error: Error | null;
+}
+
+export interface LoadingState {
+  isLoading: boolean;
+  error: string | null;
 }
