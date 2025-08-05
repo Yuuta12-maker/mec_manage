@@ -160,10 +160,10 @@ export default function BookingPage() {
         console.log('Session ID:', session[0].id)
         console.log('Starting email send process...')
         
-        // セッション予約完了メール送信（スマートメールシステム経由）
+        // セッション予約完了メール送信（Gmail SMTP経由）
         try {
-          console.log('Calling sendBookingEmails with Smart Email System...')
-          const emailResponse = await fetch('/api/send-booking-email-smart', {
+          console.log('Calling sendBookingEmails with Gmail SMTP...')
+          const emailResponse = await fetch('/api/send-booking-email', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
