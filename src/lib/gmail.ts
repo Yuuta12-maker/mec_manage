@@ -15,6 +15,8 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
   console.log('=== Gmail Email Debug Info ===')
   console.log('To:', to)
   console.log('Subject:', subject)
+  console.log('Type:', type)
+  console.log('Related ID:', related_id)
   console.log('Gmail User:', process.env.GMAIL_USER ? 'Set' : 'Missing')
   console.log('Gmail Password:', process.env.GMAIL_APP_PASSWORD ? 'Set' : 'Missing')
   console.log('Gmail User Value:', process.env.GMAIL_USER)
@@ -239,6 +241,8 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
     console.log('=== Sending Booking Emails with Gmail ===')
     console.log('Client email:', clientEmail)
     console.log('Admin email:', adminEmail)
+    console.log('Client email length:', clientEmail.length)
+    console.log('Admin email length:', adminEmail.length)
     
     // クライアント向けメールを先に送信
     const clientResult = await sendEmailWithGmail({
