@@ -11,15 +11,12 @@ export async function POST(request: NextRequest) {
       program_type,
       preferred_start_date,
       payment_method,
-      goals,
-      schedule_preference,
-      special_requests,
     } = body
 
     console.log('=== API Route: Continue Application ===')
     console.log('Request body:', body)
 
-    if (!client_id || !program_type || !payment_method || !goals) {
+    if (!client_id || !program_type || !payment_method) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -50,9 +47,9 @@ export async function POST(request: NextRequest) {
         program_type,
         preferred_start_date: preferred_start_date || null,
         payment_method,
-        goals,
-        schedule_preference: schedule_preference || null,
-        special_requests: special_requests || null,
+        goals: '6回継続プログラム申し込み', // 固定値
+        schedule_preference: null,
+        special_requests: null,
         status: 'pending',
       })
       .select()
@@ -74,7 +71,7 @@ export async function POST(request: NextRequest) {
         client.name,
         application[0].id,
         program_type,
-        goals
+        '6回継続プログラム申し込み'
       )
       
       console.log('Email sending result:', emailResult)

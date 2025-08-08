@@ -23,9 +23,6 @@ export default function ContinueApplicationPage() {
     program_type: '6sessions',
     preferred_start_date: '',
     payment_method: '',
-    goals: '',
-    schedule_preference: '',
-    special_requests: '',
   })
 
   useEffect(() => {
@@ -180,24 +177,21 @@ export default function ContinueApplicationPage() {
             <div className="px-6 py-8">
               <div className="space-y-6">
                 <div>
-                  <label htmlFor="program_type" className="block text-sm font-medium text-gray-700 mb-2">
-                    プログラムタイプ <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    id="program_type"
-                    name="program_type"
-                    required
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                    value={formData.program_type}
-                    onChange={handleChange}
-                  >
-                    <option value="6sessions">6回コース（推奨）</option>
-                    <option value="12sessions">12回コース</option>
-                    <option value="custom">カスタムプラン</option>
-                  </select>
-                  <p className="mt-1 text-sm text-gray-500">
-                    6回コースが標準的なプログラムです。
-                  </p>
+                  <div className="block text-sm font-medium text-gray-700 mb-2">
+                    プログラムタイプ
+                  </div>
+                  <div className="bg-gray-50 border border-gray-200 rounded-md p-4">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span className="text-lg font-medium text-gray-900">6回コース</span>
+                    </div>
+                    <p className="mt-2 text-sm text-gray-600">
+                      継続プログラムは全6回のセッションで構成されています。
+                    </p>
+                  </div>
+                  <input type="hidden" name="program_type" value="6sessions" />
                 </div>
 
                 <div>
@@ -238,54 +232,6 @@ export default function ContinueApplicationPage() {
                   </select>
                 </div>
 
-                <div>
-                  <label htmlFor="goals" className="block text-sm font-medium text-gray-700 mb-2">
-                    継続プログラムの目標・期待すること <span className="text-red-500">*</span>
-                  </label>
-                  <textarea
-                    id="goals"
-                    name="goals"
-                    rows={4}
-                    required
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                    placeholder="継続プログラムを通して達成したい目標や期待することをお聞かせください..."
-                    value={formData.goals}
-                    onChange={handleChange}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="schedule_preference" className="block text-sm font-medium text-gray-700 mb-2">
-                    希望スケジュール
-                  </label>
-                  <textarea
-                    id="schedule_preference"
-                    name="schedule_preference"
-                    rows={3}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                    placeholder="希望の曜日・時間帯、頻度などをお聞かせください..."
-                    value={formData.schedule_preference}
-                    onChange={handleChange}
-                  />
-                  <p className="mt-1 text-sm text-gray-500">
-                    例：平日19時以降、週1回ペース、土曜日午前中など
-                  </p>
-                </div>
-
-                <div>
-                  <label htmlFor="special_requests" className="block text-sm font-medium text-gray-700 mb-2">
-                    特別な要望・質問
-                  </label>
-                  <textarea
-                    id="special_requests"
-                    name="special_requests"
-                    rows={3}
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                    placeholder="その他ご要望や質問がございましたらお聞かせください..."
-                    value={formData.special_requests}
-                    onChange={handleChange}
-                  />
-                </div>
               </div>
             </div>
 
