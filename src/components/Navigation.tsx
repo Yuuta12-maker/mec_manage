@@ -22,6 +22,7 @@ export default function Navigation() {
   const externalLinks = [
     { name: '申し込みページ', href: '/apply', external: true },
     { name: 'セッション予約', href: '/booking', external: true },
+    { name: '継続申し込み', href: '/apply/continue', external: true },
   ]
 
   return (
