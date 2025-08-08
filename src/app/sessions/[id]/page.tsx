@@ -26,6 +26,8 @@ export default function SessionDetailPage() {
     status: 'scheduled' as 'scheduled' | 'completed' | 'cancelled'
   })
   const [sendingEmail, setSendingEmail] = useState(false)
+  const [showEmailPreview, setShowEmailPreview] = useState(false)
+  const [emailPreview, setEmailPreview] = useState<{subject: string, content: string} | null>(null)
 
   useEffect(() => {
     if (sessionId) {
@@ -63,24 +65,6 @@ export default function SessionDetailPage() {
   }
 
   const handleSave = async () => {
-    // 完了変更時の確認と次回予約促進メール送信
-    const wasCompleted = session?.status === 'completed'
-    const isBeingCompleted = formData.status === 'completed' && session?.status !== 'completed'
-    
-    if (isBeingCompleted) {
-      const confirmed = window.confirm(
-        '✅ セッションを完了にしますか？\n\n' +
-        'この操作により：\n' +
-        '• セッションが完了としてマークされます\n' +
-        '• クライアントに次回予約促進メールを送信しますか？\n\n' +
-        '完了にして、メールを送信しますか？'
-      )
-      
-      if (!confirmed) {
-        return
-      }
-    }
-
     // キャンセル変更時の確認
     if (formData.status === 'cancelled' && session?.status !== 'cancelled') {
       const confirmed = window.confirm(
@@ -115,12 +99,38 @@ export default function SessionDetailPage() {
 
       setEditing(false)
       await fetchSession()
-
-      // セッションが完了になった場合、次回予約促進メールを送信
-      if (isBeingCompleted && session) {
-        await sendNextSessionPromotionEmail()
-      }
     }, 'セッションの更新に失敗しました')
+  }
+
+  const previewNextSessionEmail = async () => {
+    if (!session) return
+
+    try {
+      const response = await fetch('/api/preview-next-session-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clientName: session.client.name,
+          sessionType: session.type,
+          sessionDate: session.scheduled_date,
+        }),
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        setEmailPreview(result.preview)
+        setShowEmailPreview(true)
+      } else {
+        console.error('メールプレビュー取得失敗:', result.error)
+        alert(`メールプレビューの取得に失敗しました: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('メールプレビューエラー:', error)
+      alert('メールプレビューの取得中にエラーが発生しました')
+    }
   }
 
   const sendNextSessionPromotionEmail = async () => {
@@ -146,6 +156,7 @@ export default function SessionDetailPage() {
       
       if (result.success) {
         alert('次回予約促進メールを送信しました！')
+        setShowEmailPreview(false)
       } else {
         console.error('メール送信失敗:', result.error)
         alert(`メール送信に失敗しました: ${result.error}`)
@@ -258,11 +269,10 @@ export default function SessionDetailPage() {
                 </span>
                 {session.status === 'completed' && (
                   <button
-                    onClick={sendNextSessionPromotionEmail}
-                    disabled={sendingEmail}
-                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    onClick={previewNextSessionEmail}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                   >
-                    {sendingEmail ? '送信中...' : '次回予約促進メール送信'}
+                    次回予約促進メール送信
                   </button>
                 )}
                 {!editing ? (
@@ -436,6 +446,84 @@ export default function SessionDetailPage() {
             </dl>
           </div>
         </div>
+
+        {/* メールプレビューモーダル */}
+        {showEmailPreview && emailPreview && (
+          <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white dark:bg-gray-800">
+              <div className="mt-3">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                    メール内容確認
+                  </h3>
+                  <button
+                    onClick={() => setShowEmailPreview(false)}
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+                
+                <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg mb-6">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      宛先
+                    </label>
+                    <div className="text-sm text-gray-900 dark:text-white">
+                      {session.client.email} ({session.client.name}さん)
+                    </div>
+                  </div>
+                  
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      件名
+                    </label>
+                    <div className="text-sm text-gray-900 dark:text-white font-medium">
+                      {emailPreview.subject}
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      本文
+                    </label>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded border text-sm text-gray-900 dark:text-white whitespace-pre-wrap font-mono">
+                      {emailPreview.content}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex items-center justify-end space-x-3">
+                  <button
+                    onClick={() => setShowEmailPreview(false)}
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600"
+                  >
+                    キャンセル
+                  </button>
+                  <button
+                    onClick={sendNextSessionPromotionEmail}
+                    disabled={sendingEmail}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {sendingEmail ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        送信中...
+                      </>
+                    ) : (
+                      'メールを送信する'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   )
