@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sendNextSessionPromotionEmail } from '@/lib/email'
+import { sendNextSessionPromotionEmailWithGmail } from '@/lib/gmail'
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const result = await sendNextSessionPromotionEmail(
+    const result = await sendNextSessionPromotionEmailWithGmail(
       clientEmail,
       clientName,
       sessionId,
