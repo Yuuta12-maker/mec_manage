@@ -116,6 +116,7 @@ export default function SessionDetailPage() {
           sessionType: session.type,
           sessionDate: session.scheduled_date,
           clientId: session.client_id,
+          clientEmail: session.client.email,
         }),
       })
 
@@ -331,6 +332,11 @@ export default function SessionDetailPage() {
                 <dt className="text-sm font-medium text-gray-500">セッション種別</dt>
                 <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
                   {getTypeLabel(session.type)}
+                  {session.session_number && (
+                    <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                      {session.session_number}回目
+                    </span>
+                  )}
                 </dd>
               </div>
               <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">

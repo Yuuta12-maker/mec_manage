@@ -13,6 +13,7 @@ export default function NewSessionPage() {
   const router = useRouter()
   const [clients, setClients] = useState<Client[]>([])
   const [loading, setLoading] = useState(false)
+  const [clientSessionCounts, setClientSessionCounts] = useState<{[key: string]: number}>({})
   const [formData, setFormData] = useState({
     client_id: '',
     scheduled_date: '',
@@ -36,7 +37,39 @@ export default function NewSessionPage() {
       console.error('Error fetching clients:', error)
     } else {
       setClients(data || [])
+      // 各クライアントのセッション回数を取得
+      if (data) {
+        fetchClientSessionCounts(data)
+      }
     }
+  }
+
+  const fetchClientSessionCounts = async (clients: Client[]) => {
+    const counts: {[key: string]: number} = {}
+    
+    for (const client of clients) {
+      const nextSessionNumber = await getNextSessionNumber(client.id)
+      counts[client.id] = nextSessionNumber
+    }
+    
+    setClientSessionCounts(counts)
+  }
+
+  // セッション番号を取得する関数
+  const getNextSessionNumber = async (clientId: string): Promise<number> => {
+    const { data, error } = await supabase
+      .from('sessions')
+      .select('session_number')
+      .eq('client_id', clientId)
+      .order('session_number', { ascending: false })
+      .limit(1)
+
+    if (error) {
+      console.error('Error getting session number:', error)
+      return 1 // エラーの場合は1を返す
+    }
+
+    return data && data.length > 0 ? (data[0].session_number || 0) + 1 : 1
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,11 +77,15 @@ export default function NewSessionPage() {
     setLoading(true)
 
     try {
+      // セッション番号を取得
+      const sessionNumber = await getNextSessionNumber(formData.client_id)
+      
       const { data, error } = await supabase
         .from('sessions')
         .insert([{
           ...formData,
           scheduled_date: new Date(formData.scheduled_date).toISOString(),
+          session_number: sessionNumber,
         }])
         .select()
 
@@ -59,7 +96,7 @@ export default function NewSessionPage() {
       }
 
       if (data) {
-        alert('セッションを作成しました。')
+        alert(`セッションを作成しました。（${sessionNumber}回目のセッション）`)
         router.push(`/sessions/${data[0].id}`)
       }
     } catch (err) {
@@ -135,6 +172,7 @@ export default function NewSessionPage() {
                     {clients.map((client) => (
                       <option key={client.id} value={client.id}>
                         {client.name}{client.name_kana ? ` (${client.name_kana})` : ''} - {client.email}
+                        {clientSessionCounts[client.id] ? ` 【${clientSessionCounts[client.id]}回目】` : ''}
                       </option>
                     ))}
                   </select>

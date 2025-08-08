@@ -413,8 +413,8 @@ export async function sendNextSessionPromotionEmailWithGmail(
 【次回セッションのご予約】
 継続プログラムにご興味をお持ちいただけましたら、下記のフォームからお申し込みください。
 
-🔗 継続プログラム予約フォーム
-${bookingUrl}
+🔗 継続プログラム申し込みフォーム
+${process.env.NEXT_PUBLIC_BASE_URL}/apply/continue?email=${encodeURIComponent(clientEmail)}
 
 【よくあるご質問】
 Q: 継続プログラムの期間はどのくらいですか？
@@ -551,6 +551,108 @@ Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
+    }
+  }
+}
+
+// 継続申し込み完了メール（Gmail版）
+export async function sendContinuationApplicationEmailsWithGmail(
+  applicantEmail: string,
+  applicantName: string,
+  applicationId: string,
+  programType: string,
+  goals: string
+) {
+  try {
+    console.log('=== sendContinuationApplicationEmailsWithGmail called ===')
+    const adminEmail = process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'
+
+    // 申込者向けメール
+    const applicantSubject = '【MEC】継続プログラムお申し込みを受け付けました'
+    const applicantContent = `${applicantName} 様
+
+この度は、マインドエンジニアリング・コーチング継続プログラムにお申し込みいただき、誠にありがとうございます。
+
+お申し込み内容を確認いたしました。
+
+【お申し込み内容】
+・プログラムタイプ: ${programType === '6sessions' ? '6回コース' : programType === '12sessions' ? '12回コース' : 'カスタムプラン'}
+・目標: ${goals.substring(0, 100)}${goals.length > 100 ? '...' : ''}
+
+【今後の流れ】
+1. 担当者より2営業日以内にご連絡いたします
+2. プログラム詳細と料金のご案内
+3. セッションスケジュールの調整
+4. 継続プログラム開始
+
+トライアルセッションでの学びを基に、さらに深い成果を実現できるよう、
+全力でサポートさせていただきます。
+
+ご不明な点がございましたら、お気軽にお問い合わせください。
+${applicantName}さんの継続的な成長を心よりお手伝いさせていただきます。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+マインドエンジニアリング・コーチング
+Email: ${adminEmail}
+━━━━━━━━━━━━━━━━━━━━━━━━━━`
+
+    // 管理者向けメール
+    const adminSubject = '【MEC】継続プログラム申し込みがありました'
+    const adminContent = `継続プログラムの申し込みがありました。
+
+【申し込み情報】
+・お名前: ${applicantName}
+・メールアドレス: ${applicantEmail}
+・申し込みID: ${applicationId}
+・プログラムタイプ: ${programType}
+
+【申し込み内容】
+・目標: ${goals}
+
+管理画面から詳細を確認し、対応をお願いします。
+
+管理画面URL: ${process.env.NEXT_PUBLIC_BASE_URL}/admin/continuation-applications`
+
+    // 両方のメールを逐次送信
+    console.log('=== Sending Continuation Application Emails with Gmail ===')
+    console.log('Applicant email:', applicantEmail)
+    console.log('Admin email:', adminEmail)
+    
+    // 申込者向けメールを先に送信
+    const applicantResult = await sendEmailWithGmail({
+      to: applicantEmail,
+      subject: applicantSubject,
+      content: applicantContent,
+      type: 'application',
+      related_id: applicationId,
+    })
+    
+    // 待機時間
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // 管理者向けメールを送信
+    const adminResult = await sendEmailWithGmail({
+      to: adminEmail,
+      subject: adminSubject,
+      content: adminContent,
+      type: 'application',
+      related_id: applicationId,
+    })
+
+    console.log('Applicant email result:', applicantResult)
+    console.log('Admin email result:', adminResult)
+
+    return {
+      applicantResult,
+      adminResult,
+      success: applicantResult.success && adminResult.success,
+    }
+  } catch (error) {
+    console.error('sendContinuationApplicationEmailsWithGmail error:', error)
+    return {
+      applicantResult: { success: false, error: 'Function error' },
+      adminResult: { success: false, error: 'Function error' },
+      success: false,
     }
   }
 }

@@ -25,6 +25,7 @@ export interface Session {
   notes?: string;
   summary?: string;
   coach_name: string;
+  session_number?: number;
   created_at: string;
   updated_at: string;
 }
@@ -84,4 +85,27 @@ export interface EmailLog {
   error_message?: string;
   sent_at: string;
   created_at: string;
+}
+
+export interface ContinuationApplication {
+  id: string;
+  client_id: string;
+  trial_session_id?: string;
+  program_type: string;
+  preferred_start_date?: string;
+  payment_method?: string;
+  goals?: string;
+  schedule_preference?: string;
+  special_requests?: string;
+  status: 'pending' | 'approved' | 'rejected' | 'cancelled';
+  admin_notes?: string;
+  created_at: string;
+  updated_at: string;
+  approved_at?: string;
+  approved_by?: string;
+}
+
+export interface ContinuationApplicationWithClient extends ContinuationApplication {
+  client: Client;
+  trial_session?: Session;
 }

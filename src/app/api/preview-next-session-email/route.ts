@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { clientName, sessionType, sessionDate, clientId } = body
+    const { clientName, sessionType, sessionDate, clientId, clientEmail } = body
 
     console.log('=== API Route: Preview Next Session Email ===')
     console.log('Request body:', body)
@@ -68,8 +68,8 @@ export async function POST(request: NextRequest) {
 【次回セッションのご予約】
 継続プログラムにご興味をお持ちいただけましたら、下記のフォームからお申し込みください。
 
-🔗 継続プログラム予約フォーム
-${bookingUrl}
+🔗 継続プログラム申し込みフォーム
+${process.env.NEXT_PUBLIC_BASE_URL}/apply/continue?email=${encodeURIComponent(clientEmail || 'client@example.com')}
 
 【よくあるご質問】
 Q: 継続プログラムの期間はどのくらいですか？
