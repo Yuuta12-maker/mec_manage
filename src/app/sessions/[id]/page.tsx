@@ -28,10 +28,13 @@ export default function SessionDetailPage() {
   const [sendingEmail, setSendingEmail] = useState(false)
   const [showEmailPreview, setShowEmailPreview] = useState(false)
   const [emailPreview, setEmailPreview] = useState<{subject: string, content: string} | null>(null)
+  const [emailHistory, setEmailHistory] = useState<any[]>([])
+  const [loadingEmailHistory, setLoadingEmailHistory] = useState(false)
 
   useEffect(() => {
     if (sessionId) {
       fetchSession()
+      fetchEmailHistory()
     }
   }, [sessionId])
 
@@ -62,6 +65,27 @@ export default function SessionDetailPage() {
         status: data.status
       })
     }, 'セッション情報の取得に失敗しました')
+  }
+
+  const fetchEmailHistory = async () => {
+    setLoadingEmailHistory(true)
+    try {
+      const { data, error } = await supabase
+        .from('email_history')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('メール送信履歴の取得に失敗:', error)
+      } else {
+        setEmailHistory(data || [])
+      }
+    } catch (error) {
+      console.error('メール送信履歴取得エラー:', error)
+    } finally {
+      setLoadingEmailHistory(false)
+    }
   }
 
   const handleSave = async () => {
@@ -160,6 +184,8 @@ export default function SessionDetailPage() {
       if (result.success) {
         alert('次回予約促進メールを送信しました！')
         setShowEmailPreview(false)
+        // メール送信履歴を再取得
+        fetchEmailHistory()
       } else {
         console.error('メール送信失敗:', result.error)
         alert(`メール送信に失敗しました: ${result.error}`)
@@ -452,6 +478,107 @@ export default function SessionDetailPage() {
                 </dd>
               </div>
             </dl>
+          </div>
+        </div>
+
+        {/* メール送信履歴セクション */}
+        <div className="mt-6 bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg transition-colors">
+          <div className="px-4 py-5 sm:px-6">
+            <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+              メール送信履歴
+            </h3>
+            <p className="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+              このセッションに関連して送信されたメールの履歴
+            </p>
+          </div>
+          <div className="border-t border-gray-200 dark:border-gray-700">
+            {loadingEmailHistory ? (
+              <div className="px-4 py-8 text-center">
+                <div className="inline-flex items-center">
+                  <LoadingSpinner size="sm" />
+                  <span className="ml-2 text-gray-600 dark:text-gray-400">読み込み中...</span>
+                </div>
+              </div>
+            ) : emailHistory.length === 0 ? (
+              <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                メール送信履歴はありません
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                  <thead className="bg-gray-50 dark:bg-gray-700">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        送信日時
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        メール種別
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        件名
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        宛先
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                        ステータス
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                    {emailHistory.map((email) => (
+                      <tr key={email.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {email.sent_at ? 
+                            new Date(email.sent_at).toLocaleString('ja-JP', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })
+                            : '未送信'
+                          }
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                            {email.email_type === 'next_session_reminder' ? '次回予約促進' :
+                             email.email_type === 'session_confirmation' ? 'セッション確認' :
+                             email.email_type}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
+                          <div className="max-w-xs truncate" title={email.subject}>
+                            {email.subject}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                          {email.recipient_email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            email.status === 'sent' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' :
+                            email.status === 'failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200' :
+                            email.status === 'pending' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                          }`}>
+                            {email.status === 'sent' ? '送信済み' :
+                             email.status === 'failed' ? '送信失敗' :
+                             email.status === 'pending' ? '送信待ち' :
+                             email.status}
+                          </span>
+                          {email.error_message && (
+                            <div className="mt-1 text-xs text-red-600 dark:text-red-400" title={email.error_message}>
+                              エラー詳細を見る
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
 

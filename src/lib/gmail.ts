@@ -9,9 +9,11 @@ interface EmailData {
   content: string
   type: 'application' | 'booking' | 'session_update' | 'next_session_promotion'
   related_id?: string
+  session_id?: string
+  client_id?: string
 }
 
-export async function sendEmailWithGmail({ to, subject, content, type, related_id }: EmailData) {
+export async function sendEmailWithGmail({ to, subject, content, type, related_id, session_id, client_id }: EmailData) {
   console.log('=== Gmail Email Debug Info ===')
   console.log('To:', to)
   console.log('Subject:', subject)
@@ -101,16 +103,16 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
 
     // メール送信履歴を保存
     const { error: logError } = await supabase
-      .from('email_logs')
+      .from('email_history')
       .insert({
-        recipient: to,
+        session_id: session_id || null,
+        client_id: client_id || null,
+        email_type: type,
         subject,
-        content,
-        type,
-        related_id,
+        recipient_email: to,
         status: 'sent',
-        error_message: null,
         sent_at: new Date().toISOString(),
+        error_message: null
       })
 
     if (logError) {
@@ -124,16 +126,16 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
     
     // エラーの場合もログに記録
     await supabase
-      .from('email_logs')
+      .from('email_history')
       .insert({
-        recipient: to,
+        session_id: session_id || null,
+        client_id: client_id || null,
+        email_type: type,
         subject,
-        content,
-        type,
-        related_id,
+        recipient_email: to,
         status: 'failed',
         error_message: error instanceof Error ? error.message : 'Unknown error',
-        sent_at: new Date().toISOString(),
+        sent_at: null
       })
 
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
@@ -298,6 +300,7 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
       content: clientContent,
       type: 'booking',
       related_id: sessionId,
+      session_id: sessionId,
     })
     
     // キャリアメールの場合はより長い待機時間
@@ -315,6 +318,7 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
       content: adminContent,
       type: 'booking',
       related_id: sessionId,
+      session_id: sessionId,
     })
     
     console.log('Client email result:', clientResult)
@@ -542,6 +546,8 @@ Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
       content: content,
       type: 'next_session_promotion',
       related_id: completedSessionId,
+      session_id: completedSessionId,
+      client_id: clientId,
     })
     
     console.log('Next session promotion email result:', result)
