@@ -6,12 +6,15 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Client, Session } from '@/types'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function ContinueApplicationPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const { user } = useAuth()
   const clientEmail = searchParams.get('email') || ''
   const trialSessionId = searchParams.get('session') || ''
+  const isAdminAccess = !!user && !clientEmail // 管理者でメールパラメータがない場合
   
   const [client, setClient] = useState<Client | null>(null)
   const [trialSession, setTrialSession] = useState<Session | null>(null)
@@ -69,6 +72,11 @@ export default function ContinueApplicationPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    if (isAdminAccess && !client) {
+      alert('管理者モードではフォーム送信はできません。実際の申し込みは、メールリンクからアクセスしてください。')
+      return
+    }
+    
     if (!client) {
       alert('クライアント情報が見つかりません。')
       return
@@ -119,7 +127,8 @@ export default function ContinueApplicationPage() {
     return date.toISOString().split('T')[0]
   }
 
-  if (!clientEmail && !client) {
+  // 管理者アクセスの場合は許可、そうでなければメールパラメータが必要
+  if (!isAdminAccess && !clientEmail && !client) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -154,6 +163,15 @@ export default function ContinueApplicationPage() {
                 トライアルセッション完了: {new Date(trialSession.scheduled_date).toLocaleDateString('ja-JP')}
               </p>
             )}
+          </div>
+        )}
+
+        {isAdminAccess && !client && (
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <h3 className="font-medium text-yellow-900 mb-2">管理者モード</h3>
+            <p className="text-yellow-800">
+              管理画面からアクセスしています。実際の申し込みには、メールからのリンクが必要です。
+            </p>
           </div>
         )}
 
@@ -278,10 +296,11 @@ export default function ContinueApplicationPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || (isAdminAccess && !client)}
                   className="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? '送信中...' : '継続プログラムに申し込む'}
+                  {(isAdminAccess && !client) ? '管理者モード（送信不可）' : 
+                   loading ? '送信中...' : '継続プログラムに申し込む'}
                 </button>
               </div>
             </div>
