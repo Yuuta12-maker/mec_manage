@@ -16,8 +16,8 @@ export default function LoadingSpinner({
   }
 
   return (
-    <div className={`animate-spin rounded-full border-2 border-primary-200 border-t-primary-500 shadow-glow ${sizeClasses[size]} ${className}`}>
-      <span className="sr-only">🔄 読み込み中...</span>
+    <div className={`animate-spin rounded-full border-2 border-gray-300 border-t-primary ${sizeClasses[size]} ${className}`}>
+      <span className="sr-only">読み込み中...</span>
     </div>
   )
 }

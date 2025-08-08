@@ -30,9 +30,7 @@ export default function Navigation() {
         <div className="flex justify-between h-16">
           <div className="flex">
             <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-bold bg-gradient-to-r from-primary-500 to-secondary-500 bg-clip-text text-transparent animate-pulse-slow flex items-center">
-                🎯 MEC管理システム
-              </h1>
+              <h1 className="text-xl font-semibold text-primary dark:text-red-400">MEC管理システム</h1>
             </div>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               {navigation.map((item) => (
@@ -41,9 +39,9 @@ export default function Navigation() {
                   href={item.href}
                   className={`${
                     pathname === item.href
-                      ? 'border-primary-500 dark:border-primary-400 text-primary-600 dark:text-primary-400 shadow-glow'
-                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-primary-300 dark:hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 hover:shadow-glow'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-all duration-300 transform hover:scale-105`}
+                      ? 'border-primary dark:border-red-400 text-gray-900 dark:text-white'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-white'
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors`}
                 >
                   {item.name}
                 </Link>
@@ -55,7 +53,7 @@ export default function Navigation() {
             <div className="sm:hidden">
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-lg text-gray-500 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-primary-50 dark:hover:bg-primary-900/20 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-300 transform hover:scale-110 hover:shadow-glow"
+                className="inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 aria-label="メニューを開く"
               >
                 {isMobileMenuOpen ? (
@@ -73,7 +71,7 @@ export default function Navigation() {
               {/* ダークモードトグル */}
               <button
                 onClick={toggleDarkMode}
-                className="p-2 rounded-lg text-gray-500 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 focus:outline-none focus:ring-2 focus:ring-accent-500 transition-all duration-300 transform hover:scale-110 hover:shadow-glow-orange animate-bounce-gentle"
+                className="p-2 rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 aria-label={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
               >
                 {isDarkMode ? (
@@ -89,13 +87,13 @@ export default function Navigation() {
 
               {/* 外部リンクドロップダウン */}
               <div className="relative group">
-                <button className="inline-flex items-center px-3 py-2 btn-secondary text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-secondary-500">
-                  🌐 外部ページ
+                <button className="inline-flex items-center px-3 py-2 border border-blue-600 dark:border-blue-400 text-sm font-medium rounded-md text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                  外部ページ
                   <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                   </svg>
                 </button>
-                <div className="absolute right-0 mt-2 w-48 glass-effect rounded-lg shadow-xl ring-1 ring-black ring-opacity-5 dark:ring-gray-600 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 transform group-hover:scale-105">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 dark:ring-gray-600 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-1">
                     {externalLinks.map((item) => (
                       <Link
@@ -103,7 +101,7 @@ export default function Navigation() {
                         href={item.href}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 dark:hover:from-primary-900/20 dark:hover:to-secondary-900/20 hover:text-primary-700 dark:hover:text-primary-300 transition-all duration-300 rounded-md"
+                        className="flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         {item.name}
                         <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -120,7 +118,7 @@ export default function Navigation() {
               </span>
               <button
                 onClick={signOut}
-                className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
+                className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white px-4 py-2 rounded text-sm transition-colors"
               >
                 ログアウト
               </button>
@@ -139,9 +137,9 @@ export default function Navigation() {
                   onClick={() => setIsMobileMenuOpen(false)}
                   className={`${
                     pathname === item.href
-                      ? 'bg-gradient-to-r from-primary-50 to-secondary-50 dark:from-primary-900/20 dark:to-secondary-900/20 border-primary-500 dark:border-primary-400 text-primary-700 dark:text-primary-200 shadow-glow'
-                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 dark:hover:from-primary-900/20 dark:hover:to-secondary-900/20 hover:border-primary-300 dark:hover:border-primary-600 hover:text-primary-700 dark:hover:text-primary-300'
-                  } block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-all duration-300 transform hover:scale-105`}
+                      ? 'bg-blue-50 dark:bg-blue-900 border-blue-500 dark:border-blue-400 text-blue-700 dark:text-blue-200'
+                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600 hover:text-gray-700 dark:hover:text-white'
+                  } block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors`}
                 >
                   {item.name}
                 </Link>
@@ -151,14 +149,14 @@ export default function Navigation() {
             {/* モバイル用外部リンク */}
             <div className="pt-4 pb-3 border-t border-gray-200 dark:border-gray-600">
               <div className="px-3 space-y-1">
-                <div className="text-sm font-medium text-secondary-600 dark:text-secondary-400 mb-2 flex items-center">🌐 外部ページ</div>
+                <div className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">外部ページ</div>
                 {externalLinks.map((item) => (
                   <Link
                     key={item.name}
                     href={item.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-primary-700 dark:hover:text-primary-300 hover:bg-gradient-to-r hover:from-primary-50 hover:to-secondary-50 dark:hover:from-primary-900/20 dark:hover:to-secondary-900/20 transition-all duration-300 rounded-md transform hover:scale-105"
+                    className="flex items-center px-3 py-2 text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   >
                     {item.name}
                     <svg className="ml-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,7 +178,7 @@ export default function Navigation() {
                 <div className="ml-auto flex items-center space-x-2">
                   <button
                     onClick={toggleDarkMode}
-                    className="p-2 rounded-lg text-gray-500 dark:text-gray-300 hover:text-accent-600 dark:hover:text-accent-400 hover:bg-accent-50 dark:hover:bg-accent-900/20 transition-all duration-300 transform hover:scale-110 hover:shadow-glow-orange animate-bounce-gentle"
+                    className="p-2 rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     aria-label={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
                   >
                     {isDarkMode ? (
@@ -195,7 +193,7 @@ export default function Navigation() {
                   </button>
                   <button
                     onClick={signOut}
-                    className="bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg transition-all duration-300 transform hover:scale-105 hover:shadow-xl"
+                    className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white px-4 py-2 rounded text-sm transition-colors"
                   >
                     ログアウト
                   </button>
