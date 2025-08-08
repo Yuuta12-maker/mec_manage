@@ -115,6 +115,7 @@ export default function SessionDetailPage() {
           clientName: session.client.name,
           sessionType: session.type,
           sessionDate: session.scheduled_date,
+          clientId: session.client_id,
         }),
       })
 
@@ -149,6 +150,7 @@ export default function SessionDetailPage() {
           sessionId: session.id,
           sessionType: session.type,
           sessionDate: session.scheduled_date,
+          clientId: session.client_id,
         }),
       })
 

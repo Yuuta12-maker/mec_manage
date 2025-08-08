@@ -335,23 +335,57 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
   }
 }
 
+// クライアントの完了セッション数を取得
+async function getClientCompletedSessionCount(clientId: string): Promise<number> {
+  try {
+    const { data, error } = await supabase
+      .from('sessions')
+      .select('id')
+      .eq('client_id', clientId)
+      .eq('status', 'completed')
+      .order('scheduled_date', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching session count:', error)
+      return 0
+    }
+
+    return data?.length || 0
+  } catch (error) {
+    console.error('Error in getClientCompletedSessionCount:', error)
+    return 0
+  }
+}
+
 // セッション終了後の次回予約促進メール（Gmail版）
 export async function sendNextSessionPromotionEmailWithGmail(
   clientEmail: string,
   clientName: string,
   completedSessionId: string,
   sessionType: string,
-  sessionDate: string
+  sessionDate: string,
+  clientId: string
 ) {
   try {
     console.log('=== sendNextSessionPromotionEmailWithGmail called ===')
     
+    // 完了セッション数を取得（今回完了したセッションを含む）
+    const completedSessionCount = await getClientCompletedSessionCount(clientId)
+    console.log('Completed session count:', completedSessionCount)
+    console.log('Session type:', sessionType)
+    
     const bookingUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/booking`
     
-    const subject = '【MEC】セッションお疲れ様でした - 次回のご予約はいかがですか？'
-    const content = `${clientName} 様
+    // セッション回数とタイプに応じてメール内容を変更
+    let subject: string
+    let content: string
+    
+    if (sessionType === 'trial') {
+      // トライアルセッション：継続のお誘い
+      subject = '【MEC】トライアルセッションお疲れ様でした - 継続プログラムのご案内'
+      content = `${clientName} 様
 
-本日は${sessionType === 'trial' ? 'トライアル' : ''}セッションにご参加いただき、誠にありがとうございました。
+本日はトライアルセッションにご参加いただき、誠にありがとうございました。
 
 【実施セッション】
 ・日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
@@ -362,40 +396,142 @@ export async function sendNextSessionPromotionEmailWithGmail(
   hour: '2-digit',
   minute: '2-digit'
 })}
-・種別: ${sessionType === 'trial' ? 'トライアルセッション' : '通常セッション'}
+・種別: トライアルセッション
 
-${sessionType === 'trial' ? 
-`今回のトライアルセッションはいかがでしたでしょうか？
+今回のトライアルセッションはいかがでしたでしょうか？
 マインドエンジニアリング・コーチングを通して、新しい気づきや発見がありましたら嬉しく思います。
 
-【継続セッションのご案内】
-より深い成果を得るために、継続的なセッションをご検討いただければと思います。
-継続セッションでは、より具体的な目標設定と実践的なアプローチで、
-あなたの成長をサポートいたします。` :
-`今回のセッションはいかがでしたでしょうか？
-継続的なセッションで、さらなる成長と成果を実感していただけるよう、
-次回のご予約をお待ちしております。`}
+【継続プログラムのご案内】
+より深い成果と持続的な成長を実現するために、継続プログラムをご用意しております。
 
-【次回予約について】
-下記のリンクから、ご都合の良い日時をお選びいただけます。
+✨ 継続プログラムの特徴
+• 6回のセッションで体系的にスキルを構築
+• あなた専用のアクションプランを作成
+• 定期的なフォローアップとサポート
+• 実践的なツールとテクニックの習得
 
-🔗 セッション予約フォーム
+【次回セッションのご予約】
+継続プログラムにご興味をお持ちいただけましたら、下記のフォームからお申し込みください。
+
+🔗 継続プログラム予約フォーム
 ${bookingUrl}
 
 【よくあるご質問】
-Q: いつ頃予約すれば良いでしょうか？
-A: 学習効果を高めるため、2-4週間以内のご予約をおすすめしています。
+Q: 継続プログラムの期間はどのくらいですか？
+A: 通常3-6ヶ月間で、あなたのペースに合わせて調整いたします。
 
-Q: セッション内容に不安があります
-A: お気軽にご相談ください。あなたのペースに合わせて進めますので、ご安心ください。
+Q: トライアルだけでも効果はありましたが...
+A: 継続することで、より深い変化と定着を実現できます。お気軽にご相談ください。
 
-ご不明な点やご相談がございましたら、お気軽にお問い合わせください。
-${clientName}さんの更なる成長を心よりサポートいたします。
+${clientName}さんの更なる成長と成功を心より願っております。
+ご質問やご相談がございましたら、お気軽にお問い合わせください。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 マインドエンジニアリング・コーチング
 Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━`
+      
+    } else if (completedSessionCount >= 6) {
+      // 6回目（最終）：お礼のメッセージ
+      subject = '【MEC】プログラム完了おめでとうございます - 心からの感謝を込めて'
+      content = `${clientName} 様
+
+本日で6回のマインドエンジニアリング・コーチングプログラムが完了いたしました。
+最後まで取り組んでいただき、誠にありがとうございました。
+
+【完了プログラム】
+・総セッション数: 6回
+・最終セッション実施日: ${new Date(sessionDate).toLocaleString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit'
+})}
+
+🎉 プログラム完了おめでとうございます！
+
+これまでの6回のセッションを通じて、${clientName}さんは大きく成長されました。
+最初のセッションから今日まで、一歩一歩前進し続けるお姿を拝見し、
+私たちも大変嬉しく思っております。
+
+【今後について】
+今回のプログラムで身につけたスキルとマインドセットを、
+日々の生活や仕事に活かしていただければと思います。
+
+また、今後もサポートが必要な場合や、追加のセッションをご希望の際は、
+お気軽にご連絡ください。いつでも喜んでサポートさせていただきます。
+
+【フォローアップについて】
+3ヶ月後に成果確認のフォローアップメールをお送りいたします。
+その際、ご質問や追加サポートのご要望もお聞かせください。
+
+${clientName}さんの今後ますますのご活躍とご成功を心よりお祈りしております。
+この度は、マインドエンジニアリング・コーチングをご利用いただき、
+本当にありがとうございました。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+マインドエンジニアリング・コーチング
+Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━`
+      
+    } else {
+      // 2-5回目：次回セッションの予約
+      const remainingSessions = 6 - completedSessionCount
+      subject = '【MEC】セッションお疲れ様でした - 次回のご予約をお待ちしております'
+      content = `${clientName} 様
+
+本日は${completedSessionCount}回目のセッションにご参加いただき、誠にありがとうございました。
+
+【実施セッション】
+・日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit'
+})}
+・回数: ${completedSessionCount}回目 / 6回
+
+今回のセッションはいかがでしたでしょうか？
+回を重ねるごとに、新しい発見や成長を実感していただけていることと思います。
+
+【プログラム進捗状況】
+✅ 完了セッション: ${completedSessionCount}回
+📅 残りセッション: ${remainingSessions}回
+
+継続的な学習とサポートにより、さらなる成果を実感していただけるよう、
+次回のセッションでもしっかりとサポートさせていただきます。
+
+【次回セッションのご予約】
+下記のリンクから、ご都合の良い日時をお選びください。
+
+🔗 セッション予約フォーム
+${bookingUrl}
+
+【次回に向けて】
+${completedSessionCount === 2 ? '• 今回学んだ技法を日常で実践してみてください\n• 疑問点があれば次回セッションでご質問ください' :
+  completedSessionCount === 3 ? '• これまでの学習内容の振り返りを行います\n• より実践的な応用テクニックをお教えします' :
+  completedSessionCount === 4 ? '• プログラム後半に向けた目標設定を行います\n• より高度なスキルの習得を目指しましょう' :
+  '• プログラム最終段階です\n• 学習成果の総まとめと今後の活用方法をご提案します'}
+
+【よくあるご質問】
+Q: 次回までにどのくらい間隔を空けるべきですか？
+A: 学習効果を最大化するため、2-3週間以内のご予約をおすすめしています。
+
+Q: セッション内容で分からなかった部分があります
+A: 次回セッションで丁寧にフォローアップいたしますので、お気軽にご質問ください。
+
+${clientName}さんの継続的な成長を心よりサポートいたします。
+次回のセッションを楽しみにお待ちしております。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+マインドエンジニアリング・コーチング
+Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
+━━━━━━━━━━━━━━━━━━━━━━━━━━`
+    }
 
     console.log('=== Sending Next Session Promotion Email with Gmail ===')
     console.log('Client email:', clientEmail)

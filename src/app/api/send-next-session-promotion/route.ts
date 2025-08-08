@@ -4,12 +4,12 @@ import { sendNextSessionPromotionEmailWithGmail } from '@/lib/gmail'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { clientEmail, clientName, sessionId, sessionType, sessionDate } = body
+    const { clientEmail, clientName, sessionId, sessionType, sessionDate, clientId } = body
 
     console.log('=== API Route: Send Next Session Promotion Email ===')
     console.log('Request body:', body)
 
-    if (!clientEmail || !clientName || !sessionId || !sessionType || !sessionDate) {
+    if (!clientEmail || !clientName || !sessionId || !sessionType || !sessionDate || !clientId) {
       return NextResponse.json(
         { success: false, error: 'Missing required fields' },
         { status: 400 }
@@ -21,7 +21,8 @@ export async function POST(request: NextRequest) {
       clientName,
       sessionId,
       sessionType,
-      sessionDate
+      sessionDate,
+      clientId
     )
 
     console.log('Next session promotion email result:', result)
