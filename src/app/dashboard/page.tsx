@@ -131,12 +131,14 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen gradient-bg transition-all duration-500">
       <Navigation />
 
       <main className="max-w-7xl mx-auto py-6 px-4">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">ダッシュボード</h2>
+          <h2 className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-6 flex items-center animate-float">
+            📊 ダッシュボード
+          </h2>
           
           {error && (
             <ErrorMessage 
@@ -157,49 +159,49 @@ export default function Dashboard() {
           {!isLoading && (
             <>
               {/* クライアント状況 */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg mb-8 transition-colors">
+              <div className="glass-effect overflow-hidden shadow-xl rounded-xl mb-8 transition-all duration-300 card-hover">
                 <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                    クライアント状況
+                  <h3 className="text-xl leading-6 font-bold text-primary-700 dark:text-primary-300 mb-6 flex items-center">
+                    👥 クライアント状況
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">総数</div>
+                    <div className="text-center transform transition-all duration-300 hover:scale-110 hover:shadow-glow p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-primary-600 animate-pulse-slow">{stats.total}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">🎢 総数</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-yellow-600">{stats.applied}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">申込完了</div>
+                    <div className="text-center transform transition-all duration-300 hover:scale-110 hover:shadow-glow-orange p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-accent-500 animate-pulse-slow">{stats.applied}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">✨ 申込完了</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">{stats.trial_booked}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">トライアル予約済</div>
+                    <div className="text-center transform transition-all duration-300 hover:scale-110 hover:shadow-glow-orange p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-accent-600 animate-pulse-slow">{stats.trial_booked}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">🗺️ トライアル予約済</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">{stats.trial_completed}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">トライアル完了</div>
+                    <div className="text-center transform transition-all duration-300 hover:scale-110 hover:shadow-glow-purple p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-secondary-600 animate-pulse-slow">{stats.trial_completed}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">🎆 トライアル完了</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">継続中</div>
+                    <div className="text-center transform transition-all duration-300 hover:scale-110 hover:shadow-glow p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-success-600 animate-pulse-slow">{stats.active}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">🌱 継続中</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{stats.completed}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">完了</div>
+                    <div className="text-center transform transition-all duration-300 hover:scale-110 hover:shadow-glow p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-primary-600 animate-pulse-slow">{stats.completed}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 font-medium">🎉 完了</div>
                     </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-600">{stats.inactive}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">非アクティブ</div>
+                    <div className="text-center transform transition-all duration-300 hover:scale-110 p-3 rounded-lg">
+                      <div className="text-3xl font-bold text-gray-500 animate-pulse-slow">{stats.inactive}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400 font-medium">😴 非アクティブ</div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* 本日のセッション */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg mb-8 transition-colors">
+              <div className="glass-effect overflow-hidden shadow-xl rounded-xl mb-8 transition-all duration-300 card-hover">
                 <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                    本日のセッション
+                  <h3 className="text-xl leading-6 font-bold text-primary-700 dark:text-primary-300 mb-6 flex items-center">
+                    🗓️ 本日のセッション
                   </h3>
                   {todaySessions.length > 0 ? (
                     <div className="flow-root">
@@ -265,10 +267,10 @@ export default function Dashboard() {
               </div>
 
               {/* 今後7日以内のセッション */}
-              <div className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors">
+              <div className="glass-effect overflow-hidden shadow-xl rounded-xl transition-all duration-300 card-hover">
                 <div className="px-4 py-5 sm:p-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
-                    今後7日以内のセッション
+                  <h3 className="text-xl leading-6 font-bold text-primary-700 dark:text-primary-300 mb-6 flex items-center">
+                    📅 今後7日以内のセッション
                   </h3>
                   {upcomingSessions.length > 0 ? (
                     <div className="flow-root">
@@ -336,7 +338,7 @@ export default function Dashboard() {
               {/* カレンダービュー */}
               <div className="mt-8">
                 <div className="mb-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">セッションカレンダー</h3>
+                  <h3 className="text-xl font-bold text-primary-700 dark:text-primary-300 flex items-center">📋 セッションカレンダー</h3>
                   <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">月間スケジュールの概要</p>
                 </div>
                 <Calendar sessions={allSessions} />

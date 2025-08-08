@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={`${inter.className} bg-white dark:bg-gray-900 text-gray-900 dark:text-white transition-colors`}>
+      <body className={`${inter.className} gradient-bg text-gray-900 dark:text-white transition-all duration-500`}>
         <ErrorBoundary>
           <ThemeProvider>
             <AuthProvider>{children}</AuthProvider>
