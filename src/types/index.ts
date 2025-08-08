@@ -78,7 +78,7 @@ export interface EmailLog {
   recipient: string;
   subject: string;
   content: string;
-  type: 'application' | 'booking' | 'session_update';
+  type: 'application' | 'booking' | 'session_update' | 'next_session_promotion';
   related_id?: string;
   status: 'sent' | 'failed';
   error_message?: string;

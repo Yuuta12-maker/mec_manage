@@ -9,7 +9,7 @@ interface EmailData {
   to: string
   subject: string
   content: string
-  type: 'application' | 'booking' | 'session_update'
+  type: 'application' | 'booking' | 'session_update' | 'next_session_promotion'
   related_id?: string
 }
 
@@ -268,6 +268,90 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
       clientResult: { success: false, error: 'Function error' },
       adminResult: { success: false, error: 'Function error' },
       success: false,
+    }
+  }
+}
+
+// セッション終了後の次回予約促進メール
+export async function sendNextSessionPromotionEmail(
+  clientEmail: string,
+  clientName: string,
+  completedSessionId: string,
+  sessionType: string,
+  sessionDate: string
+) {
+  try {
+    console.log('=== sendNextSessionPromotionEmail called ===')
+    
+    const bookingUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/booking`
+    
+    const subject = '【MEC】セッションお疲れ様でした - 次回のご予約はいかがですか？'
+    const content = `${clientName} 様
+
+本日は${sessionType === 'trial' ? 'トライアル' : ''}セッションにご参加いただき、誠にありがとうございました。
+
+【実施セッション】
+・日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit'
+})}
+・種別: ${sessionType === 'trial' ? 'トライアルセッション' : '通常セッション'}
+
+${sessionType === 'trial' ? 
+`今回のトライアルセッションはいかがでしたでしょうか？
+マインドエンジニアリング・コーチングを通して、新しい気づきや発見がありましたら嬉しく思います。
+
+【継続セッションのご案内】
+より深い成果を得るために、継続的なセッションをご検討いただければと思います。
+継続セッションでは、より具体的な目標設定と実践的なアプローチで、
+あなたの成長をサポートいたします。` :
+`今回のセッションはいかがでしたでしょうか？
+継続的なセッションで、さらなる成長と成果を実感していただけるよう、
+次回のご予約をお待ちしております。`}
+
+【次回予約について】
+下記のリンクから、ご都合の良い日時をお選びいただけます。
+
+🔗 セッション予約フォーム
+${bookingUrl}
+
+【よくあるご質問】
+Q: いつ頃予約すれば良いでしょうか？
+A: 学習効果を高めるため、2-4週間以内のご予約をおすすめしています。
+
+Q: セッション内容に不安があります
+A: お気軽にご相談ください。あなたのペースに合わせて進めますので、ご安心ください。
+
+ご不明な点やご相談がございましたら、お気軽にお問い合わせください。
+${clientName}さんの更なる成長を心よりサポートいたします。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+マインドエンジニアリング・コーチング
+Email: mindengineeringcoaching@gmail.com
+━━━━━━━━━━━━━━━━━━━━━━━━━━`
+
+    console.log('=== Sending Next Session Promotion Email ===')
+    console.log('Client email:', clientEmail)
+    
+    const result = await sendEmail({
+      to: clientEmail,
+      subject: subject,
+      content: content,
+      type: 'next_session_promotion',
+      related_id: completedSessionId,
+    })
+    
+    console.log('Next session promotion email result:', result)
+    return result
+  } catch (error) {
+    console.error('sendNextSessionPromotionEmail error:', error)
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Unknown error'
     }
   }
 }

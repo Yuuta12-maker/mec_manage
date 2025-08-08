@@ -25,6 +25,7 @@ export default function SessionDetailPage() {
     meet_link: '',
     status: 'scheduled' as 'scheduled' | 'completed' | 'cancelled'
   })
+  const [sendingEmail, setSendingEmail] = useState(false)
 
   useEffect(() => {
     if (sessionId) {
@@ -62,6 +63,24 @@ export default function SessionDetailPage() {
   }
 
   const handleSave = async () => {
+    // 完了変更時の確認と次回予約促進メール送信
+    const wasCompleted = session?.status === 'completed'
+    const isBeingCompleted = formData.status === 'completed' && session?.status !== 'completed'
+    
+    if (isBeingCompleted) {
+      const confirmed = window.confirm(
+        '✅ セッションを完了にしますか？\n\n' +
+        'この操作により：\n' +
+        '• セッションが完了としてマークされます\n' +
+        '• クライアントに次回予約促進メールを送信しますか？\n\n' +
+        '完了にして、メールを送信しますか？'
+      )
+      
+      if (!confirmed) {
+        return
+      }
+    }
+
     // キャンセル変更時の確認
     if (formData.status === 'cancelled' && session?.status !== 'cancelled') {
       const confirmed = window.confirm(
@@ -96,7 +115,47 @@ export default function SessionDetailPage() {
 
       setEditing(false)
       await fetchSession()
+
+      // セッションが完了になった場合、次回予約促進メールを送信
+      if (isBeingCompleted && session) {
+        await sendNextSessionPromotionEmail()
+      }
     }, 'セッションの更新に失敗しました')
+  }
+
+  const sendNextSessionPromotionEmail = async () => {
+    if (!session) return
+
+    setSendingEmail(true)
+    try {
+      const response = await fetch('/api/send-next-session-promotion', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clientEmail: session.client.email,
+          clientName: session.client.name,
+          sessionId: session.id,
+          sessionType: session.type,
+          sessionDate: session.scheduled_date,
+        }),
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        alert('次回予約促進メールを送信しました！')
+      } else {
+        console.error('メール送信失敗:', result.error)
+        alert(`メール送信に失敗しました: ${result.error}`)
+      }
+    } catch (error) {
+      console.error('メール送信エラー:', error)
+      alert('メール送信中にエラーが発生しました')
+    } finally {
+      setSendingEmail(false)
+    }
   }
 
   const getStatusLabel = (status: string) => {
@@ -197,6 +256,15 @@ export default function SessionDetailPage() {
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
                   {getStatusLabel(session.status)}
                 </span>
+                {session.status === 'completed' && (
+                  <button
+                    onClick={sendNextSessionPromotionEmail}
+                    disabled={sendingEmail}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  >
+                    {sendingEmail ? '送信中...' : '次回予約促進メール送信'}
+                  </button>
+                )}
                 {!editing ? (
                   <button
                     onClick={() => setEditing(true)}
