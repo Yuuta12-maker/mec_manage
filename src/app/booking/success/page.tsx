@@ -49,38 +49,26 @@ export default function BookingSuccessPage() {
               <ol className="text-blue-800 space-y-2 text-sm">
                 <li className="flex items-start">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">1</span>
-                  <span>担当者が予約内容を確認いたします</span>
+                  <span>返信メールをご確認ください</span>
                 </li>
                 <li className="flex items-start">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">2</span>
-                  <span>2営業日以内にメールまたはお電話でご連絡いたします</span>
+                  <span>セッション当日の詳細案内が記載されています</span>
                 </li>
                 <li className="flex items-start">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">3</span>
-                  <span>セッション詳細のご案内をお送りします</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">4</span>
-                  <span>セッション開始15分前にGoogle Meetリンクをお送りします（オンラインの場合）</span>
+                  <span>準備事項もメールに記載しております</span>
                 </li>
               </ol>
             </div>
 
-            <div className="bg-orange-50 rounded-lg p-4 text-left">
-              <h3 className="font-semibold text-orange-900 mb-2">セッション料金について</h3>
-              <div className="text-orange-800 space-y-1 text-sm">
-                <p><strong>トライアルセッション:</strong> ¥6,000（税込）</p>
-                <p><strong>通常セッション:</strong> 継続プログラム料金に含まれます</p>
-                <p className="mt-2">※ お支払い方法については、担当者からご案内いたします</p>
-              </div>
-            </div>
 
             <div className="bg-yellow-50 rounded-lg p-4 text-left">
               <h3 className="font-semibold text-yellow-900 mb-2">キャンセル・変更について</h3>
               <ul className="text-yellow-800 space-y-1 text-sm">
-                <li>• セッション開始24時間前までは無料でキャンセル・変更が可能です</li>
-                <li>• 24時間を切ってのキャンセルは、キャンセル料が発生する場合があります</li>
-                <li>• 変更・キャンセルのご連絡は担当者までお願いいたします</li>
+                <li>• キャンセルはできるだけ早く行っていただければ、可能な限り対応いたします</li>
+                <li>• キャンセル料はかかりません</li>
+                <li>• 変更・キャンセルのご連絡は返信メールに記載の連絡先までお願いいたします</li>
               </ul>
             </div>
 
@@ -94,29 +82,20 @@ export default function BookingSuccessPage() {
               </ul>
             </div>
 
-            <p className="text-sm text-gray-500 mt-6">
-              ご予約確認のメールが届かない場合は、迷惑メールフォルダもご確認ください。
-              <br />
-              ご不明な点がございましたら、お気軽にお問い合わせください。
+            <div className="bg-green-50 rounded-lg p-4 text-left mt-6">
+              <h3 className="font-semibold text-green-900 mb-2">重要なお知らせ</h3>
+              <ul className="text-green-800 space-y-1 text-sm">
+                <li>• <strong>返信メールを必ずご確認ください</strong></li>
+                <li>• セッション詳細・準備事項・連絡先が記載されています</li>
+                <li>• メールが届かない場合は迷惑メールフォルダもご確認ください</li>
+              </ul>
+            </div>
+            
+            <p className="text-sm text-gray-500 mt-4">
+              ご不明な点がございましたら、返信メールに記載の連絡先までお気軽にお問い合わせください。
             </p>
           </div>
 
-          <div className="space-y-4">
-            <Link
-              href="/booking"
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors mr-4"
-            >
-              別の予約をする
-            </Link>
-            <a
-              href="https://yourcompanywebsite.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
-            >
-              公式サイトに戻る
-            </a>
-          </div>
         </div>
       </main>
 
