@@ -30,6 +30,7 @@ export default function SessionDetailPage() {
   const [emailPreview, setEmailPreview] = useState<{subject: string, content: string} | null>(null)
   const [emailHistory, setEmailHistory] = useState<any[]>([])
   const [loadingEmailHistory, setLoadingEmailHistory] = useState(false)
+  const [hasNextSessionPromotionEmail, setHasNextSessionPromotionEmail] = useState(false)
 
   useEffect(() => {
     if (sessionId) {
@@ -80,6 +81,11 @@ export default function SessionDetailPage() {
         console.error('メール送信履歴の取得に失敗:', error)
       } else {
         setEmailHistory(data || [])
+        // 次回予約促進メールが送信済みかチェック
+        const hasPromotionEmail = data?.some(email => 
+          email.email_type === 'next_session_promotion' && email.status === 'sent'
+        ) || false
+        setHasNextSessionPromotionEmail(hasPromotionEmail)
       }
     } catch (error) {
       console.error('メール送信履歴取得エラー:', error)
@@ -184,8 +190,8 @@ export default function SessionDetailPage() {
       if (result.success) {
         alert('次回予約促進メールを送信しました！')
         setShowEmailPreview(false)
-        // メール送信履歴を再取得
-        fetchEmailHistory()
+        // メール送信履歴を再取得してボタン状態を更新
+        await fetchEmailHistory()
       } else {
         console.error('メール送信失敗:', result.error)
         alert(`メール送信に失敗しました: ${result.error}`)
@@ -296,13 +302,18 @@ export default function SessionDetailPage() {
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
                   {getStatusLabel(session.status)}
                 </span>
-                {session.status === 'completed' && (
+                {session.status === 'completed' && !hasNextSessionPromotionEmail && (
                   <button
                     onClick={previewNextSessionEmail}
                     className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
                   >
                     次回予約促進メール送信
                   </button>
+                )}
+                {session.status === 'completed' && hasNextSessionPromotionEmail && (
+                  <span className="inline-flex items-center px-3 py-2 text-sm text-green-700 bg-green-100 rounded-md">
+                    ✓ 次回予約促進メール送信済み
+                  </span>
                 )}
                 {!editing ? (
                   <button
@@ -542,8 +553,11 @@ export default function SessionDetailPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                           <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                            {email.email_type === 'next_session_reminder' ? '次回予約促進' :
+                            {email.email_type === 'next_session_promotion' ? '次回予約促進' :
+                             email.email_type === 'next_session_reminder' ? '次回予約リマインド' :
                              email.email_type === 'session_confirmation' ? 'セッション確認' :
+                             email.email_type === 'booking' ? '予約確認' :
+                             email.email_type === 'application' ? '申込み確認' :
                              email.email_type}
                           </span>
                         </td>
