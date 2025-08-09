@@ -148,6 +148,39 @@ export default function SessionDetailPage() {
     }, 'セッションの更新に失敗しました')
   }
 
+  const handleCompleteSession = async () => {
+    if (!session) return
+    
+    const confirmed = window.confirm(
+      '✅ セッションを完了にしますか？\n\n' +
+      'この操作により：\n' +
+      '• セッションステータスが「完了」に変更されます\n' +
+      '• 次回予約促進メール送信ボタンが表示されます\n' +
+      '• メール履歴に記録されます\n\n' +
+      'よろしいですか？'
+    )
+    
+    if (!confirmed) return
+    
+    await handleAsync(async () => {
+      const { error } = await supabase
+        .from('sessions')
+        .update({
+          status: 'completed',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', sessionId)
+
+      if (error) {
+        throw new Error(`セッションの完了処理に失敗しました: ${error.message}`)
+      }
+
+      // セッション情報とメール履歴を再取得
+      await fetchSession()
+      await fetchEmailHistory()
+    }, 'セッションの完了処理に失敗しました')
+  }
+
   const previewNextSessionEmail = async () => {
     if (!session) return
 
@@ -318,6 +351,21 @@ export default function SessionDetailPage() {
                 <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusColor(session.status)}`}>
                   {getStatusLabel(session.status)}
                 </span>
+                
+                {/* 予定状態の場合：完了ボタンを表示 */}
+                {session.status === 'scheduled' && !editing && (
+                  <button
+                    onClick={handleCompleteSession}
+                    className="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    完了
+                  </button>
+                )}
+                
+                {/* 完了状態の場合：メール送信ボタンを表示 */}
                 {session.status === 'completed' && !hasNextSessionPromotionEmail && (
                   <button
                     onClick={previewNextSessionEmail}
@@ -331,6 +379,8 @@ export default function SessionDetailPage() {
                     ✓ 次回予約促進メール送信済み
                   </span>
                 )}
+                
+                {/* 編集ボタン */}
                 {!editing ? (
                   <button
                     onClick={() => setEditing(true)}
