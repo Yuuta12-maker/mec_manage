@@ -149,7 +149,7 @@ export async function sendApplicationEmailsWithGmail(applicantEmail: string, app
     const adminEmail = process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'
 
     // 応募者向けメール
-    const applicantSubject = '【MEC】お申し込みを受け付けました'
+    const applicantSubject = '【MEC】お申し込みありがとうございます - セッション予約のご案内'
     const applicantContent = `${applicantName} 様
 
 この度は、マインドエンジニアリング・コーチング（MEC）にお申し込みいただき、誠にありがとうございます。
@@ -157,11 +157,29 @@ export async function sendApplicationEmailsWithGmail(applicantEmail: string, app
 お申し込み内容を確認いたしました。
 
 【今後の流れ】
-1. 担当者より2営業日以内にご連絡いたします
-2. トライアルセッションの日程調整を行います
-3. セッション予約フォームをお送りします
+1. 下記リンクからトライアルセッションをご予約ください
+2. セッション実施（30分程度）
+3. 継続プログラムについてご相談
 
-ご不明な点がございましたら、お気軽にお問い合わせください。
+【セッション予約フォーム】
+以下のリンクからご都合の良い日時をお選びください：
+🔗 https://mec-manage.vercel.app/booking
+
+※ご予約は先着順となります。お早めにお手続きください。
+
+【トライアルセッションについて】
+・料金：6,000円（税込）
+・時間：30分程度
+・形式：オンライン（Google Meet）または対面
+・内容：現状の課題把握と改善方向性の提示
+
+【ご準備いただくもの】
+・静かな環境（オンラインの場合）
+・筆記用具
+・現在お悩みの具体的な課題（簡単にまとめておいてください）
+
+ご質問やご不明な点がございましたら、お気軽にお問い合わせください。
+${applicantName}さんとお会いできることを楽しみにしております。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 マインドエンジニアリング・コーチング
@@ -169,7 +187,7 @@ Email: ${adminEmail}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━`
 
     // 管理者向けメール
-    const adminSubject = '【MEC】新規申し込みがありました'
+    const adminSubject = '【MEC】新規申し込み - セッション予約待ち'
     const adminContent = `新規申し込みがありました。
 
 【申し込み情報】
@@ -177,9 +195,16 @@ Email: ${adminEmail}
 ・メールアドレス: ${applicantEmail}
 ・申し込みID: ${applicationId}
 
-管理画面から詳細を確認し、対応をお願いします。
+【対応状況】
+✅ 申込者向けに予約リンク付き確認メールを自動送信済み
+📅 申込者はセッション予約フォームから予約可能
+⏰ 予約完了時に管理者向けに通知メール送信
 
-管理画面URL: ${process.env.NEXT_PUBLIC_BASE_URL}/clients`
+【管理画面】
+詳細確認・管理：${process.env.NEXT_PUBLIC_BASE_URL}/clients
+予約状況確認：${process.env.NEXT_PUBLIC_BASE_URL}/sessions
+
+※申込者が予約完了次第、別途通知いたします。`
 
     // 両方のメールを逐次送信
     console.log('=== Sending Application Emails with Gmail ===')
@@ -239,14 +264,15 @@ export async function sendBookingEmailsWithGmail(
     const adminEmail = process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'
 
     // クライアント向けメール
-    const clientSubject = '【MEC】セッション予約が完了しました'
+    const clientSubject = '【MEC】セッション予約完了 - 当日のご案内'
     const clientContent = `${clientName} 様
 
-セッションのご予約が完了いたしました。
+セッションのご予約をいただき、ありがとうございます！
+ご予約が正常に完了いたしました。
 
-【予約内容】
-・セッション種別: ${sessionType === 'trial' ? 'トライアル' : '通常セッション'}
-・予定日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
+【ご予約内容】
+・セッション種別: ${sessionType === 'trial' ? 'トライアルセッション' : '通常セッション'}
+・実施日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
   year: 'numeric',
   month: 'long',
   day: 'numeric',
@@ -254,37 +280,77 @@ export async function sendBookingEmailsWithGmail(
   hour: '2-digit',
   minute: '2-digit'
 })}
-${meetLink ? `・Google Meet URL: ${meetLink}` : ''}
+・コーチ: 森山雄太
+${meetLink ? `・Google Meet URL: ${meetLink}` : '・実施方法: 対面'}
 
 【セッション前の準備】
+📝 ご準備いただくもの：
+・筆記用具（メモを取っていただきます）
+・現在のお悩みや課題を簡単にまとめておいてください
+・リラックスできる服装でお越しください
+
+${meetLink ? `💻 オンラインセッションの場合：
 ・静かな環境でご参加ください
 ・カメラとマイクの動作確認をお願いします
-・筆記用具をご準備ください
+・セッション開始5分前にはMeetにご参加ください` : '🏢 対面セッションの場合：
+・会場の詳細は別途ご連絡いたします
+・お時間に余裕をもってお越しください'}
 
-ご質問やご不明な点がございましたら、お気軽にお問い合わせください。
+【当日の流れ】
+1. 自己紹介・現状確認（5分）
+2. 課題の整理と目標設定（10分）
+3. 具体的な改善手法のご提案（10分）
+4. 質疑応答・次回以降のご相談（5分）
 
-当日お会いできることを楽しみにしております。
+${sessionType === 'trial' ? `【トライアル後について】
+セッション後に継続プログラムについてご相談させていただきます。
+無理な勧誘は一切ございませんので、ご安心ください。` : ''}
+
+何かご質問やご不安な点がございましたら、お気軽にお問い合わせください。
+${clientName}さんとお会いできることを心より楽しみにしております。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 マインドエンジニアリング・コーチング
+コーチ: 森山雄太
 Email: ${adminEmail}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━`
 
     // 管理者向けメール
-    const adminSubject = '【MEC】新規セッション予約がありました'
-    const adminContent = `新規セッション予約がありました。
+    const adminSubject = '【MEC】📅 セッション予約通知 - 対応必要'
+    const adminContent = `新規セッション予約が完了しました。
 
 【予約情報】
 ・お名前: ${clientName}
 ・メールアドレス: ${clientEmail}
-・セッション種別: ${sessionType === 'trial' ? 'トライアル' : '通常セッション'}
-・予定日時: ${new Date(sessionDate).toLocaleString('ja-JP')}
-${meetLink ? `・Google Meet URL: ${meetLink}` : ''}
+・セッション種別: ${sessionType === 'trial' ? '🔰 トライアルセッション' : '📚 通常セッション'}
+・実施日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit'
+})}
+${meetLink ? `・Meet URL: ${meetLink}` : '・実施形式: 対面'}
 ${sessionId ? `・セッションID: ${sessionId}` : ''}
 
-管理画面から詳細を確認してください。
+【対応状況】
+✅ クライアント向けに予約完了メールを自動送信済み
+📋 セッション詳細情報が管理画面に登録済み
 
-管理画面URL: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions`
+【必要なアクション】
+${sessionType === 'trial' ? `・トライアルセッション準備
+・料金確認（6,000円）
+・継続プログラム資料の準備` : `・通常セッション準備
+・前回セッションからの進捗確認
+・今回の目標設定`}
+
+【管理画面】
+セッション詳細: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions/${sessionId || ''}
+クライアント情報: ${process.env.NEXT_PUBLIC_BASE_URL}/clients
+全セッション一覧: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions
+
+※セッション開始時刻の確認をお願いします。`
 
     // 両方のメールを逐次送信
     console.log('=== Sending Booking Emails with Gmail ===')
