@@ -48,7 +48,7 @@ export default function ApplySuccessPage() {
               <ol className="text-blue-800 space-y-2 text-sm">
                 <li className="flex items-start">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">1</span>
-                  <span>担当者より2営業日以内にご連絡いたします</span>
+                  <span>返信メールをご確認ください</span>
                 </li>
                 <li className="flex items-start">
                   <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-medium mr-3 mt-0.5">2</span>
@@ -68,35 +68,19 @@ export default function ApplySuccessPage() {
             <div className="bg-yellow-50 rounded-lg p-4 text-left">
               <h3 className="font-semibold text-yellow-900 mb-2">重要なお知らせ</h3>
               <ul className="text-yellow-800 space-y-1 text-sm">
-                <li>• ご登録いただいたメールアドレスに確認メールをお送りする場合があります</li>
+                <li>• ご登録いただいたメールアドレスに確認メールをお送りしました</li>
                 <li>• 迷惑メールフォルダもご確認ください</li>
-                <li>• ご不明な点がございましたら、お気軽にお問い合わせください</li>
+                <li>• メールに記載された今後の流れをご確認ください</li>
               </ul>
             </div>
 
             <p className="text-sm text-gray-500 mt-6">
               申し込み番号は自動で生成され、管理者が確認いたします。
               <br />
-              何かご質問がございましたら、担当者からの連絡をお待ちください。
+              何かご質問がございましたら、返信メールに記載された連絡先にお問い合わせください。
             </p>
           </div>
 
-          <div className="space-y-4">
-            <Link
-              href="/apply"
-              className="inline-block px-6 py-3 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors mr-4"
-            >
-              別の申し込みをする
-            </Link>
-            <a
-              href="https://yourcompanywebsite.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-md shadow-sm hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-colors"
-            >
-              公式サイトに戻る
-            </a>
-          </div>
         </div>
       </main>
 

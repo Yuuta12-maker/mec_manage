@@ -35,8 +35,38 @@ export default function ApplyPage() {
       return
     }
 
+    if (!formData.name_kana.trim()) {
+      alert('お名前（カナ）を入力してください。')
+      setLoading(false)
+      return
+    }
+
     if (!formData.email.trim()) {
       alert('メールアドレスを入力してください。')
+      setLoading(false)
+      return
+    }
+
+    if (!formData.phone.trim()) {
+      alert('電話番号を入力してください。')
+      setLoading(false)
+      return
+    }
+
+    if (!formData.gender) {
+      alert('性別を選択してください。')
+      setLoading(false)
+      return
+    }
+
+    if (!birthYear || !birthMonth || !birthDay) {
+      alert('生年月日を入力してください。')
+      setLoading(false)
+      return
+    }
+
+    if (!formData.address.trim()) {
+      alert('住所を入力してください。')
       setLoading(false)
       return
     }
@@ -241,12 +271,13 @@ export default function ApplyPage() {
 
                   <div>
                     <label htmlFor="name_kana" className="block text-sm font-medium text-gray-700">
-                      お名前（カナ）
+                      お名前（カナ） <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="name_kana"
                       id="name_kana"
+                      required
                       placeholder="ヤマダタロウ"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       value={formData.name_kana}
@@ -272,12 +303,13 @@ export default function ApplyPage() {
 
                   <div>
                     <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                      電話番号
+                      電話番号 <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
                       name="phone"
                       id="phone"
+                      required
                       placeholder="090-1234-5678"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       value={formData.phone}
@@ -287,11 +319,12 @@ export default function ApplyPage() {
 
                   <div>
                     <label htmlFor="gender" className="block text-sm font-medium text-gray-700">
-                      性別
+                      性別 <span className="text-red-500">*</span>
                     </label>
                     <select
                       id="gender"
                       name="gender"
+                      required
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       value={formData.gender}
                       onChange={handleChange}
@@ -305,7 +338,7 @@ export default function ApplyPage() {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      生年月日
+                      生年月日 <span className="text-red-500">*</span>
                     </label>
                     <div className="grid grid-cols-3 gap-2">
                       <select
@@ -361,12 +394,13 @@ export default function ApplyPage() {
 
                   <div>
                     <label htmlFor="address" className="block text-sm font-medium text-gray-700">
-                      住所
+                      住所 <span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       name="address"
                       id="address"
+                      required
                       placeholder="東京都渋谷区..."
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       value={formData.address}
