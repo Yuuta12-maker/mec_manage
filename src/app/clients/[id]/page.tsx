@@ -7,6 +7,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Client, Session, Payment } from '@/types'
 import Navigation from '@/components/Navigation'
+import DangerousDeleteConfirm from '@/components/DangerousDeleteConfirm'
 import Link from 'next/link'
 
 export default function ClientDetailPage() {
@@ -16,6 +17,8 @@ export default function ClientDetailPage() {
   const [sessions, setSessions] = useState<Session[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (params.id) {
@@ -65,6 +68,34 @@ export default function ClientDetailPage() {
     }
 
     setLoading(false)
+  }
+
+  const handleDeleteClient = async () => {
+    if (!client) return
+    
+    setDeleting(true)
+    try {
+      const response = await fetch(`/api/clients/${client.id}/delete`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || '削除に失敗しました')
+      }
+
+      const result = await response.json()
+      alert(`クライアント「${result.deletedClient.name}」とすべての関連データが正常に削除されました。`)
+      router.push('/clients')
+    } catch (error) {
+      console.error('Error deleting client:', error)
+      alert(error instanceof Error ? error.message : '削除中にエラーが発生しました。')
+    } finally {
+      setDeleting(false)
+    }
   }
 
   const getStatusLabel = (status: string) => {
@@ -155,16 +186,26 @@ export default function ClientDetailPage() {
                 クライアント詳細情報
               </p>
             </div>
-            <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none space-x-3">
+            <div className="mt-4 sm:mt-0 sm:ml-16 sm:flex-none flex flex-wrap gap-3">
               <Link
                 href={`/clients/${client.id}/edit`}
-                className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:w-auto"
+                className="inline-flex items-center justify-center rounded-md border border-transparent bg-primary px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 編集
               </Link>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                disabled={deleting}
+                className="inline-flex items-center justify-center rounded-md border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-700 shadow-sm hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                {deleting ? '削除中...' : '削除'}
+              </button>
               <Link
                 href="/clients"
-                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:w-auto"
+                className="inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
               >
                 戻る
               </Link>
@@ -341,6 +382,17 @@ export default function ClientDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* 削除確認モーダル */}
+        <DangerousDeleteConfirm
+          isOpen={showDeleteConfirm}
+          onClose={() => setShowDeleteConfirm(false)}
+          onConfirm={handleDeleteClient}
+          title={`クライアント「${client.name}」を削除`}
+          clientName={client.name}
+          clientId={client.id}
+          warningMessage="この操作は元に戻すことができません。クライアントと関連するすべてのデータが完全に削除されます。"
+        />
       </main>
     </div>
   )
