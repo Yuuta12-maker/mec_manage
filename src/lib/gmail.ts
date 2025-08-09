@@ -2,6 +2,27 @@
 
 import nodemailer from 'nodemailer'
 import { supabase } from './supabase'
+import { createClient } from '@supabase/supabase-js'
+
+// サーバーサイド用のSupabaseクライアント（RLS回避）
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+console.log('=== Supabase Admin Client Debug ===')
+console.log('Supabase URL:', supabaseUrl ? 'Set' : 'Missing')
+console.log('Service Key Source:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Service Role Key' : 'Anon Key (Fallback)')
+console.log('Service Key Present:', supabaseServiceKey ? 'Set' : 'Missing')
+
+if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+  console.warn('⚠️  SUPABASE_SERVICE_ROLE_KEY is not set! Using anon key which may have limited permissions.')
+}
+
+const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 interface EmailData {
   to: string
@@ -102,21 +123,40 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
     console.log('Gmail SMTP result:', result)
 
     // メール送信履歴を保存
-    const { error: logError } = await supabase
-      .from('email_history')
-      .insert({
-        session_id: session_id || null,
-        client_id: client_id || null,
-        email_type: type,
-        subject,
-        recipient_email: to,
-        status: 'sent',
-        sent_at: new Date().toISOString(),
-        error_message: null
-      })
+    console.log('=== Saving email to history ===')
+    const emailHistoryData = {
+      session_id: session_id || null,
+      client_id: client_id || null,
+      email_type: type,
+      subject,
+      recipient_email: to,
+      status: 'sent',
+      sent_at: new Date().toISOString(),
+      error_message: null
+    }
+    console.log('Email history data to insert:', JSON.stringify(emailHistoryData, null, 2))
+    console.log('Using Supabase client with key type:', process.env.SUPABASE_SERVICE_ROLE_KEY ? 'Service Role' : 'Anon Key')
+    
+    try {
+      const { data: insertData, error: logError } = await supabaseAdmin
+        .from('email_history')
+        .insert(emailHistoryData)
+        .select()
 
-    if (logError) {
-      console.error('Failed to log email:', logError)
+      console.log('Email history insert result:', { data: insertData, error: logError })
+      
+      if (logError) {
+        console.error('❌ Failed to log email:', logError)
+        console.error('❌ Log error details:', JSON.stringify(logError, null, 2))
+        console.error('❌ Error code:', logError.code)
+        console.error('❌ Error message:', logError.message)
+        console.error('❌ Error details:', logError.details)
+      } else {
+        console.log('✅ Email history saved successfully:', insertData)
+        console.log('✅ Inserted record count:', insertData?.length || 0)
+      }
+    } catch (error) {
+      console.error('❌ Exception while inserting email history:', error)
     }
 
     console.log('Email sent successfully with Gmail')
@@ -125,18 +165,36 @@ export async function sendEmailWithGmail({ to, subject, content, type, related_i
     console.error('Gmail email sending error:', error)
     
     // エラーの場合もログに記録
-    await supabase
-      .from('email_history')
-      .insert({
-        session_id: session_id || null,
-        client_id: client_id || null,
-        email_type: type,
-        subject,
-        recipient_email: to,
-        status: 'failed',
-        error_message: error instanceof Error ? error.message : 'Unknown error',
-        sent_at: null
-      })
+    console.log('=== Saving failed email to history ===')
+    const failedEmailData = {
+      session_id: session_id || null,
+      client_id: client_id || null,
+      email_type: type,
+      subject,
+      recipient_email: to,
+      status: 'failed',
+      error_message: error instanceof Error ? error.message : 'Unknown error',
+      sent_at: null
+    }
+    console.log('Failed email history data to insert:', JSON.stringify(failedEmailData, null, 2))
+    
+    try {
+      const { data: failedInsertData, error: failedLogError } = await supabaseAdmin
+        .from('email_history')
+        .insert(failedEmailData)
+        .select()
+
+      console.log('Failed email history insert result:', { data: failedInsertData, error: failedLogError })
+      
+      if (failedLogError) {
+        console.error('❌ Failed to log failed email:', failedLogError)
+        console.error('❌ Failed log error details:', JSON.stringify(failedLogError, null, 2))
+      } else {
+        console.log('✅ Failed email history saved successfully:', failedInsertData)
+      }
+    } catch (insertError) {
+      console.error('❌ Exception while inserting failed email history:', insertError)
+    }
 
     return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
   }
@@ -408,7 +466,7 @@ ${sessionType === 'trial' ? `・トライアルセッション準備
 // クライアントの完了セッション数を取得
 async function getClientCompletedSessionCount(clientId: string): Promise<number> {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('sessions')
       .select('id')
       .eq('client_id', clientId)
