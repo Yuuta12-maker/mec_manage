@@ -1,5 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { createClient } from '@supabase/supabase-js'
+
+// サーバーサイド用のSupabaseクライアント（RLS回避）
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+console.log('Supabase URL:', supabaseUrl)
+console.log('Using service key:', !!process.env.SUPABASE_SERVICE_ROLE_KEY)
+
+const supabase = createClient(supabaseUrl, supabaseServiceKey, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 export async function DELETE(
   request: NextRequest,
@@ -7,8 +21,10 @@ export async function DELETE(
 ) {
   try {
     const clientId = params.id
+    console.log('DELETE request received for client ID:', clientId)
 
     if (!clientId) {
+      console.log('No client ID provided')
       return NextResponse.json(
         { error: 'クライアントIDが指定されていません' },
         { status: 400 }
@@ -16,15 +32,19 @@ export async function DELETE(
     }
 
     // まずクライアントが存在するかチェック
+    console.log('Checking if client exists:', clientId)
     const { data: existingClient, error: clientCheckError } = await supabase
       .from('clients')
       .select('id, name')
       .eq('id', clientId)
       .single()
 
+    console.log('Client check result:', { existingClient, clientCheckError })
+
     if (clientCheckError || !existingClient) {
+      console.log('Client not found or error:', clientCheckError)
       return NextResponse.json(
-        { error: 'クライアントが見つかりません' },
+        { error: 'クライアントが見つかりません', details: clientCheckError?.message },
         { status: 404 }
       )
     }

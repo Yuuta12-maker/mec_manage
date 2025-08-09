@@ -73,21 +73,30 @@ export default function ClientDetailPage() {
   const handleDeleteClient = async () => {
     if (!client) return
     
+    console.log('Starting delete process for client:', client.id, client.name)
     setDeleting(true)
     try {
-      const response = await fetch(`/api/clients/${client.id}/delete`, {
+      const deleteUrl = `/api/clients/${client.id}/delete`
+      console.log('DELETE request URL:', deleteUrl)
+      
+      const response = await fetch(deleteUrl, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
       })
 
+      console.log('DELETE response status:', response.status)
+      console.log('DELETE response OK:', response.ok)
+
       if (!response.ok) {
         const errorData = await response.json()
+        console.error('DELETE response error data:', errorData)
         throw new Error(errorData.error || '削除に失敗しました')
       }
 
       const result = await response.json()
+      console.log('DELETE success result:', result)
       alert(`クライアント「${result.deletedClient.name}」とすべての関連データが正常に削除されました。`)
       router.push('/clients')
     } catch (error) {
