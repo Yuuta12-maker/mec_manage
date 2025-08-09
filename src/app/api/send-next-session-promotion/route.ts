@@ -8,6 +8,8 @@ export async function POST(request: NextRequest) {
 
     console.log('=== API Route: Send Next Session Promotion Email ===')
     console.log('Request body:', body)
+    console.log('Session ID from request:', sessionId)
+    console.log('Client ID from request:', clientId)
 
     if (!clientEmail || !clientName || !sessionId || !sessionType || !sessionDate || !clientId) {
       return NextResponse.json(

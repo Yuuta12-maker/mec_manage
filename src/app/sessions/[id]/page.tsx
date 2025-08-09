@@ -71,20 +71,36 @@ export default function SessionDetailPage() {
   const fetchEmailHistory = async () => {
     setLoadingEmailHistory(true)
     try {
+      console.log('=== Fetching email history ===')
+      console.log('Session ID:', sessionId)
+      
+      // まず全てのメール履歴を取得してデバッグ
+      const { data: allData, error: allError } = await supabase
+        .from('email_history')
+        .select('*')
+        .order('created_at', { ascending: false })
+      
+      console.log('All email history:', allData)
+      console.log('All email history error:', allError)
+
       const { data, error } = await supabase
         .from('email_history')
         .select('*')
         .eq('session_id', sessionId)
         .order('created_at', { ascending: false })
 
+      console.log('Filtered email history query result:', { data, error })
+
       if (error) {
         console.error('メール送信履歴の取得に失敗:', error)
       } else {
+        console.log('Email history data:', data)
         setEmailHistory(data || [])
         // 次回予約促進メールが送信済みかチェック
         const hasPromotionEmail = data?.some(email => 
           email.email_type === 'next_session_promotion' && email.status === 'sent'
         ) || false
+        console.log('Has promotion email sent:', hasPromotionEmail)
         setHasNextSessionPromotionEmail(hasPromotionEmail)
       }
     } catch (error) {
