@@ -139,10 +139,30 @@ export async function createSessionMeetEvent(
   let startDate: Date
   
   if (sessionDate.includes('T') && !sessionDate.includes('Z') && !sessionDate.includes('+')) {
-    // ローカル時間として解析（日本時間）
-    startDate = new Date(sessionDate)
+    // 日本時間として明示的に処理
+    // 文字列を解析して日本時間のDateオブジェクトを作成
+    const dateParts = sessionDate.split('T')
+    const [year, month, day] = dateParts[0].split('-').map(Number)
+    const [hour, minute, second] = dateParts[1].split(':').map(Number)
+    
+    console.log('Parsed components:', { year, month, day, hour, minute, second })
+    
+    // 日本時間として直接構築（月は0ベースなので-1）
+    startDate = new Date(year, month - 1, day, hour, minute, second || 0)
+    
+    // タイムゾーンオフセットを考慮して調整
+    const localOffset = startDate.getTimezoneOffset() * 60 * 1000
+    const jstOffset = 9 * 60 * 60 * 1000 // JST = UTC+9
+    const currentOffset = new Date().getTimezoneOffset() * 60 * 1000
+    
+    console.log('Local offset:', localOffset)
+    console.log('Current offset:', currentOffset)
+    
+    // 現在のタイムゾーンがJSTでない場合の調整
+    if (Math.abs(localOffset + jstOffset) > 1000) { // 1秒の誤差許容
+      startDate = new Date(startDate.getTime() - localOffset - jstOffset)
+    }
   } else {
-    // UTCとして解析された場合は、日本時間に調整
     startDate = new Date(sessionDate)
   }
   
