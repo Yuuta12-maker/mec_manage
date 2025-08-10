@@ -158,7 +158,52 @@ export default function BookingPage() {
       if (session && session[0]) {
         console.log('=== Booking Success ===')
         console.log('Session ID:', session[0].id)
-        console.log('Starting email send process...')
+        console.log('Starting Google Meet link generation and email send process...')
+        
+        // オンラインセッションの場合、Google Meet リンクを生成
+        let meetLink: string | undefined = undefined
+        if (formData.preferred_session_format === 'online') {
+          try {
+            console.log('Generating Google Meet link...')
+            const meetResponse = await fetch('/api/create-meet-link', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                sessionDate: selectedTime,
+                sessionType: formData.type,
+                clientName: formData.client_name,
+                clientEmail: formData.client_email,
+                sessionId: session[0].id,
+              }),
+            })
+            
+            const meetResult = await meetResponse.json()
+            console.log('Meet link generation result:', meetResult)
+            
+            if (meetResult.success && meetResult.meetLink) {
+              meetLink = meetResult.meetLink
+              console.log('Google Meet link generated successfully:', meetLink)
+              
+              // セッションにMeetリンクを保存
+              const { error: updateError } = await supabase
+                .from('sessions')
+                .update({ meet_link: meetLink })
+                .eq('id', session[0].id)
+              
+              if (updateError) {
+                console.warn('Failed to save Meet link to session:', updateError)
+              } else {
+                console.log('Meet link saved to session successfully')
+              }
+            } else {
+              console.warn('Failed to generate Meet link:', meetResult.error)
+            }
+          } catch (meetError) {
+            console.error('Error generating Meet link:', meetError)
+          }
+        }
         
         // セッション予約完了メール送信（Gmail SMTP経由）
         try {
@@ -173,7 +218,7 @@ export default function BookingPage() {
               clientName: formData.client_name,
               sessionDate: selectedTime,
               sessionType: formData.type,
-              meetLink: undefined,
+              meetLink: meetLink,
               sessionId: session[0].id,
             }),
           })

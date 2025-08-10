@@ -339,7 +339,8 @@ export async function sendBookingEmailsWithGmail(
   minute: '2-digit'
 })}
 ・コーチ: 森山雄太
-${meetLink ? `・Google Meet URL: ${meetLink}` : '・実施方法: 対面'}
+・実施方法: ${meetLink ? `オンライン（Google Meet）` : '対面'}
+${meetLink ? `・Google Meet URL: ${meetLink}` : ''}
 
 【セッション前の準備】
 📝 ご準備いただくもの：
@@ -347,10 +348,12 @@ ${meetLink ? `・Google Meet URL: ${meetLink}` : '・実施方法: 対面'}
 ・現在のお悩みや課題を簡単にまとめておいてください
 ・リラックスできる服装でお越しください
 
-${meetLink ? `💻 オンラインセッションの場合：
+${meetLink ? `💻 オンラインセッションについて：
+・上記のGoogle Meet URLからセッションにご参加ください
+・セッション開始5分前にはMeetにアクセスをお願いします
 ・静かな環境でご参加ください
-・カメラとマイクの動作確認をお願いします
-・セッション開始5分前にはMeetにご参加ください` : `🏢 対面セッションの場合：
+・カメラとマイクの動作確認を事前にお願いします
+・万が一接続に問題がある場合は、お気軽にご連絡ください` : `🏢 対面セッションについて：
 ・会場の詳細は別途ご連絡いたします
 ・お時間に余裕をもってお越しください`}
 
@@ -389,7 +392,8 @@ Email: ${adminEmail}
   hour: '2-digit',
   minute: '2-digit'
 })}
-${meetLink ? `・Meet URL: ${meetLink}` : '・実施形式: 対面'}
+・実施形式: ${meetLink ? 'オンライン（Google Meet）' : '対面'}
+${meetLink ? `・Meet URL: ${meetLink}` : ''}
 ${sessionId ? `・セッションID: ${sessionId}` : ''}
 
 【対応状況】

@@ -14,6 +14,7 @@
     "autoprefixer": "^10.4.21",
     "clsx": "^2.1.1",
     "dotenv": "^17.2.1",
+    "googleapis": "^155.0.1",
     "lucide-react": "^0.445.0",
     "next": "14.2.11",
     "nodemailer": "^7.0.5",
