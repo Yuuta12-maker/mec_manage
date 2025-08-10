@@ -159,6 +159,7 @@ export default function BookingPage() {
         console.log('=== Booking Success ===')
         console.log('Session ID:', session[0].id)
         console.log('Starting Google Meet link generation and email send process...')
+        console.log('Session format selected:', formData.preferred_session_format)
         
         // オンラインセッションの場合、Google Meet リンクを生成
         let meetLink: string | undefined = undefined
@@ -199,10 +200,17 @@ export default function BookingPage() {
               }
             } else {
               console.warn('Failed to generate Meet link:', meetResult.error)
+              console.warn('Meet result full response:', meetResult)
             }
           } catch (meetError) {
             console.error('Error generating Meet link:', meetError)
+            console.error('Meet error details:', {
+              message: meetError instanceof Error ? meetError.message : 'Unknown error',
+              stack: meetError instanceof Error ? meetError.stack : undefined
+            })
           }
+        } else {
+          console.log('Session format is not online, skipping Meet link generation')
         }
         
         // セッション予約完了メール送信（Gmail SMTP経由）

@@ -51,6 +51,12 @@ export async function createGoogleMeetEvent(eventData: GoogleMeetEventData): Pro
     const calendar = getCalendarClient()
     
     // イベントの詳細を設定
+    console.log('=== Google Calendar Event Data ===')
+    console.log('Event start time (ISO):', eventData.start.toISOString())
+    console.log('Event end time (ISO):', eventData.end.toISOString())
+    console.log('Event start time (JST):', eventData.start.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }))
+    console.log('Event end time (JST):', eventData.end.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }))
+    
     const event = {
       summary: eventData.summary,
       description: eventData.description || '',
@@ -125,8 +131,27 @@ export async function createSessionMeetEvent(
   clientName: string,
   clientEmail: string
 ): Promise<GoogleMeetResult> {
-  const startDate = new Date(sessionDate)
+  console.log('=== Session Date Processing ===')
+  console.log('Original sessionDate:', sessionDate)
+  
+  // 日本時間として正しく解析
+  // sessionDateは "YYYY-MM-DDTHH:mm:ss" 形式で日本時間として扱う
+  let startDate: Date
+  
+  if (sessionDate.includes('T') && !sessionDate.includes('Z') && !sessionDate.includes('+')) {
+    // ローカル時間として解析（日本時間）
+    startDate = new Date(sessionDate)
+  } else {
+    // UTCとして解析された場合は、日本時間に調整
+    startDate = new Date(sessionDate)
+  }
+  
+  console.log('Parsed startDate:', startDate)
+  console.log('StartDate ISO:', startDate.toISOString())
+  console.log('StartDate JST:', startDate.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }))
+  
   const endDate = new Date(startDate.getTime() + 60 * 60 * 1000) // 1時間後
+  console.log('EndDate JST:', endDate.toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' }))
 
   const summary = `${sessionType === 'trial' ? 'トライアル' : ''}セッション - ${clientName}様`
   const description = `マインドエンジニアリング・コーチングセッション
