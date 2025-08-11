@@ -192,14 +192,23 @@ export default function ServicePage() {
           <div className="flex flex-col md:flex-row gap-6">
             <div className="flex-1">
               <h3 className="text-xl font-semibold text-gray-900 mb-3">森山雄太（もりやま ゆうた）</h3>
+              <p className="text-gray-600 mb-2">1992年生まれ。マインドエンジニアリング・コーチ。</p>
+              
+              <div className="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                <p className="text-blue-800 italic">
+                  「一人ひとりのマインドがアップデートされれば、個人も社会も、もっと豊かになれる」
+                </p>
+              </div>
+              
               <p className="text-gray-700 mb-4">
-                ソフトウェアエンジニアとして10年以上の経験を持ち、システム設計からプロジェクト管理まで幅広く従事。
-                エンジニアリング手法をコーチングに応用した独自のメソッドを開発し、多くのクライアントの目標達成をサポート。
+                この信念のもと活動し、人間の思考や感情の働きを「情報処理システム」と捉え、その構造を日々研究。
+                望む未来に合わせてマインドをエンジニアリングし、誰もが実践できる使い方を体系化している。
               </p>
+              
               <div className="space-y-2 text-gray-600">
-                <p><strong>経歴：</strong> 大手IT企業でシニアエンジニア、プロジェクトリーダーを歴任</p>
-                <p><strong>専門：</strong> システム思考、アジャイル開発、プロダクト管理</p>
-                <p><strong>資格：</strong> 認定プロフェッショナルコーチ（予定）</p>
+                <p><strong>専門分野：</strong> マインドエンジニアリング、思考の情報処理システム化</p>
+                <p><strong>アプローチ：</strong> エンジニアリング思考を応用したコーチング手法</p>
+                <p><strong>趣味：</strong> ギター</p>
               </div>
             </div>
           </div>
