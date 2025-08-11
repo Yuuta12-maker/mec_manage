@@ -22,8 +22,10 @@ export default function ContinueApplicationPage() {
   const [formData, setFormData] = useState({
     program_type: '6sessions',
     preferred_start_date: '',
-    payment_method: '',
+    payment_method: 'card',
   })
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
 
   useEffect(() => {
     if (clientEmail) {

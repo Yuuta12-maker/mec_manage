@@ -18,7 +18,10 @@ export default function ApplyPage() {
     address: '',
     preferred_session_format: 'online',
     notes: '',
+    payment_method: 'card',
   })
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
 
   const [birthYear, setBirthYear] = useState('')
   const [birthMonth, setBirthMonth] = useState('')
@@ -118,74 +121,65 @@ export default function ApplyPage() {
         }
       }
 
-      const { data, error } = await supabase
-        .from('clients')
-        .insert([{
-          name: formData.name.trim(),
-          name_kana: formData.name_kana.trim() || null,
-          email: formData.email.trim(),
-          gender: formData.gender || null,
+      // 申し込みデータをAPIに送信
+      const response = await fetch('/api/apply', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...formData,
           birth_date: birthDate,
-          phone: formData.phone.trim() || null,
-          address: formData.address.trim() || null,
-          preferred_session_format: formData.preferred_session_format,
-          status: 'applied',
-          notes: formData.notes.trim() || null,
-        }])
-        .select()
+        }),
+      })
 
-      if (error) {
-        console.error('Error creating application:', error)
-        
-        // エラーの詳細に応じたメッセージ
-        if (error.code === '23505') {
-          alert('このメールアドレスは既に登録されています。別のメールアドレスをご使用ください。')
-        } else if (error.code === '23502') {
-          alert('必須項目が入力されていません。すべての必須項目を入力してください。')
-        } else if (error.code === '22001') {
-          alert('入力内容が長すぎます。文字数を減らしてください。')
+      const result = await response.json()
+
+      if (result.success) {
+        // カード決済の場合はStripe Checkoutに進む
+        if (formData.payment_method === 'card' && result.requiresPayment) {
+          await handleStripePayment(result.clientId)
         } else {
-          alert('申し込みの送信に失敗しました。入力内容をご確認の上、再度お試しください。')
+          // 銀行振込の場合は成功ページに直接遷移
+          router.push('/apply/success')
         }
-        setLoading(false)
-        return
-      }
-
-      if (data && data[0]) {
-        console.log('=== Application Success ===')
-        console.log('Application ID:', data[0].id)
-        console.log('Starting email send process...')
-        
-        // メール送信
-        try {
-          console.log('Calling sendApplicationEmails...')
-          const emailResult = await sendApplicationEmailsWithGmail(
-            formData.email,
-            formData.name,
-            data[0].id
-          )
-          console.log('sendApplicationEmails returned:', emailResult)
-          
-          if (!emailResult.success) {
-            console.warn('Email sending failed, but application was successful')
-          } else {
-            console.log('Email sending completed successfully')
-          }
-        } catch (emailError) {
-          console.error('Email error in catch block:', emailError)
-          console.error('Email error details:', {
-            message: emailError instanceof Error ? emailError.message : 'Unknown error',
-            stack: emailError instanceof Error ? emailError.stack : undefined
-          })
-          // メール送信失敗でも申し込みは完了しているので処理を続行
-        }
-        
-        router.push('/apply/success')
+      } else {
+        alert(`申し込みに失敗しました: ${result.error}`)
       }
     } catch (err) {
       console.error('Error:', err)
       alert('ネットワークエラーが発生しました。インターネット接続をご確認の上、再度お試しください。')
       setLoading(false)
+    }
+  }
+
+  const handleStripePayment = async (clientId: string) => {
+    try {
+      setIsProcessingPayment(true)
+      setPaymentError(null)
+      
+      const response = await fetch('/api/stripe/create-trial-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          clientId: clientId,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.error) {
+        throw new Error(data.error)
+      }
+
+      // Stripe Checkoutページにリダイレクト
+      window.location.href = data.url
+    } catch (error) {
+      console.error('Payment error:', error)
+      setPaymentError(error instanceof Error ? error.message : '決済処理中にエラーが発生しました。')
+      setIsProcessingPayment(false)
     }
   }
 
@@ -431,6 +425,69 @@ export default function ApplyPage() {
                 </div>
               </div>
 
+              {/* 支払い方法 */}
+              <div>
+                <h3 className="text-lg font-medium text-gray-900 mb-4">お支払い方法</h3>
+                <div className="space-y-3">
+                  <div className="flex items-start">
+                    <input
+                      id="payment_card"
+                      name="payment_method"
+                      type="radio"
+                      value="card"
+                      checked={formData.payment_method === 'card'}
+                      onChange={handleChange}
+                      className="h-4 w-4 mt-1 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <label htmlFor="payment_card" className="ml-3 block">
+                      <span className="text-sm font-medium text-gray-700">
+                        クレジットカード決済 🚀
+                      </span>
+                      <span className="block text-xs text-gray-500 mt-1">
+                        即座に決済が完了し、すぐにトライアルセッションの予約が可能になります
+                      </span>
+                      <span className="block text-sm font-medium text-green-600 mt-1">
+                        金額: ¥6,000（税込）
+                      </span>
+                    </label>
+                  </div>
+                  <div className="flex items-start">
+                    <input
+                      id="payment_bank"
+                      name="payment_method"
+                      type="radio"
+                      value="bank_transfer"
+                      checked={formData.payment_method === 'bank_transfer'}
+                      onChange={handleChange}
+                      className="h-4 w-4 mt-1 text-blue-600 focus:ring-blue-500 border-gray-300"
+                    />
+                    <label htmlFor="payment_bank" className="ml-3 block">
+                      <span className="text-sm font-medium text-gray-700">
+                        銀行振込
+                      </span>
+                      <span className="block text-xs text-gray-500 mt-1">
+                        振込確認後にトライアルセッションの予約が可能になります
+                      </span>
+                    </label>
+                  </div>
+                </div>
+                
+                {formData.payment_method === 'card' && (
+                  <div className="mt-4 p-4 bg-blue-50 rounded-md">
+                    <div className="flex items-center">
+                      <svg className="h-5 w-5 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                      </svg>
+                      <span className="text-sm font-medium text-blue-900">安全な決済システム</span>
+                    </div>
+                    <p className="text-sm text-blue-800 mt-1">
+                      決済はStripeの安全なシステムで処理されます。<br/>
+                      カード情報は当サイトに保存されません。
+                    </p>
+                  </div>
+                )}
+              </div>
+
               {/* その他・備考 */}
               <div>
                 <h3 className="text-lg font-medium text-gray-900 mb-4">その他</h3>
@@ -460,14 +517,27 @@ export default function ApplyPage() {
                 </div>
               </div>
 
+              {paymentError && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-4">
+                  <div className="flex items-center">
+                    <svg className="h-5 w-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm text-red-800">{paymentError}</span>
+                  </div>
+                </div>
+              )}
+
               {/* 送信ボタン */}
               <div className="flex justify-center pt-6">
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={loading || isProcessingPayment}
                   className="w-full md:w-auto px-8 py-3 bg-blue-600 text-white font-medium rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? '送信中...' : '申し込みを送信'}
+                  {isProcessingPayment ? '決済画面に移動中...' : 
+                   loading ? '送信中...' : 
+                   formData.payment_method === 'card' ? '決済に進む' : '申し込みを送信'}
                 </button>
               </div>
             </div>

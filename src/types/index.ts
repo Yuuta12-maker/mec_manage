@@ -13,6 +13,12 @@ export interface Client {
   created_at: string;
   updated_at: string;
   trial_completed_at?: string;
+  // Trial payment fields
+  stripe_customer_id?: string;
+  trial_payment_status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'cancelled';
+  trial_stripe_session_id?: string;
+  trial_payment_amount?: number;
+  trial_paid_at?: string;
 }
 
 export interface Session {
@@ -103,9 +109,107 @@ export interface ContinuationApplication {
   updated_at: string;
   approved_at?: string;
   approved_by?: string;
+  // Stripe payment fields
+  stripe_checkout_session_id?: string;
+  stripe_payment_intent_id?: string;
+  payment_status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'cancelled' | 'refunded';
+  payment_amount?: number;
+  payment_currency?: string;
+  paid_at?: string;
+  payment_method_type?: string;
+  stripe_customer_id?: string;
 }
 
 export interface ContinuationApplicationWithClient extends ContinuationApplication {
   client: Client;
   trial_session?: Session;
+}
+
+// New Stripe-related types
+export interface PaymentTransaction {
+  id: string;
+  continuation_application_id: string;
+  stripe_checkout_session_id?: string;
+  stripe_payment_intent_id?: string;
+  stripe_charge_id?: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'cancelled' | 'refunded';
+  payment_method_type?: string;
+  payment_method_brand?: string;
+  payment_method_last4?: string;
+  failure_code?: string;
+  failure_message?: string;
+  stripe_fee?: number;
+  net_amount?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StripeCustomer {
+  id: string;
+  client_id: string;
+  stripe_customer_id: string;
+  email: string;
+  name?: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaymentIntentData {
+  sessionId: string;
+  amount: number;
+  currency: string;
+  customer_email: string;
+  metadata: {
+    continuation_application_id: string;
+    client_id: string;
+  };
+}
+
+export interface CreateCheckoutSessionRequest {
+  continuationApplicationId: string;
+  priceId?: string;
+}
+
+export interface CreateCheckoutSessionResponse {
+  sessionId: string;
+  url: string;
+}
+
+export interface VerifyPaymentResponse {
+  success: boolean;
+  status: string;
+  payment_intent_id?: string;
+  amount?: number;
+}
+
+// Trial payment types
+export interface TrialPaymentTransaction {
+  id: string;
+  client_id: string;
+  stripe_checkout_session_id?: string;
+  stripe_payment_intent_id?: string;
+  stripe_charge_id?: string;
+  amount: number;
+  currency: string;
+  status: 'pending' | 'processing' | 'succeeded' | 'failed' | 'cancelled' | 'refunded';
+  payment_method_type?: string;
+  payment_method_brand?: string;
+  payment_method_last4?: string;
+  failure_code?: string;
+  failure_message?: string;
+  stripe_fee?: number;
+  net_amount?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface CreateTrialCheckoutSessionRequest {
+  clientId: string;
+}
+
+export interface CreateTrialCheckoutSessionResponse {
+  sessionId: string;
+  url: string;
 }
