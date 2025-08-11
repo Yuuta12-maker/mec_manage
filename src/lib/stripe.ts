@@ -27,7 +27,7 @@ export const formatCurrency = (amount: number, currency: string = 'JPY'): string
 };
 
 // Stripe エラーメッセージの日本語化
-export const getStripeErrorMessage = (error: Stripe.StripeError): string => {
+export const getStripeErrorMessage = (error: Stripe.StripeRawError): string => {
   switch (error.code) {
     case 'card_declined':
       return 'カードが拒否されました。別のカードをお試しください。';
