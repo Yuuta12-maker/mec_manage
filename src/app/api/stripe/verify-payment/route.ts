@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const clientId = session.metadata?.client_id;
     const applicationId = session.metadata?.continuation_application_id;
 
-    let verificationResult = { success: false, type: paymentType };
+    let verificationResult: any = { success: false, type: paymentType };
 
     // トライアル決済の確認
     if (paymentType === 'trial' && clientId) {
