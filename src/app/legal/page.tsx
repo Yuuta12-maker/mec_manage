@@ -70,7 +70,7 @@ export default function LegalPage() {
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>トライアルセッション実施前：キャンセル可能（全額返金）</li>
                   <li>トライアルセッション実施後：継続プログラムへの参加義務はありません</li>
-                  <li>継続プログラム開始後：原則として返金不可</li>
+                  <li style={{color: '#c50502'}} className="font-semibold">継続プログラム：返金不可</li>
                   <li>サービス提供者の都合による中止：全額返金いたします</li>
                 </ul>
               </div>

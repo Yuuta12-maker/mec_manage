@@ -95,7 +95,7 @@ export default function ServicePage() {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-700">回数</p>
-                  <p className="text-gray-600">月1回×6回</p>
+                  <p className="text-gray-600">月1回×6回（トライアル含む）</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-gray-700">料金</p>
@@ -103,7 +103,7 @@ export default function ServicePage() {
                 </div>
               </div>
               <p className="text-gray-700 mb-4">
-                体系的なコーチングプログラムを通じて、持続可能な成長とゴール達成をサポートします。
+                トライアルセッションを含む全6回の体系的なコーチングプログラムを通じて、持続可能な成長とゴール達成をサポートします。
                 各セッションでは進捗確認、課題解決、次のアクションプランの策定を行います。
               </p>
               

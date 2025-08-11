@@ -71,9 +71,8 @@ export default function TermsPage() {
                 </ul>
                 <p><strong>継続プログラム：</strong></p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
-                  <li>プログラム開始前：キャンセル可能（全額返金）</li>
-                  <li>プログラム開始後：原則として返金不可</li>
-                  <li>当サービス都合による中止：未実施分を日割り計算にて返金</li>
+                  <li style={{color: '#c50502'}} className="font-semibold">返金不可</li>
+                  <li>当サービス都合による中止：全額返金いたします</li>
                 </ul>
               </div>
             </div>
