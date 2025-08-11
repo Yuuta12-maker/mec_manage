@@ -92,16 +92,11 @@ export async function POST(request: NextRequest) {
 
     // 銀行振込の場合は従来通りメール送信
     try {
-      await sendApplicationEmailsWithGmail({
-        clientName: client.name,
-        clientEmail: client.email,
-        clientPhone: client.phone,
-        clientGender: client.gender,
-        clientBirthDate: client.birth_date,
-        clientAddress: client.address,
-        preferredSessionFormat: client.preferred_session_format,
-        notes: client.notes || '',
-      });
+      await sendApplicationEmailsWithGmail(
+        client.email,
+        client.name,
+        client.id
+      );
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
       // メール送信失敗でも申し込みは有効とする
