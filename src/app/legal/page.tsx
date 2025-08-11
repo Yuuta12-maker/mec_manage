@@ -24,15 +24,15 @@ export default function LegalPage() {
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">所在地</h3>
               <p className="text-gray-700">
-                〒150-0002<br />
-                東京都渋谷区渋谷1-1-1
+                〒790-0012<br />
+                愛媛県松山市湊町2-5-2 リコオビル401
               </p>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-gray-900 mb-3">連絡先</h3>
               <p className="text-gray-700">
-                電話番号：03-1234-5678<br />
+                電話番号：090-5710-7627<br />
                 メールアドレス：mindengineeringcoaching@gmail.com<br />
                 受付時間：平日 9:00-18:00
               </p>

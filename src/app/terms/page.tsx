@@ -175,6 +175,8 @@ export default function TermsPage() {
               <div className="bg-gray-50 p-4 rounded-md">
                 <p className="font-semibold">マインドエンジニアリング・コーチング</p>
                 <p>担当者：森山雄太</p>
+                <p>所在地：〒790-0012 愛媛県松山市湊町2-5-2 リコオビル401</p>
+                <p>電話番号：090-5710-7627</p>
                 <p>メールアドレス：mindengineeringcoaching@gmail.com</p>
                 <p>受付時間：平日 9:00-18:00</p>
               </div>
