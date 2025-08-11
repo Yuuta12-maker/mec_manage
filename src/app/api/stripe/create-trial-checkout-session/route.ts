@@ -5,6 +5,14 @@ import { CreateTrialCheckoutSessionRequest, CreateTrialCheckoutSessionResponse }
 
 export async function POST(request: NextRequest): Promise<NextResponse<CreateTrialCheckoutSessionResponse | { error: string }>> {
   try {
+    // Check if Stripe is configured
+    if (!stripe) {
+      return NextResponse.json(
+        { error: 'Stripe is not configured' },
+        { status: 500 }
+      );
+    }
+
     const body: CreateTrialCheckoutSessionRequest = await request.json();
     const { clientId } = body;
 
