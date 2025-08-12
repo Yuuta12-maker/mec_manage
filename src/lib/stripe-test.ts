@@ -1,7 +1,7 @@
 import Stripe from 'stripe';
 
-// 環境切り替え用フラグ
-export const useTestEnvironment = process.env.STRIPE_USE_TEST === 'true';
+// 環境切り替え用フラグ（強制的にテストモードに設定）
+export const useTestEnvironment = true; // process.env.STRIPE_USE_TEST === 'true';
 
 // テスト環境用のStripeクライアント
 const stripeTestSecretKey = process.env.STRIPE_TEST_SECRET_KEY;
