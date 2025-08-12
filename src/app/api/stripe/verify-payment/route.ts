@@ -56,8 +56,8 @@ export async function GET(request: NextRequest) {
         clientStatus: 'trial_paid'
       };
 
-      // 決済成功時にメール送信（Webhookが機能しない場合の代替策）
-      if (paymentSucceeded && session.customer_details?.email) {
+      // 決済成功時にメール送信（申込・決済完了統合メール）
+      if (paymentSucceeded) {
         try {
           const { sendTrialPaymentCompletionEmailsWithGmail } = await import('@/lib/gmail');
           
@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
             .single();
           
           if (!error && client) {
-            console.log('Sending trial payment completion email from verify-payment API');
+            console.log('Sending trial application and payment completion email from verify-payment API');
             await sendTrialPaymentCompletionEmailsWithGmail(
               client.email,
               client.name,
@@ -78,7 +78,7 @@ export async function GET(request: NextRequest) {
             );
           }
         } catch (emailError) {
-          console.error('Error sending payment completion email:', emailError);
+          console.error('Error sending application and payment completion email:', emailError);
           // メール送信失敗でも決済確認は成功として返す
         }
       }
@@ -95,8 +95,8 @@ export async function GET(request: NextRequest) {
         applicationStatus: 'approved'
       };
 
-      // 決済成功時にメール送信（Webhookが機能しない場合の代替策）
-      if (paymentSucceeded && session.customer_details?.email) {
+      // 決済成功時にメール送信（継続申込・決済完了統合メール）
+      if (paymentSucceeded) {
         try {
           const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
           
@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
           
           if (!error && application?.clients && !Array.isArray(application.clients)) {
             const client = application.clients as { name: string; email: string };
-            console.log('Sending continuation payment completion email from verify-payment API');
+            console.log('Sending continuation application and payment completion email from verify-payment API');
             await sendApplicationEmailsWithGmail(
               client.email,
               client.name,
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
             );
           }
         } catch (emailError) {
-          console.error('Error sending continuation payment completion email:', emailError);
+          console.error('Error sending continuation application and payment completion email:', emailError);
           // メール送信失敗でも決済確認は成功として返す
         }
       }

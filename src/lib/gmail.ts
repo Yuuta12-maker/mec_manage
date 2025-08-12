@@ -697,7 +697,7 @@ Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
   }
 }
 
-// トライアル決済完了メール（Gmail版）
+// トライアル決済完了メール（Gmail版）- 申込・決済完了統合版
 export async function sendTrialPaymentCompletionEmailsWithGmail(
   clientEmail: string,
   clientName: string,
@@ -705,36 +705,50 @@ export async function sendTrialPaymentCompletionEmailsWithGmail(
   amount: number
 ) {
   try {
-    console.log('=== sendTrialPaymentCompletionEmailsWithGmail called ===')
+    console.log('=== sendTrialApplicationAndPaymentCompletionEmailsWithGmail called ===')
     const adminEmail = process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'
 
-    // クライアント向けメール
-    const clientSubject = '【MEC】決済完了のお知らせ - セッション予約のご案内'
+    // クライアント向けメール（申込完了と決済完了を統合）
+    const clientSubject = '【MEC】お申し込み・決済完了 - セッション予約のご案内'
     const clientContent = `${clientName} 様
 
-この度は、マインドエンジニアリング・コーチング（MEC）のトライアルセッション決済を完了いただき、誠にありがとうございます。
+この度は、マインドエンジニアリング・コーチング（MEC）のトライアルセッションにお申し込みいただき、誠にありがとうございます。
 
-【決済完了内容】
+お申し込み内容を確認し、決済が正常に完了いたしました。
+
+【お申し込み・決済完了内容】
 ・料金: ¥${amount.toLocaleString()}（税込）
 ・セッション: トライアルセッション（30分）
+・お名前: ${clientName} 様
+・メールアドレス: ${clientEmail}
 
-決済が正常に完了いたしました。
+【今後の流れ】
+1. 下記リンクからトライアルセッションをご予約ください
+2. セッション実施（30分程度）
+3. 継続プログラムについてご相談
 
-【次のステップ】
-以下のリンクからトライアルセッションをご予約ください：
+【セッション予約フォーム】
+以下のリンクからご都合の良い日時をお選びください：
+🔗 https://mec-manage.vercel.app/booking
 
-🔗 セッション予約フォーム
-https://mec-manage.vercel.app/booking
+※ご予約は先着順となります。お早めにお手続きください。
 
-【セッションについて】
+【トライアルセッションについて】
+・料金: ¥${amount.toLocaleString()}（税込・決済完了済み）
 ・時間: 30分程度
-・形式: オンライン（Google Meet）または対面からお選びいただけます
+・形式: オンライン（Google Meet）または対面
 ・内容: 現状の課題把握と改善方向性の提示
 
 【ご準備いただくもの】
 ・静かな環境（オンラインの場合）
 ・筆記用具
-・現在お悩みの具体的な課題
+・現在お悩みの具体的な課題（簡単にまとめておいてください）
+・Googleアカウント（オンラインセッションの場合、Google Meetを使用します）
+
+【オンラインセッションについて】
+※オンラインセッションをご希望の場合、Google Meetを使用いたします。
+※Google Meetのご利用にはGoogleアカウントが必要です。
+※アカウントをお持ちでない場合は、事前に作成をお願いいたします（5分程度で完了）。
 
 ご質問やご不明な点がございましたら、お気軽にお問い合わせください。
 ${clientName}さんとお会いできることを楽しみにしております。
@@ -745,17 +759,17 @@ Email: ${adminEmail}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━`
 
     // 管理者向けメール
-    const adminSubject = '【MEC】トライアル決済完了 - セッション予約待ち'
-    const adminContent = `トライアルセッションの決済が完了しました。
+    const adminSubject = '【MEC】トライアル申込・決済完了 - セッション予約待ち'
+    const adminContent = `トライアルセッションの申込・決済が完了しました。
 
-【決済情報】
+【申込・決済情報】
 ・お名前: ${clientName}
 ・メールアドレス: ${clientEmail}
 ・クライアントID: ${clientId}
 ・決済金額: ¥${amount.toLocaleString()}
 
 【対応状況】
-✅ 決済完了確認メールを自動送信済み
+✅ 申込・決済完了メールを自動送信済み
 📅 クライアントはセッション予約フォームから予約可能
 ⏰ 予約完了時に管理者向けに通知メール送信
 

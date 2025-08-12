@@ -165,43 +165,8 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       // 継続申し込みは既に更新済みなので、ログのみ
     }
 
-    // 決済完了メールの送信（非同期）
-    let customerEmail = session.customer_details?.email;
-    
-    // customer_detailsにメールがない場合、DBから取得
-    if (!customerEmail) {
-      try {
-        const { data: application, error } = await supabaseAdmin
-          .from('continuation_applications')
-          .select(`
-            clients (
-              email
-            )
-          `)
-          .eq('id', applicationId)
-          .single();
-        
-        if (!error && application?.clients && !Array.isArray(application.clients)) {
-          customerEmail = (application.clients as { email: string }).email;
-          console.log(`Customer email retrieved from DB: ${customerEmail}`);
-        }
-      } catch (dbError) {
-        console.error('Error fetching customer email from DB:', dbError);
-      }
-    }
-    
-    if (customerEmail) {
-      sendPaymentConfirmationEmail(
-        customerEmail,
-        applicationId,
-        session.amount_total || 0
-      ).catch(emailError => {
-        console.error('Error sending payment confirmation email:', emailError);
-        // メール送信失敗でもWebhookは成功として処理
-      });
-    } else {
-      console.error('No customer email available for sending payment confirmation email');
-    }
+    // 継続申込決済完了メールの送信はverify-payment APIで行うため、ここでは送信しない
+    console.log('Continuation application payment completed. Email will be sent via verify-payment API.');
 
     console.log(`Successfully processed checkout session: ${session.id}`);
   } catch (error) {
@@ -323,39 +288,8 @@ async function handleTrialPaymentCompleted(session: Stripe.Checkout.Session, cli
       // クライアント更新は完了しているので、ログのみ
     }
 
-    // トライアル決済完了メールの送信（非同期）
-    let customerEmail = session.customer_details?.email;
-    
-    // customer_detailsにメールがない場合、DBから取得
-    if (!customerEmail) {
-      try {
-        const { data: client, error } = await supabaseAdmin
-          .from('clients')
-          .select('email')
-          .eq('id', clientId)
-          .single();
-        
-        if (!error && client?.email) {
-          customerEmail = client.email;
-          console.log(`Customer email retrieved from DB: ${customerEmail}`);
-        }
-      } catch (dbError) {
-        console.error('Error fetching customer email from DB:', dbError);
-      }
-    }
-    
-    if (customerEmail) {
-      sendTrialPaymentConfirmationEmail(
-        customerEmail,
-        clientId,
-        session.amount_total || 6000
-      ).catch(emailError => {
-        console.error('Error sending trial payment confirmation email:', emailError);
-        // メール送信失敗でもWebhookは成功として処理
-      });
-    } else {
-      console.error('No customer email available for sending trial payment confirmation email');
-    }
+    // トライアル決済完了メールの送信はverify-payment APIで行うため、ここでは送信しない
+    console.log('Trial payment completed. Email will be sent via verify-payment API.');
 
     console.log(`Successfully processed trial payment: ${session.id}`);
   } catch (error) {
@@ -364,88 +298,5 @@ async function handleTrialPaymentCompleted(session: Stripe.Checkout.Session, cli
   }
 }
 
-// 決済完了メール送信（Gmail実装）
-async function sendPaymentConfirmationEmail(
-  email: string,
-  applicationId: string,
-  amount: number
-) {
-  try {
-    console.log(`Sending payment confirmation email to: ${email}`);
-    console.log(`Application ID: ${applicationId}, Amount: ${amount}`);
-    
-    // Gmail送信機能を使用
-    const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
-    
-    // 申し込み者情報を取得
-    const { data: application, error } = await supabaseAdmin
-      .from('continuation_applications')
-      .select(`
-        clients (
-          id,
-          name,
-          email
-        )
-      `)
-      .eq('id', applicationId)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching application for email:', error);
-      // アプリケーション情報取得失敗でもエラーを投げない
-      return;
-    }
-    
-    if (application?.clients && !Array.isArray(application.clients)) {
-      const client = application.clients as { id: string; name: string; email: string };
-      await sendApplicationEmailsWithGmail(
-        client.email,
-        client.name,
-        client.id
-      );
-    }
-  } catch (error) {
-    console.error('Error sending payment confirmation email:', error);
-    // エラーを投げない（Webhookを成功させる）
-  }
-}
-
-// トライアル決済完了メール送信
-async function sendTrialPaymentConfirmationEmail(
-  email: string,
-  clientId: string,
-  amount: number
-) {
-  try {
-    console.log(`Sending trial payment confirmation email to: ${email}`);
-    console.log(`Client ID: ${clientId}, Amount: ${amount}`);
-    
-    // Gmail送信機能を使用
-    const { sendTrialPaymentCompletionEmailsWithGmail } = await import('@/lib/gmail');
-    
-    // クライアント情報を取得
-    const { data: client, error } = await supabaseAdmin
-      .from('clients')
-      .select('id, name, email')
-      .eq('id', clientId)
-      .single();
-    
-    if (error) {
-      console.error('Error fetching client for email:', error);
-      // クライアント情報取得失敗でもエラーを投げない
-      return;
-    }
-    
-    if (client) {
-      await sendTrialPaymentCompletionEmailsWithGmail(
-        client.email,
-        client.name,
-        client.id,
-        amount
-      );
-    }
-  } catch (error) {
-    console.error('Error sending trial payment confirmation email:', error);
-    // エラーを投げない（Webhookを成功させる）
-  }
-}
+// Webhookでのメール送信関数は削除済み
+// メール送信はverify-payment APIで実行される
