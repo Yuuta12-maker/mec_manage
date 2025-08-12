@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe, DEFAULT_PROGRAM_PRICE } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { CreateCheckoutSessionRequest, CreateCheckoutSessionResponse } from '@/types';
 
 export async function POST(request: NextRequest): Promise<NextResponse<CreateCheckoutSessionResponse | { error: string }>> {
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateChe
     }
 
     // 継続申し込み情報を取得
-    const { data: application, error: applicationError } = await supabase
+    const { data: application, error: applicationError } = await supabaseAdmin
       .from('continuation_applications')
       .select(`
         *,
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateChe
 
     // Stripe顧客を作成または取得
     let stripeCustomerId: string;
-    const { data: existingCustomer } = await supabase
+    const { data: existingCustomer } = await supabaseAdmin
       .from('stripe_customers')
       .select('stripe_customer_id')
       .eq('client_id', application.client_id)
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateChe
       stripeCustomerId = customer.id;
 
       // stripe_customersテーブルに保存
-      await supabase
+      await supabaseAdmin
         .from('stripe_customers')
         .insert({
           client_id: application.client_id,
@@ -125,7 +125,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateChe
     });
 
     // セッションIDをデータベースに保存
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('continuation_applications')
       .update({
         stripe_checkout_session_id: session.id,

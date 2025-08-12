@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,7 +9,7 @@ export async function POST(request: NextRequest) {
     // （実際の環境ではSupabase管理画面でALTER TABLEを実行する必要があります）
     
     // 2. 既存セッションの番号を更新
-    const { data: sessions, error: fetchError } = await supabase
+    const { data: sessions, error: fetchError } = await supabaseAdmin
       .from('sessions')
       .select('id, client_id, scheduled_date, created_at')
       .order('client_id')
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
         const session = clientSessionList[i]
         const sessionNumber = i + 1
         
-        const { error: updateError } = await supabase
+        const { error: updateError } = await supabaseAdmin
           .from('sessions')
           .update({ session_number: sessionNumber })
           .eq('id', session.id)

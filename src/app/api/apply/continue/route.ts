@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '@/lib/supabase'
+import { supabaseAdmin } from '@/lib/supabase-admin'
 import { sendContinuationApplicationEmailsWithGmail } from '@/lib/gmail'
 
 export async function POST(request: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // クライアント情報を取得
-    const { data: client, error: clientError } = await supabase
+    const { data: client, error: clientError } = await supabaseAdmin
       .from('clients')
       .select('*')
       .eq('id', client_id)
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 継続申し込みを作成
-    const { data: application, error: insertError } = await supabase
+    const { data: application, error: insertError } = await supabaseAdmin
       .from('continuation_applications')
       .insert({
         client_id,

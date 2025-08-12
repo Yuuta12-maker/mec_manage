@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { sendApplicationEmailsWithGmail } from '@/lib/gmail';
 
 interface ApplyRequest {
@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     }
 
     // メールアドレス重複チェック
-    const { data: existingClient, error: checkError } = await supabase
+    const { data: existingClient, error: checkError } = await supabaseAdmin
       .from('clients')
       .select('email')
       .eq('email', body.email.trim())
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     }
 
     // クライアント情報を保存
-    const { data: client, error: insertError } = await supabase
+    const { data: client, error: insertError } = await supabaseAdmin
       .from('clients')
       .insert({
         name: body.name.trim(),

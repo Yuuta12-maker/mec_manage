@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
 
@@ -110,7 +110,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
 
   try {
     // 継続申し込みのステータスを更新
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('continuation_applications')
       .update({
         status: 'approved',
@@ -130,7 +130,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     // 決済トランザクションを記録
-    const { error: transactionError } = await supabase
+    const { error: transactionError } = await supabaseAdmin
       .from('payment_transactions')
       .insert({
         continuation_application_id: applicationId,
@@ -178,7 +178,7 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
 
   try {
     // 決済トランザクションのステータスを更新
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('payment_transactions')
       .update({
         status: 'succeeded',
@@ -208,7 +208,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
 
   try {
     // 継続申し込みのステータスを更新
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('continuation_applications')
       .update({
         payment_status: 'failed',
@@ -221,7 +221,7 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
     }
 
     // 決済トランザクションのステータスを更新
-    const { error: transactionError } = await supabase
+    const { error: transactionError } = await supabaseAdmin
       .from('payment_transactions')
       .update({
         status: 'failed',
@@ -245,7 +245,7 @@ async function handleTrialPaymentCompleted(session: Stripe.Checkout.Session, cli
 
   try {
     // クライアントのステータスを更新
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('clients')
       .update({
         trial_payment_status: 'succeeded',
@@ -261,7 +261,7 @@ async function handleTrialPaymentCompleted(session: Stripe.Checkout.Session, cli
     }
 
     // トライアル決済トランザクションを記録
-    const { error: transactionError } = await supabase
+    const { error: transactionError } = await supabaseAdmin
       .from('trial_payment_transactions')
       .insert({
         client_id: clientId,

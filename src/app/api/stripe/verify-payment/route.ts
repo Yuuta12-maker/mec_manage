@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     // トライアル決済の確認
     if (paymentType === 'trial' && clientId) {
-      const { data: client, error } = await supabase
+      const { data: client, error } = await supabaseAdmin
         .from('clients')
         .select('trial_payment_status, status')
         .eq('id', clientId)
@@ -65,7 +65,7 @@ export async function GET(request: NextRequest) {
     }
     // 継続決済の確認
     else if (applicationId) {
-      const { data: application, error } = await supabase
+      const { data: application, error } = await supabaseAdmin
         .from('continuation_applications')
         .select('payment_status, status')
         .eq('id', applicationId)

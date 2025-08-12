@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe, DEFAULT_TRIAL_PRICE } from '@/lib/stripe';
-import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import { CreateTrialCheckoutSessionRequest, CreateTrialCheckoutSessionResponse } from '@/types';
 
 export async function POST(request: NextRequest): Promise<NextResponse<CreateTrialCheckoutSessionResponse | { error: string }>> {
@@ -25,7 +25,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     }
 
     // クライアント情報を取得
-    const { data: client, error: clientError } = await supabase
+    const { data: client, error: clientError } = await supabaseAdmin
       .from('clients')
       .select('*')
       .eq('id', clientId)
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
       stripeCustomerId = customer.id;
 
       // stripe_customer_idをクライアントテーブルに保存
-      await supabase
+      await supabaseAdmin
         .from('clients')
         .update({
           stripe_customer_id: customer.id,
@@ -106,7 +106,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     });
 
     // セッションIDをデータベースに保存
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('clients')
       .update({
         trial_stripe_session_id: session.id,

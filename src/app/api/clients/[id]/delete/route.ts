@@ -36,7 +36,7 @@ export async function DELETE(
 
     // SQL関数を使用してクライアントを完全削除
     console.log('Calling delete function for client:', clientId)
-    const { data: deleteResult, error: deleteError } = await supabase
+    const { data: deleteResult, error: deleteError } = await supabaseAdmin
       .rpc('delete_client_completely', { client_uuid: clientId })
 
     console.log('Delete function result:', deleteResult)
@@ -62,7 +62,7 @@ export async function DELETE(
 
     // 削除ログを記録
     try {
-      await supabase
+      await supabaseAdmin
         .from('email_logs')
         .insert({
           recipient: 'system@admin',
