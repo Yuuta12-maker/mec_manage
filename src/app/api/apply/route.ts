@@ -66,8 +66,6 @@ export async function POST(request: NextRequest) {
         preferred_session_format: body.preferred_session_format,
         notes: body.notes?.trim() || null,
         status: 'applied',
-        trial_payment_status: 'pending',
-        trial_payment_amount: 6000,
       })
       .select()
       .single();
