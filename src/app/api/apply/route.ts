@@ -78,17 +78,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // カード決済の場合はここで終了（決済完了後にWebhookでメール送信）
-    if (body.payment_method === 'card') {
-      return NextResponse.json({
-        success: true,
-        clientId: client.id,
-        requiresPayment: true,
-        message: 'Application saved, proceed to payment'
-      });
-    }
-
-    // 銀行振込の場合は従来通りメール送信
+    // 申し込み完了メールを送信（決済方法に関わらず）
     try {
       await sendApplicationEmailsWithGmail(
         client.email,
@@ -98,6 +88,16 @@ export async function POST(request: NextRequest) {
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
       // メール送信失敗でも申し込みは有効とする
+    }
+
+    // カード決済の場合は決済フローに進む
+    if (body.payment_method === 'card') {
+      return NextResponse.json({
+        success: true,
+        clientId: client.id,
+        requiresPayment: true,
+        message: 'Application submitted successfully, proceed to payment'
+      });
     }
 
     return NextResponse.json({
