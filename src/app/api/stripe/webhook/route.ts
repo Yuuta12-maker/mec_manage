@@ -328,7 +328,7 @@ async function sendPaymentConfirmationEmail(
       .eq('id', applicationId)
       .single();
     
-    if (application?.clients) {
+    if (application?.clients && !Array.isArray(application.clients)) {
       await sendApplicationEmailsWithGmail(
         application.clients.email,
         application.clients.name,
