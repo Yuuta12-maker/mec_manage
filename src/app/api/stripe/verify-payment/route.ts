@@ -46,25 +46,86 @@ export async function GET(request: NextRequest) {
 
     // トライアル決済の確認
     if (paymentType === 'trial' && clientId) {
-      // テスト環境では Stripe セッション状態のみで判定
+      const paymentSucceeded = session.payment_status === 'paid';
+      
       verificationResult = {
-        success: session.payment_status === 'paid',
+        success: paymentSucceeded,
         type: 'trial',
         clientId,
-        paymentStatus: session.payment_status === 'paid' ? 'succeeded' : 'pending',
+        paymentStatus: paymentSucceeded ? 'succeeded' : 'pending',
         clientStatus: 'trial_paid'
       };
+
+      // 決済成功時にメール送信（Webhookが機能しない場合の代替策）
+      if (paymentSucceeded && session.customer_details?.email) {
+        try {
+          const { sendTrialPaymentCompletionEmailsWithGmail } = await import('@/lib/gmail');
+          
+          // クライアント情報を取得
+          const { data: client, error } = await supabaseAdmin
+            .from('clients')
+            .select('name, email')
+            .eq('id', clientId)
+            .single();
+          
+          if (!error && client) {
+            console.log('Sending trial payment completion email from verify-payment API');
+            await sendTrialPaymentCompletionEmailsWithGmail(
+              client.email,
+              client.name,
+              clientId,
+              session.amount_total || 6000
+            );
+          }
+        } catch (emailError) {
+          console.error('Error sending payment completion email:', emailError);
+          // メール送信失敗でも決済確認は成功として返す
+        }
+      }
     }
     // 継続決済の確認
     else if (applicationId) {
-      // テスト環境では Stripe セッション状態のみで判定
+      const paymentSucceeded = session.payment_status === 'paid';
+      
       verificationResult = {
-        success: session.payment_status === 'paid',
+        success: paymentSucceeded,
         type: 'continuation',
         applicationId,
-        paymentStatus: session.payment_status === 'paid' ? 'succeeded' : 'pending',
+        paymentStatus: paymentSucceeded ? 'succeeded' : 'pending',
         applicationStatus: 'approved'
       };
+
+      // 決済成功時にメール送信（Webhookが機能しない場合の代替策）
+      if (paymentSucceeded && session.customer_details?.email) {
+        try {
+          const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
+          
+          // 継続申し込み情報を取得
+          const { data: application, error } = await supabaseAdmin
+            .from('continuation_applications')
+            .select(`
+              clients (
+                name,
+                email
+              )
+            `)
+            .eq('id', applicationId)
+            .single();
+          
+          if (!error && application?.clients && !Array.isArray(application.clients)) {
+            const client = application.clients as { name: string; email: string };
+            console.log('Sending continuation payment completion email from verify-payment API');
+            await sendApplicationEmailsWithGmail(
+              client.email,
+              client.name,
+              applicationId
+            );
+          }
+        } catch (emailError) {
+          console.error('Error sending continuation payment completion email:', emailError);
+          // メール送信失敗でも決済確認は成功として返す
+        }
+      }
     }
     else {
       return NextResponse.json(
