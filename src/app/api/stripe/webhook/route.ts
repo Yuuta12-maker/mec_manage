@@ -373,7 +373,7 @@ async function sendTrialPaymentConfirmationEmail(
     console.log(`Client ID: ${clientId}, Amount: ${amount}`);
     
     // Gmail送信機能を使用
-    const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
+    const { sendTrialPaymentCompletionEmailsWithGmail } = await import('@/lib/gmail');
     
     // クライアント情報を取得
     const { data: client, error } = await supabaseAdmin
@@ -389,10 +389,11 @@ async function sendTrialPaymentConfirmationEmail(
     }
     
     if (client) {
-      await sendApplicationEmailsWithGmail(
+      await sendTrialPaymentCompletionEmailsWithGmail(
         client.email,
         client.name,
-        client.id
+        client.id,
+        amount
       );
     }
   } catch (error) {

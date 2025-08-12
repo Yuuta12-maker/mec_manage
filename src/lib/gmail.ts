@@ -697,6 +697,120 @@ Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
   }
 }
 
+// トライアル決済完了メール（Gmail版）
+export async function sendTrialPaymentCompletionEmailsWithGmail(
+  clientEmail: string,
+  clientName: string,
+  clientId: string,
+  amount: number
+) {
+  try {
+    console.log('=== sendTrialPaymentCompletionEmailsWithGmail called ===')
+    const adminEmail = process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'
+
+    // クライアント向けメール
+    const clientSubject = '【MEC】決済完了のお知らせ - セッション予約のご案内'
+    const clientContent = `${clientName} 様
+
+この度は、マインドエンジニアリング・コーチング（MEC）のトライアルセッション決済を完了いただき、誠にありがとうございます。
+
+【決済完了内容】
+・料金: ¥${amount.toLocaleString()}（税込）
+・セッション: トライアルセッション（30分）
+
+決済が正常に完了いたしました。
+
+【次のステップ】
+以下のリンクからトライアルセッションをご予約ください：
+
+🔗 セッション予約フォーム
+https://mec-manage.vercel.app/booking
+
+【セッションについて】
+・時間: 30分程度
+・形式: オンライン（Google Meet）または対面からお選びいただけます
+・内容: 現状の課題把握と改善方向性の提示
+
+【ご準備いただくもの】
+・静かな環境（オンラインの場合）
+・筆記用具
+・現在お悩みの具体的な課題
+
+ご質問やご不明な点がございましたら、お気軽にお問い合わせください。
+${clientName}さんとお会いできることを楽しみにしております。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+マインドエンジニアリング・コーチング
+Email: ${adminEmail}
+━━━━━━━━━━━━━━━━━━━━━━━━━━`
+
+    // 管理者向けメール
+    const adminSubject = '【MEC】トライアル決済完了 - セッション予約待ち'
+    const adminContent = `トライアルセッションの決済が完了しました。
+
+【決済情報】
+・お名前: ${clientName}
+・メールアドレス: ${clientEmail}
+・クライアントID: ${clientId}
+・決済金額: ¥${amount.toLocaleString()}
+
+【対応状況】
+✅ 決済完了確認メールを自動送信済み
+📅 クライアントはセッション予約フォームから予約可能
+⏰ 予約完了時に管理者向けに通知メール送信
+
+【管理画面】
+クライアント詳細: ${process.env.NEXT_PUBLIC_BASE_URL}/clients
+セッション管理: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions
+
+※クライアントが予約完了次第、別途通知いたします。`
+
+    // 両方のメールを逐次送信
+    console.log('=== Sending Trial Payment Completion Emails with Gmail ===')
+    console.log('Client email:', clientEmail)
+    console.log('Admin email:', adminEmail)
+    
+    // クライアント向けメールを先に送信
+    const clientResult = await sendEmailWithGmail({
+      to: clientEmail,
+      subject: clientSubject,
+      content: clientContent,
+      type: 'application',
+      related_id: clientId,
+      client_id: clientId,
+    })
+    
+    // 待機時間
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // 管理者向けメールを送信
+    const adminResult = await sendEmailWithGmail({
+      to: adminEmail,
+      subject: adminSubject,
+      content: adminContent,
+      type: 'application',
+      related_id: clientId,
+      client_id: clientId,
+    })
+
+    console.log('Client email result:', clientResult)
+    console.log('Admin email result:', adminResult)
+
+    return {
+      clientResult,
+      adminResult,
+      success: clientResult.success && adminResult.success,
+    }
+  } catch (error) {
+    console.error('sendTrialPaymentCompletionEmailsWithGmail error:', error)
+    return {
+      clientResult: { success: false, error: 'Function error' },
+      adminResult: { success: false, error: 'Function error' },
+      success: false,
+    }
+  }
+}
+
 // 継続申し込み完了メール（Gmail版）
 export async function sendContinuationApplicationEmailsWithGmail(
   applicantEmail: string,
