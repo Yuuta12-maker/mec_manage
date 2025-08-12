@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     // セッション数を取得するためのダミー関数（プレビュー用）
     const getSessionCountForPreview = async (clientId: string) => {
-      const { supabase } = await import('@/lib/supabase')
+      const { supabaseAdmin } = await import('@/lib/supabase-admin')
       const { data, error } = await supabaseAdmin
         .from('sessions')
         .select('id')
