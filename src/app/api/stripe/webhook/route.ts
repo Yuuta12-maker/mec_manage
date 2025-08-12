@@ -166,15 +166,41 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
     }
 
     // 決済完了メールの送信（非同期）
-    if (session.customer_details?.email) {
+    let customerEmail = session.customer_details?.email;
+    
+    // customer_detailsにメールがない場合、DBから取得
+    if (!customerEmail) {
+      try {
+        const { data: application, error } = await supabaseAdmin
+          .from('continuation_applications')
+          .select(`
+            clients (
+              email
+            )
+          `)
+          .eq('id', applicationId)
+          .single();
+        
+        if (!error && application?.clients && !Array.isArray(application.clients)) {
+          customerEmail = (application.clients as { email: string }).email;
+          console.log(`Customer email retrieved from DB: ${customerEmail}`);
+        }
+      } catch (dbError) {
+        console.error('Error fetching customer email from DB:', dbError);
+      }
+    }
+    
+    if (customerEmail) {
       sendPaymentConfirmationEmail(
-        session.customer_details.email,
+        customerEmail,
         applicationId,
         session.amount_total || 0
       ).catch(emailError => {
         console.error('Error sending payment confirmation email:', emailError);
         // メール送信失敗でもWebhookは成功として処理
       });
+    } else {
+      console.error('No customer email available for sending payment confirmation email');
     }
 
     console.log(`Successfully processed checkout session: ${session.id}`);
@@ -298,15 +324,37 @@ async function handleTrialPaymentCompleted(session: Stripe.Checkout.Session, cli
     }
 
     // トライアル決済完了メールの送信（非同期）
-    if (session.customer_details?.email) {
+    let customerEmail = session.customer_details?.email;
+    
+    // customer_detailsにメールがない場合、DBから取得
+    if (!customerEmail) {
+      try {
+        const { data: client, error } = await supabaseAdmin
+          .from('clients')
+          .select('email')
+          .eq('id', clientId)
+          .single();
+        
+        if (!error && client?.email) {
+          customerEmail = client.email;
+          console.log(`Customer email retrieved from DB: ${customerEmail}`);
+        }
+      } catch (dbError) {
+        console.error('Error fetching customer email from DB:', dbError);
+      }
+    }
+    
+    if (customerEmail) {
       sendTrialPaymentConfirmationEmail(
-        session.customer_details.email,
+        customerEmail,
         clientId,
         session.amount_total || 6000
       ).catch(emailError => {
         console.error('Error sending trial payment confirmation email:', emailError);
         // メール送信失敗でもWebhookは成功として処理
       });
+    } else {
+      console.error('No customer email available for sending trial payment confirmation email');
     }
 
     console.log(`Successfully processed trial payment: ${session.id}`);
