@@ -7,10 +7,17 @@ import Stripe from 'stripe';
 // Webhook署名検証とイベント処理
 export async function POST(request: NextRequest) {
   try {
+    console.log('🚀 Webhook request received');
+    
     const stripe = getStripeClient();
     const environment = getCurrentEnvironment();
     
     console.log(`🔧 Processing webhook in ${environment} environment`);
+    console.log('📋 Environment variables check:', {
+      hasStripeKey: !!process.env.STRIPE_TEST_SECRET_KEY || !!process.env.STRIPE_SECRET_KEY,
+      hasWebhookSecret: !!getWebhookSecret(),
+      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+    });
     
     // Check if Stripe is configured
     if (!stripe) {
@@ -34,12 +41,15 @@ export async function POST(request: NextRequest) {
 
     const webhookSecret = getWebhookSecret();
     if (!webhookSecret) {
-      console.error('Webhook secret not configured for current environment');
+      console.error('❌ Webhook secret not configured for current environment:', environment);
+      console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('STRIPE')));
       return NextResponse.json(
         { error: 'Webhook secret not configured' },
         { status: 500 }
       );
     }
+    
+    console.log('✅ Webhook secret found for environment:', environment);
 
     let event: Stripe.Event;
 
@@ -77,7 +87,9 @@ export async function POST(request: NextRequest) {
           console.log(`Unhandled event type: ${event.type}`);
       }
     } catch (processingError) {
-      console.error('Error processing webhook event:', processingError);
+      console.error('❌ Error processing webhook event:', processingError);
+      console.error('Event type:', event?.type);
+      console.error('Event data:', JSON.stringify(event?.data, null, 2));
       return NextResponse.json(
         { error: 'Webhook processing failed' },
         { status: 500 }
@@ -161,6 +173,7 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
         session.amount_total || 0
       ).catch(emailError => {
         console.error('Error sending payment confirmation email:', emailError);
+        // メール送信失敗でもWebhookは成功として処理
       });
     }
 
@@ -292,6 +305,7 @@ async function handleTrialPaymentCompleted(session: Stripe.Checkout.Session, cli
         session.amount_total || 6000
       ).catch(emailError => {
         console.error('Error sending trial payment confirmation email:', emailError);
+        // メール送信失敗でもWebhookは成功として処理
       });
     }
 
@@ -316,7 +330,7 @@ async function sendPaymentConfirmationEmail(
     const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
     
     // 申し込み者情報を取得
-    const { data: application } = await supabaseAdmin
+    const { data: application, error } = await supabaseAdmin
       .from('continuation_applications')
       .select(`
         clients (
@@ -328,6 +342,12 @@ async function sendPaymentConfirmationEmail(
       .eq('id', applicationId)
       .single();
     
+    if (error) {
+      console.error('Error fetching application for email:', error);
+      // アプリケーション情報取得失敗でもエラーを投げない
+      return;
+    }
+    
     if (application?.clients && !Array.isArray(application.clients)) {
       const client = application.clients as { id: string; name: string; email: string };
       await sendApplicationEmailsWithGmail(
@@ -338,7 +358,7 @@ async function sendPaymentConfirmationEmail(
     }
   } catch (error) {
     console.error('Error sending payment confirmation email:', error);
-    throw error;
+    // エラーを投げない（Webhookを成功させる）
   }
 }
 
@@ -356,11 +376,17 @@ async function sendTrialPaymentConfirmationEmail(
     const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
     
     // クライアント情報を取得
-    const { data: client } = await supabaseAdmin
+    const { data: client, error } = await supabaseAdmin
       .from('clients')
       .select('id, name, email')
       .eq('id', clientId)
       .single();
+    
+    if (error) {
+      console.error('Error fetching client for email:', error);
+      // クライアント情報取得失敗でもエラーを投げない
+      return;
+    }
     
     if (client) {
       await sendApplicationEmailsWithGmail(
@@ -371,6 +397,6 @@ async function sendTrialPaymentConfirmationEmail(
     }
   } catch (error) {
     console.error('Error sending trial payment confirmation email:', error);
-    throw error;
+    // エラーを投げない（Webhookを成功させる）
   }
 }
