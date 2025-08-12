@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripeClient, getCurrentEnvironment, getWebhookSecret } from '@/lib/stripe-test';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { headers } from 'next/headers';
 import Stripe from 'stripe';
@@ -7,6 +7,11 @@ import Stripe from 'stripe';
 // Webhook署名検証とイベント処理
 export async function POST(request: NextRequest) {
   try {
+    const stripe = getStripeClient();
+    const environment = getCurrentEnvironment();
+    
+    console.log(`🔧 Processing webhook in ${environment} environment`);
+    
     // Check if Stripe is configured
     if (!stripe) {
       return NextResponse.json(
@@ -27,8 +32,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!process.env.STRIPE_WEBHOOK_SECRET) {
-      console.error('STRIPE_WEBHOOK_SECRET not configured');
+    const webhookSecret = getWebhookSecret();
+    if (!webhookSecret) {
+      console.error('Webhook secret not configured for current environment');
       return NextResponse.json(
         { error: 'Webhook secret not configured' },
         { status: 500 }
@@ -41,7 +47,7 @@ export async function POST(request: NextRequest) {
       event = stripe.webhooks.constructEvent(
         body,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET
+        webhookSecret
       );
     } catch (err) {
       console.error('Webhook signature verification failed:', err);

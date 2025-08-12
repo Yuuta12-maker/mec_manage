@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe } from '@/lib/stripe';
+import { getStripeClient, getCurrentEnvironment } from '@/lib/stripe-test';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 
 export async function GET(request: NextRequest) {
   try {
+    const stripe = getStripeClient();
+    const environment = getCurrentEnvironment();
+    
+    console.log(`🔧 Verifying payment in ${environment} environment`);
+    
     // Check if Stripe is configured
     if (!stripe) {
       return NextResponse.json(

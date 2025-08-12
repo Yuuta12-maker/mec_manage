@@ -44,3 +44,10 @@ export const getPublishableKey = () => {
     ? process.env.STRIPE_TEST_CLIENT_KEY
     : process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 };
+
+// Webhook署名シークレットを取得
+export const getWebhookSecret = () => {
+  return useTestEnvironment
+    ? process.env.STRIPE_TEST_WEBHOOK_SECRET
+    : process.env.STRIPE_WEBHOOK_SECRET;
+};
