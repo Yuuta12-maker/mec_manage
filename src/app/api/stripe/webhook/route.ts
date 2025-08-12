@@ -302,25 +302,39 @@ async function handleTrialPaymentCompleted(session: Stripe.Checkout.Session, cli
   }
 }
 
-// 決済完了メール送信（簡易実装）
+// 決済完了メール送信（Gmail実装）
 async function sendPaymentConfirmationEmail(
   email: string,
   applicationId: string,
   amount: number
 ) {
   try {
-    // 既存のメール送信機能を利用
-    // 実装は既存のGmail送信機能に統合予定
     console.log(`Sending payment confirmation email to: ${email}`);
     console.log(`Application ID: ${applicationId}, Amount: ${amount}`);
     
-    // TODO: 実際のメール送信実装
-    // await sendEmail({
-    //   to: email,
-    //   subject: 'MEC継続プログラム決済完了のお知らせ',
-    //   template: 'payment_confirmation',
-    //   data: { applicationId, amount }
-    // });
+    // Gmail送信機能を使用
+    const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
+    
+    // 申し込み者情報を取得
+    const { data: application } = await supabaseAdmin
+      .from('continuation_applications')
+      .select(`
+        clients (
+          id,
+          name,
+          email
+        )
+      `)
+      .eq('id', applicationId)
+      .single();
+    
+    if (application?.clients) {
+      await sendApplicationEmailsWithGmail(
+        application.clients.email,
+        application.clients.name,
+        application.clients.id
+      );
+    }
   } catch (error) {
     console.error('Error sending payment confirmation email:', error);
     throw error;
@@ -337,13 +351,23 @@ async function sendTrialPaymentConfirmationEmail(
     console.log(`Sending trial payment confirmation email to: ${email}`);
     console.log(`Client ID: ${clientId}, Amount: ${amount}`);
     
-    // TODO: 実際のメール送信実装
-    // await sendEmail({
-    //   to: email,
-    //   subject: 'MECトライアルセッション決済完了のお知らせ',
-    //   template: 'trial_payment_confirmation',
-    //   data: { clientId, amount }
-    // });
+    // Gmail送信機能を使用
+    const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
+    
+    // クライアント情報を取得
+    const { data: client } = await supabaseAdmin
+      .from('clients')
+      .select('id, name, email')
+      .eq('id', clientId)
+      .single();
+    
+    if (client) {
+      await sendApplicationEmailsWithGmail(
+        client.email,
+        client.name,
+        client.id
+      );
+    }
   } catch (error) {
     console.error('Error sending trial payment confirmation email:', error);
     throw error;

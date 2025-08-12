@@ -78,20 +78,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // カード決済の場合もメール送信を実行
+    // カード決済の場合はここで終了（決済完了後にWebhookでメール送信）
     if (body.payment_method === 'card') {
-      // メール送信（エラーでも申し込みは継続）
-      try {
-        await sendApplicationEmailsWithGmail(
-          client.email,
-          client.name,
-          client.id
-        );
-      } catch (emailError) {
-        console.error('Email sending failed for card payment:', emailError);
-        // メール送信失敗でもStripe決済に進む
-      }
-      
       return NextResponse.json({
         success: true,
         clientId: client.id,
