@@ -1,10 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { stripe, DEFAULT_TRIAL_PRICE } from '@/lib/stripe';
+import { DEFAULT_TRIAL_PRICE } from '@/lib/stripe';
+import { getStripeClient, getCurrentEnvironment } from '@/lib/stripe-test';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { CreateTrialCheckoutSessionRequest, CreateTrialCheckoutSessionResponse } from '@/types';
 
 export async function POST(request: NextRequest): Promise<NextResponse<CreateTrialCheckoutSessionResponse | { error: string }>> {
   try {
+    const stripe = getStripeClient();
+    const environment = getCurrentEnvironment();
+    
+    console.log(`🔧 Creating trial checkout session in ${environment} environment`);
+    
     // Check if Stripe is configured
     if (!stripe) {
       return NextResponse.json(
