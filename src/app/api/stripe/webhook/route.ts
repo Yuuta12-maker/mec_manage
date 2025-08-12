@@ -329,10 +329,11 @@ async function sendPaymentConfirmationEmail(
       .single();
     
     if (application?.clients && !Array.isArray(application.clients)) {
+      const client = application.clients as { id: string; name: string; email: string };
       await sendApplicationEmailsWithGmail(
-        application.clients.email,
-        application.clients.name,
-        application.clients.id
+        client.email,
+        client.name,
+        client.id
       );
     }
   } catch (error) {
