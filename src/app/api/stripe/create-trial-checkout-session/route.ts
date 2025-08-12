@@ -87,8 +87,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
         quantity: 1,
       }],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/apply/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/apply/cancel?client_id=${clientId}`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/cancel?client_id=${clientId}`,
       metadata: {
         client_id: clientId,
         type: 'trial',

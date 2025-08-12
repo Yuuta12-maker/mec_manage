@@ -106,8 +106,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateChe
       payment_method_types: ['card'],
       line_items: lineItems,
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/apply/continue/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/apply/continue/cancel?application_id=${continuationApplicationId}`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/continue/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/continue/cancel?application_id=${continuationApplicationId}`,
       metadata: {
         continuation_application_id: continuationApplicationId,
         client_id: application.client_id,
