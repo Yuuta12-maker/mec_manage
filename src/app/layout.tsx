@@ -1,11 +1,19 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Fira_Sans, Noto_Sans_JP } from 'next/font/google'
 import AuthProvider from '@/components/AuthProvider'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { ThemeProvider } from '@/contexts/ThemeContext'
 import './globals.css'
 
-const inter = Inter({ subsets: ['latin'] })
+const firaSans = Fira_Sans({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700']
+})
+
+const notoSansJP = Noto_Sans_JP({ 
+  subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700']
+})
 
 export const metadata: Metadata = {
   title: 'MEC管理システム',
@@ -19,7 +27,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ja">
-      <body className={`${inter.className} gradient-bg text-gray-900 dark:text-white transition-all duration-500`}>
+      <body className={`${firaSans.className} ${notoSansJP.className} gradient-bg text-gray-900 dark:text-white transition-all duration-500`}>
         <ErrorBoundary>
           <ThemeProvider>
             <AuthProvider>{children}</AuthProvider>
