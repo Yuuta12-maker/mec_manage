@@ -11,9 +11,69 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        primary: '#c50502',
+        // Amazon Ads Brand Colors
+        primary: '#ff9900',
         'primary-foreground': '#ffffff',
-      }
+        secondary: '#232f3e',
+        'secondary-foreground': '#ffffff',
+        
+        // Amazon Ads UI Colors
+        brand: {
+          orange: '#ff9900',
+          'orange-hover': '#e88900',
+          'orange-light': '#ffb84d',
+          navy: '#232f3e',
+          'navy-light': '#37475a',
+          blue: '#0073bb',
+          'blue-hover': '#005a96',
+        },
+        
+        // Status Colors
+        success: '#067d68',
+        warning: '#b7791f',
+        error: '#d13212',
+        info: '#0073bb',
+        
+        // Neutral Colors
+        gray: {
+          50: '#f8f9fa',
+          100: '#f1f3f4',
+          200: '#e8eaed',
+          300: '#dadce0',
+          400: '#bdc1c6',
+          500: '#9aa0a6',
+          600: '#80868b',
+          700: '#5f6368',
+          800: '#3c4043',
+          900: '#202124',
+        },
+        
+        // Background Colors
+        background: {
+          primary: '#ffffff',
+          secondary: '#f8f9fa',
+          tertiary: '#f1f3f4',
+        }
+      },
+      
+      fontFamily: {
+        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Amazon Ember', 'Inter', 'system-ui', 'sans-serif'],
+      },
+      
+      boxShadow: {
+        'sm': '0 1px 3px rgba(0, 0, 0, 0.1)',
+        'md': '0 4px 6px rgba(0, 0, 0, 0.1)',
+        'lg': '0 10px 25px rgba(0, 0, 0, 0.1)',
+        'xl': '0 20px 40px rgba(0, 0, 0, 0.1)',
+      },
+      
+      borderRadius: {
+        'sm': '4px',
+        'md': '8px',
+        'lg': '12px',
+        'xl': '16px',
+      },
     },
   },
   plugins: [],

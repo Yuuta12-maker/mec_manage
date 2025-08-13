@@ -26,23 +26,28 @@ export default function Navigation() {
   ]
 
   return (
-    <nav className="glass-effect shadow-lg dark:shadow-gray-700/50 transition-all duration-300">
-      <div className="max-w-7xl mx-auto px-4">
+    <nav className="aws-header shadow-sm">
+      <div className="px-6">
         <div className="flex justify-between h-16">
-          <div className="flex">
-            <div className="flex-shrink-0 flex items-center">
-              <h1 className="text-xl font-semibold text-primary dark:text-red-400">MEC管理システム</h1>
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <div className="flex items-center space-x-3">
+                <div className="bg-brand-orange text-white px-3 py-1 rounded text-sm font-semibold">
+                  MEC
+                </div>
+                <h1 className="text-lg font-medium text-white">管理システム</h1>
+              </div>
             </div>
-            <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+            <div className="hidden md:ml-8 md:flex md:space-x-8">
               {navigation.map((item) => (
                 <Link
                   key={item.name}
                   href={item.href}
                   className={`${
                     pathname === item.href
-                      ? 'border-primary dark:border-red-400 text-gray-900 dark:text-white'
-                      : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-500 hover:text-gray-700 dark:hover:text-white'
-                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors`}
+                      ? 'border-brand-orange text-white font-medium'
+                      : 'border-transparent text-gray-300 hover:text-white hover:border-gray-300'
+                  } inline-flex items-center px-1 pt-1 border-b-2 text-sm transition-colors pb-4`}
                 >
                   {item.name}
                 </Link>
@@ -68,27 +73,10 @@ export default function Navigation() {
                 )}
               </button>
             </div>
-            <div className="hidden sm:flex sm:items-center sm:space-x-3">
-              {/* ダークモードトグル */}
-              <button
-                onClick={toggleDarkMode}
-                className="p-2 rounded-md text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-                aria-label={isDarkMode ? 'ライトモードに切り替え' : 'ダークモードに切り替え'}
-              >
-                {isDarkMode ? (
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                ) : (
-                  <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
-                  </svg>
-                )}
-              </button>
-
+            <div className="hidden md:flex md:items-center md:space-x-4">
               {/* 外部リンクドロップダウン */}
               <div className="relative group">
-                <button className="inline-flex items-center px-3 py-2 border border-blue-600 dark:border-blue-400 text-sm font-medium rounded-md text-blue-600 dark:text-blue-400 bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                <button className="aws-btn-secondary text-sm">
                   外部ページ
                   <svg className="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -114,12 +102,19 @@ export default function Navigation() {
                 </div>
               </div>
               
-              <span className="text-sm text-gray-700 dark:text-gray-300 hidden md:block">
-                {user?.email}
-              </span>
+              <div className="flex items-center space-x-3 text-gray-300">
+                <span className="text-sm hidden lg:block">
+                  {user?.email}
+                </span>
+                <div className="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
+                  <span className="text-sm font-medium text-white">
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </span>
+                </div>
+              </div>
               <button
                 onClick={signOut}
-                className="bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800 text-white px-4 py-2 rounded text-sm transition-colors"
+                className="aws-btn-secondary text-sm"
               >
                 ログアウト
               </button>
