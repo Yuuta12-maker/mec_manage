@@ -58,8 +58,8 @@ const config: Config = {
       },
       
       fontFamily: {
-        sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Amazon Ember', 'Inter', 'system-ui', 'sans-serif'],
+        sans: ['Montserrat', 'Noto Sans JP', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Montserrat', 'Noto Sans JP', 'system-ui', 'sans-serif'],
       },
       
       boxShadow: {
