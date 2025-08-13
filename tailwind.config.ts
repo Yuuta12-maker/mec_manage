@@ -58,8 +58,8 @@ const config: Config = {
       },
       
       fontFamily: {
-        sans: ['Montserrat', 'Noto Sans JP', 'system-ui', '-apple-system', 'sans-serif'],
-        display: ['Montserrat', 'Noto Sans JP', 'system-ui', 'sans-serif'],
+        sans: ['Fira Sans', 'Hiragino Sans', 'Noto Sans JP', 'system-ui', '-apple-system', 'sans-serif'],
+        display: ['Fira Sans', 'Hiragino Sans', 'Noto Sans JP', 'system-ui', 'sans-serif'],
       },
       
       boxShadow: {
