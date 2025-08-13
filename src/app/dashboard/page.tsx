@@ -131,10 +131,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen gradient-bg transition-all duration-500">
+    <div className="flex min-h-screen bg-background-secondary">
       <Navigation />
 
-      <main className="max-w-7xl mx-auto py-6 px-4">
+      <main className="flex-1 md:ml-64 p-6">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">ダッシュボード</h2>
           
@@ -157,46 +157,46 @@ export default function Dashboard() {
           {!isLoading && (
             <>
               {/* クライアント状況 */}
-              <div className="glass-effect overflow-hidden shadow-xl rounded-xl mb-8 transition-all duration-300 card-hover">
+              <div className="aws-card-hover overflow-hidden mb-8">
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
                     クライアント状況
                   </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{stats.total}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">総数</div>
+                      <div className="aws-metric-value text-blue-600">{stats.total}</div>
+                      <div className="aws-metric-label">総数</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-yellow-600">{stats.applied}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">申込完了</div>
+                      <div className="aws-metric-value text-yellow-600">{stats.applied}</div>
+                      <div className="aws-metric-label">申込完了</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-orange-600">{stats.trial_booked}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">トライアル予約済</div>
+                      <div className="aws-metric-value text-orange-600">{stats.trial_booked}</div>
+                      <div className="aws-metric-label">トライアル予約済</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-purple-600">{stats.trial_completed}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">トライアル完了</div>
+                      <div className="aws-metric-value text-purple-600">{stats.trial_completed}</div>
+                      <div className="aws-metric-label">トライアル完了</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-green-600">{stats.active}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">継続中</div>
+                      <div className="aws-metric-value text-green-600">{stats.active}</div>
+                      <div className="aws-metric-label">継続中</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-blue-600">{stats.completed}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">完了</div>
+                      <div className="aws-metric-value text-blue-600">{stats.completed}</div>
+                      <div className="aws-metric-label">完了</div>
                     </div>
                     <div className="text-center">
-                      <div className="text-2xl font-bold text-gray-600">{stats.inactive}</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">非アクティブ</div>
+                      <div className="aws-metric-value text-gray-600">{stats.inactive}</div>
+                      <div className="aws-metric-label">非アクティブ</div>
                     </div>
                   </div>
                 </div>
               </div>
 
               {/* 本日のセッション */}
-              <div className="glass-effect overflow-hidden shadow-xl rounded-xl mb-8 transition-all duration-300 card-hover">
+              <div className="aws-card-hover overflow-hidden mb-8">
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
                     本日のセッション
@@ -265,7 +265,7 @@ export default function Dashboard() {
               </div>
 
               {/* 今後7日以内のセッション */}
-              <div className="glass-effect overflow-hidden shadow-xl rounded-xl transition-all duration-300 card-hover">
+              <div className="aws-card-hover overflow-hidden">
                 <div className="px-4 py-5 sm:p-6">
                   <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white mb-4">
                     今後7日以内のセッション

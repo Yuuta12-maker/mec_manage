@@ -11,19 +11,20 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Amazon Ads Brand Colors
-        primary: '#ff9900',
+        // Corporate Brand Colors
+        primary: '#c50502',
         'primary-foreground': '#ffffff',
-        secondary: '#232f3e',
+        secondary: '#1f2937',
         'secondary-foreground': '#ffffff',
         
-        // Amazon Ads UI Colors
+        // Corporate UI Colors
         brand: {
-          orange: '#ff9900',
-          'orange-hover': '#e88900',
-          'orange-light': '#ffb84d',
-          navy: '#232f3e',
-          'navy-light': '#37475a',
+          red: '#c50502',
+          'red-hover': '#a20401',
+          'red-light': '#dc2626',
+          'red-dark': '#991b1b',
+          gray: '#1f2937',
+          'gray-light': '#374151',
           blue: '#0073bb',
           'blue-hover': '#005a96',
         },
