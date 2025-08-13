@@ -131,10 +131,10 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background-secondary">
+    <div className="min-h-screen bg-background-secondary">
       <Navigation />
 
-      <main className="flex-1 md:ml-64 p-6">
+      <main className="md:ml-64 p-6">
         <div className="mb-8">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">ダッシュボード</h2>
           

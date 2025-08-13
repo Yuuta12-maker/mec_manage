@@ -277,9 +277,9 @@ export default function SessionDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      <div className="min-h-screen bg-background-secondary transition-colors">
         <Navigation />
-        <main className="max-w-7xl mx-auto py-6 px-4">
+        <main className="md:ml-64 p-6">
           <div className="flex items-center justify-center h-64">
             <LoadingSpinner size="lg" />
             <span className="ml-3 text-gray-600 dark:text-gray-300">セッション情報を読み込み中...</span>
@@ -291,9 +291,9 @@ export default function SessionDetailPage() {
 
   if (error || !session) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+      <div className="min-h-screen bg-background-secondary transition-colors">
         <Navigation />
-        <main className="max-w-7xl mx-auto py-6 px-4">
+        <main className="md:ml-64 p-6">
           {error && (
             <ErrorMessage 
               message={error} 
@@ -314,10 +314,10 @@ export default function SessionDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
+    <div className="min-h-screen bg-background-secondary transition-colors">
       <Navigation />
 
-      <main className="max-w-4xl mx-auto py-6 px-4">
+      <main className="md:ml-64 p-6 max-w-4xl">
         {error && (
           <ErrorMessage 
             message={error} 

@@ -90,10 +90,10 @@ export default function NewPaymentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background-secondary">
       <Navigation />
 
-      <main className="max-w-7xl mx-auto py-6 px-4">
+      <main className="md:ml-64 p-6">
         <div className="mb-8">
           <div className="sm:flex sm:items-center">
             <div className="sm:flex-auto">

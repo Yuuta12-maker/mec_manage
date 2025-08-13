@@ -144,9 +144,9 @@ export default function EditClientPage() {
 
   if (initialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background-secondary">
         <Navigation />
-        <main className="max-w-7xl mx-auto py-6 px-4">
+        <main className="md:ml-64 p-6">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
           </div>
@@ -156,10 +156,10 @@ export default function EditClientPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background-secondary">
       <Navigation />
 
-      <main className="max-w-7xl mx-auto py-6 px-4">
+      <main className="md:ml-64 p-6">
         <div className="mb-8">
           <div className="sm:flex sm:items-center">
             <div className="sm:flex-auto">
