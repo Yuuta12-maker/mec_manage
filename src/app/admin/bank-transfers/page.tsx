@@ -3,7 +3,9 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
 import Navigation from '@/components/Navigation'
 import Link from 'next/link'
 
@@ -38,6 +40,8 @@ interface BankTransferPayment {
 }
 
 export default function BankTransfersPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [transfers, setTransfers] = useState<BankTransferPayment[]>([])
   const [loading, setLoading] = useState(true)
   const [processingTransfer, setProcessingTransfer] = useState<string | null>(null)
@@ -45,8 +49,14 @@ export default function BankTransfersPage() {
   const [filterStatus, setFilterStatus] = useState<string>('all')
 
   useEffect(() => {
-    fetchTransfers()
-  }, [])
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      fetchTransfers()
+    }
+  }, [user, authLoading, router])
 
   const fetchTransfers = async () => {
     setLoading(true)
@@ -166,17 +176,25 @@ export default function BankTransfersPage() {
     return new Date(dueDate) < new Date() && new Date(dueDate).toDateString() !== new Date().toDateString()
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="min-h-screen bg-background-secondary">
         <Navigation />
         <main className="md:ml-64 p-6">
           <div className="flex items-center justify-center h-64">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+            <span className="ml-3 text-gray-600">
+              {authLoading ? '認証確認中...' : '振込情報読み込み中...'}
+            </span>
           </div>
         </main>
       </div>
     )
+  }
+
+  // 認証されていない場合はここでリターン
+  if (!user) {
+    return null
   }
 
   return (
