@@ -4,9 +4,9 @@ import { supabaseAdmin } from '@/lib/supabase-admin'
 export async function GET(request: NextRequest) {
   try {
     // データベースの簡単なヘルスチェック
-    const { data: healthCheck, error } = await supabaseAdmin
+    const { data: healthCheck, error, count } = await supabaseAdmin
       .from('clients')
-      .select('count(*)')
+      .select('id', { count: 'exact' })
       .limit(1)
 
     if (error) {
@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
       message: 'System is healthy',
       timestamp: new Date().toISOString(),
       database_status: 'connected',
-      client_count: healthCheck?.[0]?.count || 0
+      client_count: count || 0
     })
   } catch (error) {
     console.error('Health check failed:', error)
