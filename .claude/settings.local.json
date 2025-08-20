@@ -18,7 +18,10 @@
       "Bash(npm run dev:*)",
       "WebFetch(domain:localhost)",
       "Bash(touch:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(find:*)",
+      "Bash(gh:*)",
+      "Bash(vercel:*)"
     ],
     "deny": []
   }

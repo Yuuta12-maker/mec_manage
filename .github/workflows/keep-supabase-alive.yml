@@ -11,15 +11,15 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Health Check
+    - name: Simple Ping Check
       run: |
-        curl -X GET "${{ secrets.APP_URL }}/api/health-check" \
+        curl -X GET "${{ secrets.APP_URL }}/api/ping" \
           -H "Content-Type: application/json" \
           --fail --silent --show-error
         
     - name: Keep Alive Ping
       run: |
-        curl -X POST "${{ secrets.APP_URL }}/api/keep-alive" \
+        curl -X POST "${{ secrets.APP_URL }}/api/ping" \
           -H "Content-Type: application/json" \
           --fail --silent --show-error
           

@@ -119,7 +119,7 @@ export default function ContinueApplicationSuccessPage() {
                 </span>
               </div>
               <p className="text-sm text-green-700 mt-2">
-                金額: ¥50,000（税込）
+                金額: ¥214,000（税込）
               </p>
             </div>
           )}

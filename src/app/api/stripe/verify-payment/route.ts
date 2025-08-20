@@ -95,13 +95,53 @@ export async function GET(request: NextRequest) {
         applicationStatus: 'approved'
       };
 
-      // 決済成功時にメール送信（継続申込・決済完了統合メール）
+      // 決済成功時の処理
       if (paymentSucceeded) {
         try {
-          const { sendApplicationEmailsWithGmail } = await import('@/lib/gmail');
+          // データベースを更新（決済成功、申し込み承認）
+          const { error: updateError } = await supabaseAdmin
+            .from('continuation_applications')
+            .update({
+              payment_status: 'succeeded',
+              status: 'approved',
+              paid_at: new Date().toISOString(),
+              approved_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+              stripe_payment_intent_id: session.payment_intent as string,
+              payment_method_type: session.payment_method_types?.[0] || 'card',
+            })
+            .eq('id', applicationId);
+
+          if (updateError) {
+            console.error('Error updating continuation application:', updateError);
+          }
+
+          // クライアントのステータスをactiveに更新
+          const { data: application } = await supabaseAdmin
+            .from('continuation_applications')
+            .select('client_id')
+            .eq('id', applicationId)
+            .single();
+
+          if (application) {
+            const { error: clientUpdateError } = await supabaseAdmin
+              .from('clients')
+              .update({
+                status: 'active',
+                updated_at: new Date().toISOString(),
+              })
+              .eq('id', application.client_id);
+
+            if (clientUpdateError) {
+              console.error('Error updating client status:', clientUpdateError);
+            }
+          }
+
+          // メール送信（継続プログラム決済完了メール）
+          const { sendContinuationPaymentCompletionEmailsWithGmail } = await import('@/lib/gmail');
           
           // 継続申し込み情報を取得
-          const { data: application, error } = await supabaseAdmin
+          const { data: applicationWithClient, error } = await supabaseAdmin
             .from('continuation_applications')
             .select(`
               clients (
@@ -112,18 +152,19 @@ export async function GET(request: NextRequest) {
             .eq('id', applicationId)
             .single();
           
-          if (!error && application?.clients && !Array.isArray(application.clients)) {
-            const client = application.clients as { name: string; email: string };
-            console.log('Sending continuation application and payment completion email from verify-payment API');
-            await sendApplicationEmailsWithGmail(
+          if (!error && applicationWithClient?.clients && !Array.isArray(applicationWithClient.clients)) {
+            const client = applicationWithClient.clients as { name: string; email: string };
+            console.log('Sending continuation payment completion email from verify-payment API');
+            await sendContinuationPaymentCompletionEmailsWithGmail(
               client.email,
               client.name,
-              applicationId
+              applicationId,
+              session.amount_total || 214000
             );
           }
         } catch (emailError) {
-          console.error('Error sending continuation application and payment completion email:', emailError);
-          // メール送信失敗でも決済確認は成功として返す
+          console.error('Error in payment success processing:', emailError);
+          // エラーでも決済確認は成功として返す
         }
       }
     }

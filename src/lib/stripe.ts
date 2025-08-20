@@ -50,6 +50,6 @@ export const getStripeErrorMessage = (error: Stripe.StripeRawError): string => {
 };
 
 // デフォルト価格設定
-export const DEFAULT_PROGRAM_PRICE = 50000; // 50,000円
+export const DEFAULT_PROGRAM_PRICE = 214000; // 214,000円（継続プログラム）
 export const DEFAULT_TRIAL_PRICE = 6000; // 6,000円
 export const DEFAULT_CURRENCY = 'JPY';

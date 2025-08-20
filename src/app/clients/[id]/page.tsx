@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
-import { Client, Session, Payment } from '@/types'
+import { Client, Session, Payment, TrialPaymentTransaction, PaymentTransaction, ContinuationApplication } from '@/types'
 import Navigation from '@/components/Navigation'
 import Link from 'next/link'
 
@@ -15,6 +15,7 @@ export default function ClientDetailPage() {
   const [client, setClient] = useState<Client | null>(null)
   const [sessions, setSessions] = useState<Session[]>([])
   const [payments, setPayments] = useState<Payment[]>([])
+  const [realPayments, setRealPayments] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -64,7 +65,66 @@ export default function ClientDetailPage() {
       setPayments(paymentData)
     }
 
+    // 実際の決済履歴を取得
+    await fetchRealPayments(clientId)
+
     setLoading(false)
+  }
+
+  const fetchRealPayments = async (clientId: string) => {
+    const allPayments: any[] = []
+
+    // トライアル決済履歴を取得
+    const { data: trialPayments } = await supabase
+      .from('trial_payment_transactions')
+      .select('*')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false })
+
+    if (trialPayments) {
+      trialPayments.forEach(payment => {
+        allPayments.push({
+          id: payment.id,
+          type: 'trial',
+          amount: payment.amount,
+          status: payment.status,
+          created_at: payment.created_at,
+          payment_method: payment.payment_method_type || 'card',
+          stripe_session_id: payment.stripe_checkout_session_id,
+        })
+      })
+    }
+
+    // 継続プログラム決済履歴を取得
+    const { data: continuationApplications } = await supabase
+      .from('continuation_applications')
+      .select(`
+        *,
+        payment_transactions (*)
+      `)
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false })
+
+    if (continuationApplications) {
+      continuationApplications.forEach(app => {
+        if (app.payment_status === 'succeeded' && app.payment_amount) {
+          allPayments.push({
+            id: app.id,
+            type: 'continuation',
+            amount: app.payment_amount,
+            status: app.payment_status,
+            created_at: app.paid_at || app.updated_at,
+            payment_method: app.payment_method_type || 'card',
+            stripe_session_id: app.stripe_checkout_session_id,
+          })
+        }
+      })
+    }
+
+    // 作成日時でソート
+    allPayments.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    
+    setRealPayments(allPayments)
   }
 
 
@@ -103,7 +163,12 @@ export default function ClientDetailPage() {
 
   const getPaymentStatusLabel = (status: string) => {
     const labels: { [key: string]: string } = {
-      pending: '未払い',
+      pending: '処理中',
+      processing: '処理中',
+      succeeded: '決済完了',
+      failed: '失敗',
+      cancelled: 'キャンセル',
+      refunded: '返金済み',
       completed: '支払い済み',
       overdue: '期限超過',
     }
@@ -111,7 +176,21 @@ export default function ClientDetailPage() {
   }
 
   const getPaymentTypeLabel = (type: string) => {
-    return type === 'trial' ? 'トライアル料金' : 'プログラム料金'
+    return type === 'trial' ? 'トライアル決済' : type === 'continuation' ? '継続プログラム決済' : 'プログラム料金'
+  }
+
+  const getPaymentStatusColor = (status: string) => {
+    const colors: { [key: string]: string } = {
+      succeeded: 'bg-green-100 text-green-800',
+      processing: 'bg-yellow-100 text-yellow-800',
+      pending: 'bg-yellow-100 text-yellow-800',
+      failed: 'bg-red-100 text-red-800',
+      cancelled: 'bg-gray-100 text-gray-800',
+      refunded: 'bg-purple-100 text-purple-800',
+      completed: 'bg-green-100 text-green-800',
+      overdue: 'bg-red-100 text-red-800',
+    }
+    return colors[status] || 'bg-gray-100 text-gray-800'
   }
 
   if (loading) {
@@ -295,8 +374,8 @@ export default function ClientDetailPage() {
             {/* 支払い履歴 */}
             <div className="bg-white shadow sm:rounded-lg">
               <div className="px-4 py-5 sm:p-6">
-                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">支払い履歴</h3>
-                {payments.length > 0 ? (
+                <h3 className="text-lg font-medium leading-6 text-gray-900 mb-4">決済履歴</h3>
+                {realPayments.length > 0 ? (
                   <div className="overflow-hidden">
                     <table className="min-w-full divide-y divide-gray-200">
                       <thead className="bg-gray-50">
@@ -308,15 +387,18 @@ export default function ClientDetailPage() {
                             金額
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            期限
+                            決済日時
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             ステータス
                           </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            決済方法
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
-                        {payments.map((payment) => (
+                        {realPayments.map((payment) => (
                           <tr key={payment.id}>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               {getPaymentTypeLabel(payment.type)}
@@ -325,10 +407,15 @@ export default function ClientDetailPage() {
                               ¥{payment.amount.toLocaleString()}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {new Date(payment.due_date).toLocaleDateString('ja-JP')}
+                              {new Date(payment.created_at).toLocaleString('ja-JP')}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap">
+                              <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getPaymentStatusColor(payment.status)}`}>
+                                {getPaymentStatusLabel(payment.status)}
+                              </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {getPaymentStatusLabel(payment.status)}
+                              {payment.payment_method === 'card' ? 'クレジットカード' : payment.payment_method}
                             </td>
                           </tr>
                         ))}
@@ -336,7 +423,7 @@ export default function ClientDetailPage() {
                     </table>
                   </div>
                 ) : (
-                  <p className="text-sm text-gray-500">支払い履歴がありません。</p>
+                  <p className="text-sm text-gray-500">決済履歴がありません。</p>
                 )}
               </div>
             </div>

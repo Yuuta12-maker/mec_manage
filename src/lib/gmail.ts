@@ -556,49 +556,21 @@ export async function sendNextSessionPromotionEmailWithGmail(
     
     if (sessionType === 'trial') {
       // トライアルセッション：継続のお誘い
-      subject = '【MEC】トライアルセッションお疲れ様でした - 継続プログラムのご案内'
+      subject = '【MEC】継続プログラムのご案内'
       content = `${clientName} 様
 
-本日はトライアルセッションにご参加いただき、誠にありがとうございました。
+本日はトライアルセッションにご参加いただき、ありがとうございました。
 
-【実施セッション】
-・日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  weekday: 'long',
-  hour: '2-digit',
-  minute: '2-digit'
-})}
-・種別: トライアルセッション
+【継続プログラムについて】
+• 6回のセッション（6ヶ月間・月1回）
+• 料金: ¥214,000（税込）
 
-今回のトライアルセッションはいかがでしたでしょうか？
-マインドエンジニアリング・コーチングを通して、新しい気づきや発見がありましたら嬉しく思います。
-
-【継続プログラムのご案内】
-より深い成果と持続的な成長を実現するために、継続プログラムをご用意しております。
-
-✨ 継続プログラムの特徴
-• 6回のセッションで体系的にスキルを構築
-• あなた専用のアクションプランを作成
-• 定期的なフォローアップとサポート
-• 実践的なツールとテクニックの習得
-
-【次回セッションのご予約】
-継続プログラムにご興味をお持ちいただけましたら、下記のフォームからお申し込みください。
+継続プログラムにご興味をお持ちいただけましたら、下記からお申し込みください。
 
 🔗 継続プログラム申し込みフォーム
-${process.env.NEXT_PUBLIC_BASE_URL}/apply/continue?email=${encodeURIComponent(clientEmail)}
+${process.env.NEXT_PUBLIC_BASE_URL}/apply/continue?email=${encodeURIComponent(clientEmail)}&session=${completedSessionId}
 
-【よくあるご質問】
-Q: 継続プログラムの期間はどのくらいですか？
-A: 通常3-6ヶ月間で、あなたのペースに合わせて調整いたします。
-
-Q: トライアルだけでも効果はありましたが...
-A: 継続することで、より深い変化と定着を実現できます。お気軽にご相談ください。
-
-${clientName}さんの更なる成長と成功を心より願っております。
-ご質問やご相談がございましたら、お気軽にお問い合わせください。
+ご質問がございましたら、お気軽にお問い合わせください。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 マインドエンジニアリング・コーチング
@@ -607,43 +579,13 @@ Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
       
     } else if (completedSessionCount >= 6) {
       // 6回目（最終）：お礼のメッセージ
-      subject = '【MEC】プログラム完了おめでとうございます - 心からの感謝を込めて'
+      subject = '【MEC】プログラム完了のお知らせ'
       content = `${clientName} 様
 
-本日で6回のマインドエンジニアリング・コーチングプログラムが完了いたしました。
-最後まで取り組んでいただき、誠にありがとうございました。
+6回のマインドエンジニアリング・コーチングプログラムが完了いたしました。
+最後まで取り組んでいただき、ありがとうございました。
 
-【完了プログラム】
-・総セッション数: 6回
-・最終セッション実施日: ${new Date(sessionDate).toLocaleString('ja-JP', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  weekday: 'long',
-  hour: '2-digit',
-  minute: '2-digit'
-})}
-
-🎉 プログラム完了おめでとうございます！
-
-これまでの6回のセッションを通じて、${clientName}さんは大きく成長されました。
-最初のセッションから今日まで、一歩一歩前進し続けるお姿を拝見し、
-私たちも大変嬉しく思っております。
-
-【今後について】
-今回のプログラムで身につけたスキルとマインドセットを、
-日々の生活や仕事に活かしていただければと思います。
-
-また、今後もサポートが必要な場合や、追加のセッションをご希望の際は、
-お気軽にご連絡ください。いつでも喜んでサポートさせていただきます。
-
-【フォローアップについて】
-3ヶ月後に成果確認のフォローアップメールをお送りいたします。
-その際、ご質問や追加サポートのご要望もお聞かせください。
-
-${clientName}さんの今後ますますのご活躍とご成功を心よりお祈りしております。
-この度は、マインドエンジニアリング・コーチングをご利用いただき、
-本当にありがとうございました。
+今後もサポートが必要な場合は、お気軽にご連絡ください。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 マインドエンジニアリング・コーチング
@@ -653,53 +595,20 @@ Email: ${process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'}
     } else {
       // 2-5回目：次回セッションの予約
       const remainingSessions = 6 - completedSessionCount
-      subject = '【MEC】セッションお疲れ様でした - 次回のご予約をお待ちしております'
+      subject = '【MEC】次回セッションのご予約について'
       content = `${clientName} 様
 
-本日は${completedSessionCount}回目のセッションにご参加いただき、誠にありがとうございました。
-
-【実施セッション】
-・日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-  weekday: 'long',
-  hour: '2-digit',
-  minute: '2-digit'
-})}
-・回数: ${completedSessionCount}回目 / 6回
-
-今回のセッションはいかがでしたでしょうか？
-回を重ねるごとに、新しい発見や成長を実感していただけていることと思います。
-
-【プログラム進捗状況】
-✅ 完了セッション: ${completedSessionCount}回
-📅 残りセッション: ${remainingSessions}回
-
-継続的な学習とサポートにより、さらなる成果を実感していただけるよう、
-次回のセッションでもしっかりとサポートさせていただきます。
+本日はセッションにご参加いただき、ありがとうございました。
 
 【次回セッションのご予約】
-下記のリンクから、ご都合の良い日時をお選びください。
+下記のリンクからご都合の良い日時をお選びください。
 
 🔗 セッション予約フォーム
 ${bookingUrl}
 
-【次回に向けて】
-${completedSessionCount === 2 ? '• 今回学んだ技法を日常で実践してみてください\n• 疑問点があれば次回セッションでご質問ください' :
-  completedSessionCount === 3 ? '• これまでの学習内容の振り返りを行います\n• より実践的な応用テクニックをお教えします' :
-  completedSessionCount === 4 ? '• プログラム後半に向けた目標設定を行います\n• より高度なスキルの習得を目指しましょう' :
-  '• プログラム最終段階です\n• 学習成果の総まとめと今後の活用方法をご提案します'}
+※月1回のペースでのご予約をおすすめしています
 
-【よくあるご質問】
-Q: 次回までにどのくらい間隔を空けるべきですか？
-A: 学習効果を最大化するため、2-3週間以内のご予約をおすすめしています。
-
-Q: セッション内容で分からなかった部分があります
-A: 次回セッションで丁寧にフォローアップいたしますので、お気軽にご質問ください。
-
-${clientName}さんの継続的な成長を心よりサポートいたします。
-次回のセッションを楽しみにお待ちしております。
+ご質問がございましたら、お気軽にお問い合わせください。
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 マインドエンジニアリング・コーチング
@@ -859,20 +768,164 @@ Email: ${adminEmail}
   }
 }
 
+// 継続プログラム決済完了メール（Gmail版）
+export async function sendContinuationPaymentCompletionEmailsWithGmail(
+  applicantEmail: string,
+  applicantName: string,
+  applicationId: string,
+  amount: number
+) {
+  try {
+    console.log('=== sendContinuationPaymentCompletionEmailsWithGmail called ===')
+    const adminEmail = process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'
+
+    // 申込者向けメール
+    const applicantSubject = '【MEC】継続プログラムの決済が完了しました - プログラム開始準備'
+    const applicantContent = `${applicantName} 様
+
+この度は、マインドエンジニアリング・コーチング継続プログラムの決済が正常に完了いたしました。
+誠にありがとうございます。
+
+【決済情報】
+・決済金額: ¥${amount.toLocaleString()}（税込）
+・申し込みID: ${applicationId}
+・決済日時: ${new Date().toLocaleDateString('ja-JP')} ${new Date().toLocaleTimeString('ja-JP')}
+
+【プログラム内容】
+・セッション回数: 6回
+・実施期間: 6ヶ月間
+・各セッション: 30分程度
+・実施形式: オンライン（Google Meet）または対面
+
+【今後の流れ】
+1. 近日中に担当者よりご連絡いたします
+2. 最初のセッション日程を調整いたします
+3. プログラム詳細資料をお送りします
+4. 継続セッション開始
+
+トライアルセッションでの学びを基に、さらに深い成果を実現できるよう、
+全力でサポートさせていただきます。
+
+継続プログラムを通じて、${applicantName}さんの目標達成を心よりサポートいたします。
+ご質問やご不明な点がございましたら、お気軽にお問い合わせください。
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+マインドエンジニアリング・コーチング
+Email: ${adminEmail}
+━━━━━━━━━━━━━━━━━━━━━━━━━━`
+
+    // 管理者向けメール
+    const adminSubject = '【MEC】継続プログラム決済完了 - セッション開始準備'
+    const adminContent = `継続プログラムの決済が完了しました。
+
+【決済情報】
+・お名前: ${applicantName}
+・メールアドレス: ${applicantEmail}
+・申し込みID: ${applicationId}
+・決済金額: ¥${amount.toLocaleString()}
+・決済日時: ${new Date().toLocaleDateString('ja-JP')} ${new Date().toLocaleTimeString('ja-JP')}
+
+【対応状況】
+✅ 決済完了
+✅ 申込者向けに決済完了確認メールを自動送信済み
+✅ クライアントステータス: Active
+📅 セッション日程調整が必要
+
+【必要なアクション】
+1. クライアントに連絡してセッション日程を調整
+2. プログラム詳細資料の送付
+3. 最初のセッション予約の作成
+
+【管理画面】
+クライアント管理: ${process.env.NEXT_PUBLIC_BASE_URL}/clients
+セッション管理: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions
+継続申し込み管理: ${process.env.NEXT_PUBLIC_BASE_URL}/admin/continuation-applications
+
+※継続プログラムが開始できる状態になりました。クライアントとの日程調整を進めてください。`
+
+    // 両方のメールを逐次送信
+    console.log('=== Sending Continuation Payment Completion Emails with Gmail ===')
+    console.log('Applicant email:', applicantEmail)
+    console.log('Admin email:', adminEmail)
+    
+    // 申込者向けメールを先に送信
+    const applicantResult = await sendEmailWithGmail({
+      to: applicantEmail,
+      subject: applicantSubject,
+      content: applicantContent,
+      type: 'application',
+      related_id: applicationId,
+    })
+    
+    // 待機時間
+    await new Promise(resolve => setTimeout(resolve, 2000))
+    
+    // 管理者向けメールを送信
+    const adminResult = await sendEmailWithGmail({
+      to: adminEmail,
+      subject: adminSubject,
+      content: adminContent,
+      type: 'application',
+      related_id: applicationId,
+    })
+
+    console.log('Applicant email result:', applicantResult)
+    console.log('Admin email result:', adminResult)
+
+    return {
+      applicantResult,
+      adminResult,
+      success: applicantResult.success && adminResult.success,
+    }
+  } catch (error) {
+    console.error('sendContinuationPaymentCompletionEmailsWithGmail error:', error)
+    return {
+      applicantResult: { success: false, error: 'Function error' },
+      adminResult: { success: false, error: 'Function error' },
+      success: false,
+    }
+  }
+}
+
 // 継続申し込み完了メール（Gmail版）
 export async function sendContinuationApplicationEmailsWithGmail(
   applicantEmail: string,
   applicantName: string,
   applicationId: string,
   programType: string,
-  goals: string
+  goals: string,
+  paymentMethod: string = 'credit_card'
 ) {
   try {
     console.log('=== sendContinuationApplicationEmailsWithGmail called ===')
     const adminEmail = process.env.GMAIL_USER || 'mindengineeringcoaching@gmail.com'
 
+    // 決済方法に応じたメール内容を生成
+    const getBankTransferInfo = () => {
+      if (paymentMethod === 'bank_transfer') {
+        return `
+【お振込先情報】
+銀行名: 楽天銀行
+支店名: 第二営業支店 (252)
+口座種別: 普通預金
+口座番号: 7654321
+口座名義: モリヤマ ユウタ（森山雄太）
+
+振込金額: ¥214,000
+振込期限: ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP')}
+
+※振込手数料はお客様のご負担となります
+※お振込名義は登録されたお名前と同じ名義でお願いいたします
+※お振込確認後、1営業日以内にセッション予約のご案内をお送りいたします`
+      }
+      return ''
+    }
+
     // 申込者向けメール
-    const applicantSubject = '【MEC】継続プログラムお申し込みを受け付けました'
+    const applicantSubject = paymentMethod === 'bank_transfer' 
+      ? '【MEC】継続プログラムお申し込み完了 - お振込先のご案内'
+      : '【MEC】継続プログラムお申し込みを受け付けました'
+      
     const applicantContent = `${applicantName} 様
 
 この度は、マインドエンジニアリング・コーチング継続プログラムにお申し込みいただき、誠にありがとうございます。
@@ -880,14 +933,20 @@ export async function sendContinuationApplicationEmailsWithGmail(
 お申し込み内容を確認いたしました。
 
 【お申し込み内容】
-・プログラムタイプ: ${programType === '6sessions' ? '6回コース' : programType === '12sessions' ? '12回コース' : 'カスタムプラン'}
-・目標: ${goals.substring(0, 100)}${goals.length > 100 ? '...' : ''}
+・プログラムタイプ: ${programType === '6sessions' ? '6回コース（¥214,000）' : programType === '12sessions' ? '12回コース' : 'カスタムプラン'}
+・決済方法: ${paymentMethod === 'bank_transfer' ? '銀行振込' : paymentMethod === 'credit_card' ? 'クレジットカード' : paymentMethod}
+${getBankTransferInfo()}
 
 【今後の流れ】
-1. 担当者より2営業日以内にご連絡いたします
+${paymentMethod === 'bank_transfer' ? 
+  `1. 上記銀行口座へ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP')}までにお振込みください
+2. お振込み確認後、1営業日以内にセッション予約のご案内をお送りします
+3. セッションスケジュールの調整
+4. 継続プログラム開始` :
+  `1. 担当者より2営業日以内にご連絡いたします
 2. プログラム詳細と料金のご案内
 3. セッションスケジュールの調整
-4. 継続プログラム開始
+4. 継続プログラム開始`}
 
 トライアルセッションでの学びを基に、さらに深い成果を実現できるよう、
 全力でサポートさせていただきます。
@@ -901,7 +960,10 @@ Email: ${adminEmail}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━`
 
     // 管理者向けメール
-    const adminSubject = '【MEC】継続プログラム申し込みがありました'
+    const adminSubject = paymentMethod === 'bank_transfer' 
+      ? '【MEC】継続プログラム申し込み（銀行振込）- 入金確認要'
+      : '【MEC】継続プログラム申し込みがありました'
+      
     const adminContent = `継続プログラムの申し込みがありました。
 
 【申し込み情報】
@@ -909,11 +971,20 @@ Email: ${adminEmail}
 ・メールアドレス: ${applicantEmail}
 ・申し込みID: ${applicationId}
 ・プログラムタイプ: ${programType}
+・決済方法: ${paymentMethod === 'bank_transfer' ? '銀行振込（¥214,000）' : paymentMethod === 'credit_card' ? 'クレジットカード' : paymentMethod}
 
 【申し込み内容】
 ・目標: ${goals}
 
-管理画面から詳細を確認し、対応をお願いします。
+${paymentMethod === 'bank_transfer' ? 
+  `【銀行振込の対応】
+・お客様には振込先情報を自動送信済みです
+・振込期限: ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toLocaleDateString('ja-JP')}
+・入金確認後、振込確認管理画面で「入金確認」処理を行ってください
+・その後、セッション予約の案内を送信してください
+
+振込確認画面: ${process.env.NEXT_PUBLIC_BASE_URL}/admin/bank-transfers` :
+  '管理画面から詳細を確認し、対応をお願いします。'}
 
 管理画面URL: ${process.env.NEXT_PUBLIC_BASE_URL}/admin/continuation-applications`
 

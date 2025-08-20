@@ -30,6 +30,11 @@ export default function Dashboard() {
   })
   
   const { isLoading, error, handleAsync, clearError } = useErrorHandler()
+  const [systemStatus, setSystemStatus] = useState<{
+    lastPing?: string
+    isActive: boolean
+    message?: string
+  }>({ isActive: false })
 
   useEffect(() => {
     fetchDashboardData()
@@ -130,6 +135,79 @@ export default function Dashboard() {
     return type === 'trial' ? 'トライアル' : '通常セッション'
   }
 
+  const performKeepAlive = async () => {
+    try {
+      const response = await fetch('/api/keep-alive', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        setSystemStatus({
+          isActive: true,
+          lastPing: new Date().toISOString(),
+          message: 'システム維持完了'
+        })
+        
+        // 3秒後にメッセージを消去
+        setTimeout(() => {
+          setSystemStatus(prev => ({
+            ...prev,
+            message: undefined
+          }))
+        }, 3000)
+      } else {
+        setSystemStatus({
+          isActive: false,
+          message: 'システム維持に失敗しました'
+        })
+      }
+    } catch (error) {
+      console.error('Keep-alive error:', error)
+      setSystemStatus({
+        isActive: false,
+        message: 'システム維持でエラーが発生しました'
+      })
+    }
+  }
+
+  const checkSystemHealth = async () => {
+    try {
+      const response = await fetch('/api/health-check')
+      const result = await response.json()
+      
+      if (result.success) {
+        setSystemStatus({
+          isActive: true,
+          lastPing: result.timestamp,
+          message: 'システム正常'
+        })
+        
+        setTimeout(() => {
+          setSystemStatus(prev => ({
+            ...prev,
+            message: undefined
+          }))
+        }, 3000)
+      } else {
+        setSystemStatus({
+          isActive: false,
+          message: 'システムヘルスチェックに失敗'
+        })
+      }
+    } catch (error) {
+      console.error('Health check error:', error)
+      setSystemStatus({
+        isActive: false,
+        message: 'ヘルスチェックエラー'
+      })
+    }
+  }
+
   return (
     <div className="min-h-screen bg-background-secondary">
       <Navigation />
@@ -156,6 +234,50 @@ export default function Dashboard() {
           
           {!isLoading && (
             <>
+              {/* システム維持機能 */}
+              <div className="aws-card-hover overflow-hidden mb-6">
+                <div className="px-4 py-5 sm:p-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
+                        システム維持
+                      </h3>
+                      <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        Supabase Free プランの自動停止を防ぐため、定期的にシステムアクティビティを生成します
+                      </p>
+                      {systemStatus.lastPing && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          最終アクティビティ: {new Date(systemStatus.lastPing).toLocaleString('ja-JP')}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex space-x-3">
+                      <button
+                        onClick={checkSystemHealth}
+                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                      >
+                        ヘルスチェック
+                      </button>
+                      <button
+                        onClick={performKeepAlive}
+                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                      >
+                        システム維持実行
+                      </button>
+                    </div>
+                  </div>
+                  {systemStatus.message && (
+                    <div className={`mt-3 p-2 rounded-md text-sm ${
+                      systemStatus.isActive 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-red-100 text-red-800'
+                    }`}>
+                      {systemStatus.message}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* クライアント状況 */}
               <div className="aws-card-hover overflow-hidden mb-8">
                 <div className="px-4 py-5 sm:p-6">

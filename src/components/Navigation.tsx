@@ -27,12 +27,13 @@ export default function Navigation() {
     { name: 'クライアント管理', href: '/clients', icon: Users },
     { name: 'セッション管理', href: '/sessions', icon: Calendar },
     { name: '支払い管理', href: '/payments', icon: CreditCard },
+    { name: '振込確認管理', href: '/admin/bank-transfers', icon: CreditCard },
   ]
 
   const externalLinks = [
     { name: '申し込みページ', href: '/apply', external: true },
     { name: 'セッション予約', href: '/booking', external: true },
-    { name: '継続申し込み', href: '/apply/continue', external: true },
+    { name: '継続申し込み（手動入力）', href: '/apply/continue', external: true },
   ]
 
   return (

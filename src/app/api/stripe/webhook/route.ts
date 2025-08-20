@@ -147,6 +147,27 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       throw updateError;
     }
 
+    // クライアントのステータスをactiveに更新
+    const { data: application } = await supabaseAdmin
+      .from('continuation_applications')
+      .select('client_id')
+      .eq('id', applicationId)
+      .single();
+
+    if (application) {
+      const { error: clientUpdateError } = await supabaseAdmin
+        .from('clients')
+        .update({
+          status: 'active',
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', application.client_id);
+
+      if (clientUpdateError) {
+        console.error('Error updating client status to active:', clientUpdateError);
+      }
+    }
+
     // 決済トランザクションを記録
     const { error: transactionError } = await supabaseAdmin
       .from('payment_transactions')
