@@ -1,8 +1,40 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
 
+// レート制限用のメモリキャッシュ（本番環境では Redis を推奨）
+const rateLimitCache = new Map<string, { count: number; resetTime: number }>()
+
+// レート制限チェック（IP あたり 5回/分）
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now()
+  const windowMs = 60 * 1000 // 1分
+  const maxAttempts = 5
+  
+  const record = rateLimitCache.get(ip)
+  
+  if (!record || now > record.resetTime) {
+    rateLimitCache.set(ip, { count: 1, resetTime: now + windowMs })
+    return true
+  }
+  
+  if (record.count >= maxAttempts) {
+    return false
+  }
+  
+  record.count++
+  return true
+}
+
 export async function POST(request: NextRequest) {
   try {
+    // レート制限チェック
+    const ip = request.ip || request.headers.get('x-forwarded-for') || 'unknown'
+    if (!checkRateLimit(ip)) {
+      return NextResponse.json(
+        { success: false, error: 'Too many attempts. Please try again later.' },
+        { status: 429 }
+      )
+    }
     const body = await request.json()
     const {
       name,
@@ -85,10 +117,13 @@ export async function POST(request: NextRequest) {
       trialSessionId = trialSessions[0].id
     }
 
+    // 最小限の情報のみを返す（個人情報漏洩を防止）
     return NextResponse.json({
       success: true,
       client: {
-        ...client,
+        id: client.id,
+        name: client.name, // 氏名のみ（確認用）
+        status: client.status,
         trial_session_id: trialSessionId,
       },
       message: 'Client verified successfully'

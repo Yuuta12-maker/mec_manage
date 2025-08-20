@@ -3,7 +3,9 @@
 export const dynamic = 'force-dynamic'
 
 import { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
+import { useAuth } from '@/hooks/useAuth'
 import { ContinuationApplicationWithClient } from '@/types'
 import Navigation from '@/components/Navigation'
 import LoadingSpinner from '@/components/LoadingSpinner'
@@ -12,13 +14,21 @@ import { useErrorHandler } from '@/hooks/useErrorHandler'
 import Link from 'next/link'
 
 export default function ContinuationApplicationsPage() {
+  const { user, loading: authLoading } = useAuth()
+  const router = useRouter()
   const [applications, setApplications] = useState<ContinuationApplicationWithClient[]>([])
   const { isLoading, error, handleAsync, clearError } = useErrorHandler()
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
   useEffect(() => {
-    fetchApplications()
-  }, [])
+    if (!authLoading) {
+      if (!user) {
+        router.push('/login')
+        return
+      }
+      fetchApplications()
+    }
+  }, [user, authLoading, router])
 
   const fetchApplications = async () => {
     await handleAsync(async () => {
@@ -93,18 +103,25 @@ export default function ContinuationApplicationsPage() {
     return app.status === statusFilter
   })
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
         <Navigation />
         <main className="max-w-7xl mx-auto py-6 px-4">
           <div className="flex items-center justify-center h-64">
             <LoadingSpinner size="lg" />
-            <span className="ml-3 text-gray-600 dark:text-gray-300">継続申し込み情報を読み込み中...</span>
+            <span className="ml-3 text-gray-600 dark:text-gray-300">
+              {authLoading ? '認証確認中...' : '継続申し込み情報を読み込み中...'}
+            </span>
           </div>
         </main>
       </div>
     )
+  }
+
+  // 認証されていない場合はここでリターン
+  if (!user) {
+    return null
   }
 
   return (

@@ -21,7 +21,9 @@
       "Bash(rm:*)",
       "Bash(find:*)",
       "Bash(gh:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "mcp__supabase__get_anon_key",
+      "mcp__supabase__get_advisors"
     ],
     "deny": []
   }
