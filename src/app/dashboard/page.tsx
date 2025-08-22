@@ -237,37 +237,37 @@ export default function Dashboard() {
               {/* システム維持機能 */}
               <div className="aws-card-hover overflow-hidden mb-6">
                 <div className="px-4 py-5 sm:p-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col space-y-4">
                     <div>
                       <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
                         システム維持
                       </h3>
                       <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        Supabase Free プランの自動停止を防ぐため、定期的にシステムアクティビティを生成します
+                        Supabase の自動停止を防止
                       </p>
                       {systemStatus.lastPing && (
                         <p className="text-xs text-gray-500 mt-1">
-                          最終アクティビティ: {new Date(systemStatus.lastPing).toLocaleString('ja-JP')}
+                          最終: {new Date(systemStatus.lastPing).toLocaleString('ja-JP')}
                         </p>
                       )}
                     </div>
-                    <div className="flex space-x-3">
+                    <div className="flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={checkSystemHealth}
-                        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                        className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors"
                       >
                         ヘルスチェック
                       </button>
                       <button
                         onClick={performKeepAlive}
-                        className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                        className="flex-1 inline-flex items-center justify-center px-4 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
                       >
                         システム維持実行
                       </button>
                     </div>
                   </div>
                   {systemStatus.message && (
-                    <div className={`mt-3 p-2 rounded-md text-sm ${
+                    <div className={`mt-4 p-3 rounded-lg text-sm font-medium ${
                       systemStatus.isActive 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
