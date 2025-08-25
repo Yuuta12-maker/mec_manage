@@ -6,16 +6,13 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { supabase } from '@/lib/supabase'
 import { Client, Session } from '@/types'
-import { useAuth } from '@/hooks/useAuth'
 
 export default function ContinueApplicationPage() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { user } = useAuth()
   const clientEmail = searchParams.get('email') || ''
   const trialSessionId = searchParams.get('session') || ''
   const applicationId = searchParams.get('application_id') || ''
-  const isAdminAccess = !!user && !clientEmail // 管理者でメールパラメータがない場合
   
   const [client, setClient] = useState<Client | null>(null)
   const [trialSession, setTrialSession] = useState<Session | null>(null)
@@ -50,11 +47,11 @@ export default function ContinueApplicationPage() {
       if (trialSessionId) {
         fetchTrialSession()
       }
-    } else if (!isAdminAccess) {
+    } else {
       // URLパラメータがない場合、クライアント照合フォームを表示
       setShowClientVerification(true)
     }
-  }, [clientEmail, trialSessionId, applicationId, isAdminAccess])
+  }, [clientEmail, trialSessionId, applicationId])
 
   const fetchExistingApplication = async () => {
     if (!applicationId) return
@@ -207,11 +204,6 @@ export default function ContinueApplicationPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
-    if (isAdminAccess && !client) {
-      alert('管理者モードではフォーム送信はできません。実際の申し込みは、メールリンクからアクセスしてください。')
-      return
-    }
     
     if (!client) {
       alert('クライアント情報が見つかりません。')
@@ -484,18 +476,7 @@ export default function ContinueApplicationPage() {
     )
   }
 
-  // 管理者アクセスの場合は許可、そうでなければメールパラメータが必要
-  if (!isAdminAccess && !clientEmail && !client) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">アクセスエラー</h2>
-          <p className="text-gray-600 mb-6">このページは直接アクセスできません。</p>
-          <p className="text-gray-600">メールのリンクからアクセスしてください。</p>
-        </div>
-      </div>
-    )
-  }
+  // クライアント照合が必要ない場合は、通常通りフォームを表示
 
   return (
     <div className="min-h-screen bg-gray-50 py-12">
@@ -523,14 +504,6 @@ export default function ContinueApplicationPage() {
           </div>
         )}
 
-        {isAdminAccess && !client && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <h3 className="font-medium text-yellow-900 mb-2">管理者モード</h3>
-            <p className="text-yellow-800">
-              管理画面からアクセスしています。実際の申し込みには、メールからのリンクが必要です。
-            </p>
-          </div>
-        )}
 
         <div className="bg-white shadow-lg rounded-lg overflow-hidden">
           <form onSubmit={handleSubmit}>
@@ -658,11 +631,10 @@ export default function ContinueApplicationPage() {
                 </div>
                 <button
                   type="submit"
-                  disabled={loading || isProcessingPayment || (isAdminAccess && !client)}
+                  disabled={loading || isProcessingPayment}
                   className="inline-flex justify-center py-3 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {(isAdminAccess && !client) ? '管理者モード（送信不可）' : 
-                   loading ? '申し込み処理中...' : 
+                  {loading ? '申し込み処理中...' : 
                    isProcessingPayment ? '決済ページへ移動中...' :
                    formData.payment_method === 'credit_card' ? '決済に進む' : '継続プログラムに申し込む'}
                 </button>
