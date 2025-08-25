@@ -58,6 +58,10 @@ export default function SessionDetailPage() {
         throw new Error('セッションが見つかりません')
       }
 
+      console.log('=== Session data retrieved ===')
+      console.log('Session type from database:', data.type)
+      console.log('Full session data:', data)
+      
       setSession(data as SessionWithClient)
       setFormData({
         notes: data.notes || '',

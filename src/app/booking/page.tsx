@@ -149,6 +149,10 @@ export default function BookingPage() {
       }
 
       // セッション作成
+      console.log('=== Creating session with data ===')
+      console.log('formData.type:', formData.type)
+      console.log('Session type being inserted:', formData.type)
+      
       const { data: session, error: sessionError } = await supabase
         .from('sessions')
         .insert([{
@@ -160,6 +164,11 @@ export default function BookingPage() {
           coach_name: '森山雄太',
         }])
         .select()
+        
+      console.log('Session creation result:', session)
+      if (session && session[0]) {
+        console.log('Created session type:', session[0].type)
+      }
 
       if (sessionError) {
         console.error('Error creating session:', sessionError)
