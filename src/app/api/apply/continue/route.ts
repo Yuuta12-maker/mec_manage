@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-admin'
-import { sendContinuationApplicationEmailsWithGmail } from '@/lib/gmail'
 
 export async function POST(request: NextRequest) {
   try {
@@ -122,24 +121,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // メール送信（新規申し込みの場合のみ）
-    if (!application_id) {
-      try {
-        const emailResult = await sendContinuationApplicationEmailsWithGmail(
-          client.email,
-          client.name,
-          application[0].id,
-          program_type,
-          '6回継続プログラム申し込み',
-          payment_method
-        )
-        
-        console.log('Email sending result:', emailResult)
-      } catch (emailError) {
-        console.error('Email sending failed:', emailError)
-        // メール送信失敗でも申し込みは成功とする
-      }
-    }
+    // メール送信は行わず、管理者が管理画面で確認する方式に変更
 
     return NextResponse.json({
       success: true,
