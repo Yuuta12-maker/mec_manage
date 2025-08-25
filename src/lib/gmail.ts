@@ -481,15 +481,22 @@ ${sessionType === 'trial' ? `・トライアルセッション準備
     console.log('Wait time for next email:', waitTime, 'ms')
     await new Promise(resolve => setTimeout(resolve, waitTime))
     
-    // 管理者向けメールを送信
-    const adminResult = await sendEmailWithGmail({
-      to: adminEmail,
-      subject: adminSubject,
-      content: adminContent,
-      type: 'booking',
-      related_id: sessionId,
-      session_id: sessionId,
-    })
+    // 管理者向けメールはトライアルセッションのみ送信
+    let adminResult = { success: true, message: 'Admin email skipped for regular session' }
+    
+    if (sessionType === 'trial') {
+      adminResult = await sendEmailWithGmail({
+        to: adminEmail,
+        subject: adminSubject,
+        content: adminContent,
+        type: 'booking',
+        related_id: sessionId,
+        session_id: sessionId,
+      })
+      console.log('Admin email sent for trial session')
+    } else {
+      console.log('Admin email skipped for regular session')
+    }
     
     console.log('Client email result:', clientResult)
     console.log('Admin email result:', adminResult)

@@ -333,6 +333,53 @@ export default function BookingPage() {
                 <div className="space-y-6">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-3">
+                      セッション種別 <span className="text-red-500">*</span>
+                    </label>
+                    <div className="space-y-3">
+                      <div className="flex items-start">
+                        <input
+                          type="radio"
+                          id="session_trial"
+                          name="type"
+                          value="trial"
+                          checked={formData.type === 'trial'}
+                          onChange={handleChange}
+                          className="mt-1 h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300"
+                        />
+                        <div className="ml-3 flex-1">
+                          <label htmlFor="session_trial" className="text-sm font-medium text-orange-900 cursor-pointer">
+                            トライアルセッション
+                          </label>
+                          <p className="text-sm text-orange-700">
+                            ¥6,000（税込）- 初回の方向けのお試しセッション
+                          </p>
+                        </div>
+                      </div>
+                      
+                      <div className="flex items-start">
+                        <input
+                          type="radio"
+                          id="session_regular"
+                          name="type"
+                          value="regular"
+                          checked={formData.type === 'regular'}
+                          onChange={handleChange}
+                          className="mt-1 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                        />
+                        <div className="ml-3 flex-1">
+                          <label htmlFor="session_regular" className="text-sm font-medium text-blue-900 cursor-pointer">
+                            通常セッション
+                          </label>
+                          <p className="text-sm text-blue-700">
+                            継続プログラム内のセッション（継続申し込み済みの方）
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
                       希望日 <span className="text-red-500">*</span>
                     </label>
                     <BookingCalendar
