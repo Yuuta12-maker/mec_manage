@@ -19,7 +19,6 @@ export default function ContinueApplicationPage() {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     program_type: '6sessions',
-    preferred_start_date: '',
     payment_method: 'card',
   })
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
@@ -75,7 +74,6 @@ export default function ContinueApplicationPage() {
       }
       setFormData({
         program_type: data.program_type || '6sessions',
-        preferred_start_date: data.preferred_start_date || '',
         payment_method: data.payment_method || 'card',
       })
     }
@@ -287,13 +285,6 @@ export default function ContinueApplicationPage() {
     }))
   }
 
-  // 2週間後の日付をデフォルトに設定
-  const getDefaultStartDate = () => {
-    const date = new Date()
-    date.setDate(date.getDate() + 14)
-    return date.toISOString().split('T')[0]
-  }
-
   // クライアント照合フォームを表示
   if (showClientVerification) {
     return (
@@ -485,9 +476,22 @@ export default function ContinueApplicationPage() {
           <h1 className="text-3xl font-bold text-gray-900 mb-4">
             継続プログラムお申し込み
           </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-4">
             マインドエンジニアリング・コーチング継続プログラムへのお申し込みフォームです。
           </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl mx-auto">
+            <div className="flex items-start">
+              <svg className="h-5 w-5 text-blue-500 mt-0.5 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div>
+                <h4 className="font-medium text-blue-900 mb-1">セッション予約について</h4>
+                <p className="text-blue-800 text-sm">
+                  個別のセッション予約は、お申し込み完了後に別途「セッション予約フォーム」からご予約いただきます。
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
 
         {client && (
@@ -525,24 +529,6 @@ export default function ContinueApplicationPage() {
                     </p>
                   </div>
                   <input type="hidden" name="program_type" value="6sessions" />
-                </div>
-
-                <div>
-                  <label htmlFor="preferred_start_date" className="block text-sm font-medium text-gray-700 mb-2">
-                    希望開始日
-                  </label>
-                  <input
-                    type="date"
-                    id="preferred_start_date"
-                    name="preferred_start_date"
-                    className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                    value={formData.preferred_start_date}
-                    onChange={handleChange}
-                    min={new Date().toISOString().split('T')[0]}
-                  />
-                  <p className="mt-1 text-sm text-gray-500">
-                    トライアルから2週間後以降の日程をおすすめします。
-                  </p>
                 </div>
 
                 <div>
