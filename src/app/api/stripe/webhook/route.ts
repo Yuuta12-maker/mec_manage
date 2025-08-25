@@ -168,22 +168,24 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       }
     }
 
-    // 決済トランザクションを記録
-    const { error: transactionError } = await supabaseAdmin
-      .from('payment_transactions')
-      .insert({
-        continuation_application_id: applicationId,
-        stripe_checkout_session_id: session.id,
-        stripe_payment_intent_id: session.payment_intent as string,
-        amount: session.amount_total || 0,
-        currency: session.currency?.toUpperCase() || 'JPY',
-        status: 'succeeded',
-        payment_method_type: 'card',
-      });
+    // 決済履歴をpaymentsテーブルに記録
+    if (application) {
+      const { error: paymentError } = await supabaseAdmin
+        .from('payments')
+        .insert({
+          client_id: application.client_id,
+          type: 'program',
+          amount: Math.round((session.amount_total || 0) / 100), // centからyenに変換
+          due_date: new Date().toISOString().split('T')[0], // 今日の日付
+          status: 'completed',
+          paid_date: new Date().toISOString().split('T')[0],
+        });
 
-    if (transactionError) {
-      console.error('Error creating payment transaction:', transactionError);
-      // 継続申し込みは既に更新済みなので、ログのみ
+      if (paymentError) {
+        console.error('Error creating payment record:', paymentError);
+      } else {
+        console.log('Payment record created successfully');
+      }
     }
 
     // 継続申込決済完了メールの送信はverify-payment APIで行うため、ここでは送信しない
@@ -208,19 +210,8 @@ async function handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent)
   }
 
   try {
-    // 決済トランザクションのステータスを更新
-    const { error } = await supabaseAdmin
-      .from('payment_transactions')
-      .update({
-        status: 'succeeded',
-        stripe_charge_id: paymentIntent.latest_charge as string,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('stripe_payment_intent_id', paymentIntent.id);
-
-    if (error) {
-      console.error('Error updating payment transaction:', error);
-    }
+    // 決済履歴のステータスを更新 (payment_intent_idでの検索は困難なのでログのみ)
+    console.log('Payment intent succeeded - payment record should already be created by checkout.session.completed');
   } catch (error) {
     console.error('Error in handlePaymentIntentSucceeded:', error);
   }
@@ -251,20 +242,8 @@ async function handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent) {
       console.error('Error updating continuation application:', updateError);
     }
 
-    // 決済トランザクションのステータスを更新
-    const { error: transactionError } = await supabaseAdmin
-      .from('payment_transactions')
-      .update({
-        status: 'failed',
-        failure_code: paymentIntent.last_payment_error?.code,
-        failure_message: paymentIntent.last_payment_error?.message,
-        updated_at: new Date().toISOString(),
-      })
-      .eq('stripe_payment_intent_id', paymentIntent.id);
-
-    if (transactionError) {
-      console.error('Error updating payment transaction:', transactionError);
-    }
+    // 決済失敗のログ記録 (payment_intent_idでの検索は困難なのでログのみ)
+    console.log('Payment failed:', paymentIntent.id, 'Error:', paymentIntent.last_payment_error?.message);
   } catch (error) {
     console.error('Error in handlePaymentIntentFailed:', error);
   }
@@ -291,22 +270,22 @@ async function handleTrialPaymentCompleted(session: Stripe.Checkout.Session, cli
       throw updateError;
     }
 
-    // トライアル決済トランザクションを記録
-    const { error: transactionError } = await supabaseAdmin
-      .from('trial_payment_transactions')
+    // トライアル決済履歴をpaymentsテーブルに記録
+    const { error: paymentError } = await supabaseAdmin
+      .from('payments')
       .insert({
         client_id: clientId,
-        stripe_checkout_session_id: session.id,
-        stripe_payment_intent_id: session.payment_intent as string,
-        amount: session.amount_total || 6000,
-        currency: session.currency?.toUpperCase() || 'JPY',
-        status: 'succeeded',
-        payment_method_type: 'card',
+        type: 'trial',
+        amount: Math.round((session.amount_total || 6000) / 100), // centからyenに変換
+        due_date: new Date().toISOString().split('T')[0], // 今日の日付
+        status: 'completed',
+        paid_date: new Date().toISOString().split('T')[0],
       });
 
-    if (transactionError) {
-      console.error('Error creating trial payment transaction:', transactionError);
-      // クライアント更新は完了しているので、ログのみ
+    if (paymentError) {
+      console.error('Error creating trial payment record:', paymentError);
+    } else {
+      console.log('Trial payment record created successfully');
     }
 
     // トライアル決済完了メールの送信はverify-payment APIで行うため、ここでは送信しない
