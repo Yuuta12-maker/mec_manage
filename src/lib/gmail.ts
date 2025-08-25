@@ -425,13 +425,12 @@ Email: ${adminEmail}
       ? '【MEC】🔰 トライアルセッション予約通知 - 対応必要' 
       : '【MEC】📚 継続セッション予約通知 - 対応必要'
     const adminContent = sessionType === 'trial' 
-      ? `新規トライアルセッション予約が完了しました。` 
-      : `継続プログラム内のセッション予約が完了しました。`
+      ? `新規トライアルセッション予約が完了しました。
 
 【予約情報】
 ・お名前: ${clientName}
 ・メールアドレス: ${clientEmail}
-・セッション種別: ${sessionType === 'trial' ? '🔰 トライアルセッション' : '📚 通常セッション'}
+・セッション種別: 🔰 トライアルセッション
 ・実施日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
   year: 'numeric',
   month: 'long',
@@ -449,11 +448,42 @@ ${sessionId ? `・セッションID: ${sessionId}` : ''}
 📋 セッション詳細情報が管理画面に登録済み
 
 【必要なアクション】
-${sessionType === 'trial' ? `・トライアルセッション準備
+・トライアルセッション準備
 ・料金確認（6,000円）
-・継続プログラム資料の準備` : `・通常セッション準備
+・継続プログラム資料の準備
+
+【管理画面】
+セッション詳細: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions/${sessionId || ''}
+クライアント情報: ${process.env.NEXT_PUBLIC_BASE_URL}/clients
+全セッション一覧: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions
+
+※セッション開始時刻の確認をお願いします。` 
+      : `継続プログラム内のセッション予約が完了しました。
+
+【予約情報】
+・お名前: ${clientName}
+・メールアドレス: ${clientEmail}
+・セッション種別: 📚 通常セッション
+・実施日時: ${new Date(sessionDate).toLocaleString('ja-JP', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long',
+  hour: '2-digit',
+  minute: '2-digit'
+})}
+・実施形式: ${meetLink ? 'オンライン（Google Meet）' : '対面'}
+${meetLink ? `・Meet URL: ${meetLink}` : ''}
+${sessionId ? `・セッションID: ${sessionId}` : ''}
+
+【対応状況】
+✅ クライアント向けに予約完了メールを自動送信済み
+📋 セッション詳細情報が管理画面に登録済み
+
+【必要なアクション】
+・継続セッション準備
 ・前回セッションからの進捗確認
-・今回の目標設定`}
+・今回の目標設定
 
 【管理画面】
 セッション詳細: ${process.env.NEXT_PUBLIC_BASE_URL}/sessions/${sessionId || ''}
