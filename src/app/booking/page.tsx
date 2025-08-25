@@ -416,6 +416,21 @@ export default function BookingPage() {
                   </div>
 
                   <div>
+                    <label htmlFor="client_name_kana" className="block text-sm font-medium text-gray-700">
+                      お名前（カナ）
+                    </label>
+                    <input
+                      type="text"
+                      name="client_name_kana"
+                      id="client_name_kana"
+                      placeholder="ヤマダタロウ"
+                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                      value={formData.client_name_kana}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div>
                     <label htmlFor="client_email" className="block text-sm font-medium text-gray-700">
                       メールアドレス <span className="text-red-500">*</span>
                     </label>
@@ -427,21 +442,6 @@ export default function BookingPage() {
                       placeholder="example@email.com"
                       className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                       value={formData.client_email}
-                      onChange={handleChange}
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="client_name_kana" className="block text-sm font-medium text-gray-700">
-                      お名前（カナ）
-                    </label>
-                    <input
-                      type="text"
-                      name="client_name_kana"
-                      id="client_name_kana"
-                      placeholder="ヤマダタロウ"
-                      className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
-                      value={formData.client_name_kana}
                       onChange={handleChange}
                     />
                   </div>

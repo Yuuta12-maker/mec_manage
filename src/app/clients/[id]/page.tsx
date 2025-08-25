@@ -74,50 +74,47 @@ export default function ClientDetailPage() {
   const fetchRealPayments = async (clientId: string) => {
     const allPayments: any[] = []
 
-    // トライアル決済履歴を取得
-    const { data: trialPayments } = await supabase
-      .from('trial_payment_transactions')
+    // 従来のpaymentsテーブルから決済履歴を取得
+    const { data: standardPayments } = await supabase
+      .from('payments')
       .select('*')
       .eq('client_id', clientId)
       .order('created_at', { ascending: false })
 
-    if (trialPayments) {
-      trialPayments.forEach(payment => {
+    if (standardPayments) {
+      standardPayments.forEach(payment => {
         allPayments.push({
           id: payment.id,
-          type: 'trial',
+          type: payment.type, // 'trial' or 'program'
           amount: payment.amount,
           status: payment.status,
           created_at: payment.created_at,
-          payment_method: payment.payment_method_type || 'card',
-          stripe_session_id: payment.stripe_checkout_session_id,
+          payment_method: 'card',
+          due_date: payment.due_date,
+          paid_date: payment.paid_date,
         })
       })
     }
 
-    // 継続プログラム決済履歴を取得
-    const { data: continuationApplications } = await supabase
-      .from('continuation_applications')
-      .select(`
-        *,
-        payment_transactions (*)
-      `)
+    // 銀行振込決済履歴を取得
+    const { data: bankTransfers } = await supabase
+      .from('bank_transfer_payments')
+      .select('*')
       .eq('client_id', clientId)
       .order('created_at', { ascending: false })
 
-    if (continuationApplications) {
-      continuationApplications.forEach(app => {
-        if (app.payment_status === 'succeeded' && app.payment_amount) {
-          allPayments.push({
-            id: app.id,
-            type: 'continuation',
-            amount: app.payment_amount,
-            status: app.payment_status,
-            created_at: app.paid_at || app.updated_at,
-            payment_method: app.payment_method_type || 'card',
-            stripe_session_id: app.stripe_checkout_session_id,
-          })
-        }
+    if (bankTransfers) {
+      bankTransfers.forEach(payment => {
+        allPayments.push({
+          id: payment.id,
+          type: payment.payment_type, // 'trial' or 'continuation'
+          amount: payment.amount,
+          status: payment.status,
+          created_at: payment.created_at,
+          payment_method: 'bank_transfer',
+          due_date: payment.due_date,
+          confirmed_at: payment.confirmed_at,
+        })
       })
     }
 
@@ -176,7 +173,12 @@ export default function ClientDetailPage() {
   }
 
   const getPaymentTypeLabel = (type: string) => {
-    return type === 'trial' ? 'トライアル決済' : type === 'continuation' ? '継続プログラム決済' : 'プログラム料金'
+    const labels: { [key: string]: string } = {
+      trial: 'トライアル決済',
+      continuation: '継続プログラム決済',
+      program: 'プログラム料金',
+    }
+    return labels[type] || type
   }
 
   const getPaymentStatusColor = (status: string) => {
@@ -415,7 +417,9 @@ export default function ClientDetailPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {payment.payment_method === 'card' ? 'クレジットカード' : payment.payment_method}
+                              {payment.payment_method === 'card' ? 'クレジットカード' : 
+                               payment.payment_method === 'bank_transfer' ? '銀行振込' : 
+                               payment.payment_method}
                             </td>
                           </tr>
                         ))}
