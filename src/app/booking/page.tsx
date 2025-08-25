@@ -85,6 +85,12 @@ export default function BookingPage() {
       return
     }
 
+    if (!formData.client_name || !formData.client_email) {
+      alert('お名前とメールアドレスは必須です。')
+      setLoading(false)
+      return
+    }
+
     try {
       let clientId = null
 
@@ -97,7 +103,7 @@ export default function BookingPage() {
 
       if (searchError) {
         console.error('Error searching client:', searchError)
-        alert('クライアント検索に失敗しました。')
+        alert(`クライアント検索に失敗しました。エラー詳細: ${searchError.message}`)
         return
       }
 
@@ -127,7 +133,13 @@ export default function BookingPage() {
 
         if (clientError) {
           console.error('Error creating client:', clientError)
-          alert('クライアント登録に失敗しました。')
+          console.error('Error details:', {
+            code: clientError.code,
+            message: clientError.message,
+            details: clientError.details,
+            hint: clientError.hint
+          })
+          alert(`クライアント登録に失敗しました。\nエラー詳細: ${clientError.message}\n${clientError.details ? 'Details: ' + clientError.details : ''}`)
           return
         }
 
