@@ -137,31 +137,8 @@ export async function GET(request: NextRequest) {
             }
           }
 
-          // メール送信（継続プログラム決済完了メール）
-          const { sendContinuationPaymentCompletionEmailsWithGmail } = await import('@/lib/gmail');
-          
-          // 継続申し込み情報を取得
-          const { data: applicationWithClient, error } = await supabaseAdmin
-            .from('continuation_applications')
-            .select(`
-              clients (
-                name,
-                email
-              )
-            `)
-            .eq('id', applicationId)
-            .single();
-          
-          if (!error && applicationWithClient?.clients && !Array.isArray(applicationWithClient.clients)) {
-            const client = applicationWithClient.clients as { name: string; email: string };
-            console.log('Sending continuation payment completion email from verify-payment API');
-            await sendContinuationPaymentCompletionEmailsWithGmail(
-              client.email,
-              client.name,
-              applicationId,
-              session.amount_total || 214000
-            );
-          }
+          // 継続プログラム決済完了メールは送信しない（管理者が管理画面で確認）
+          console.log('Continuation payment completed - no email notification sent');
         } catch (emailError) {
           console.error('Error in payment success processing:', emailError);
           // エラーでも決済確認は成功として返す
