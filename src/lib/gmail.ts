@@ -407,7 +407,9 @@ ${meetLink ? `💻 オンラインセッションについて：
 
 ${sessionType === 'trial' ? `【トライアル後について】
 セッション後に継続プログラムについてご相談させていただきます。
-無理な勧誘は一切ございませんので、ご安心ください。` : ''}
+無理な勧誘は一切ございませんので、ご安心ください。` : `【継続セッションについて】
+継続プログラムの一環として実施いたします。
+前回セッションからの進捗や新たな課題について、一緒に取り組んでまいりましょう。`}
 
 何かご質問やご不安な点がございましたら、お気軽にお問い合わせください。
 ${clientName}さんとお会いできることを心より楽しみにしております。
@@ -419,8 +421,12 @@ Email: ${adminEmail}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━`
 
     // 管理者向けメール
-    const adminSubject = '【MEC】📅 セッション予約通知 - 対応必要'
-    const adminContent = `新規セッション予約が完了しました。
+    const adminSubject = sessionType === 'trial' 
+      ? '【MEC】🔰 トライアルセッション予約通知 - 対応必要' 
+      : '【MEC】📚 継続セッション予約通知 - 対応必要'
+    const adminContent = sessionType === 'trial' 
+      ? `新規トライアルセッション予約が完了しました。` 
+      : `継続プログラム内のセッション予約が完了しました。`
 
 【予約情報】
 ・お名前: ${clientName}
@@ -481,22 +487,15 @@ ${sessionType === 'trial' ? `・トライアルセッション準備
     console.log('Wait time for next email:', waitTime, 'ms')
     await new Promise(resolve => setTimeout(resolve, waitTime))
     
-    // 管理者向けメールはトライアルセッションのみ送信
-    let adminResult = { success: true, message: 'Admin email skipped for regular session' }
-    
-    if (sessionType === 'trial') {
-      adminResult = await sendEmailWithGmail({
-        to: adminEmail,
-        subject: adminSubject,
-        content: adminContent,
-        type: 'booking',
-        related_id: sessionId,
-        session_id: sessionId,
-      })
-      console.log('Admin email sent for trial session')
-    } else {
-      console.log('Admin email skipped for regular session')
-    }
+    // 管理者向けメールを送信（セッション種別によって内容を調整）
+    const adminResult = await sendEmailWithGmail({
+      to: adminEmail,
+      subject: adminSubject,
+      content: adminContent,
+      type: 'booking',
+      related_id: sessionId,
+      session_id: sessionId,
+    })
     
     console.log('Client email result:', clientResult)
     console.log('Admin email result:', adminResult)
