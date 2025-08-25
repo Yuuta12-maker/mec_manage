@@ -19,7 +19,7 @@ export default function ContinueApplicationPage() {
   const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     program_type: '6sessions',
-    payment_method: 'card',
+    payment_method: '',
   })
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   const [paymentError, setPaymentError] = useState<string | null>(null)
@@ -74,7 +74,7 @@ export default function ContinueApplicationPage() {
       }
       setFormData({
         program_type: data.program_type || '6sessions',
-        payment_method: data.payment_method || 'card',
+        payment_method: data.payment_method || '',
       })
     }
   }
@@ -205,6 +205,11 @@ export default function ContinueApplicationPage() {
     
     if (!client) {
       alert('クライアント情報が見つかりません。')
+      return
+    }
+
+    if (!formData.payment_method) {
+      alert('支払い方法を選択してください。')
       return
     }
 
@@ -532,9 +537,9 @@ export default function ContinueApplicationPage() {
                 </div>
 
                 <div>
-                  <label htmlFor="payment_method" className="block text-sm font-medium text-gray-700 mb-2">
+                  <div className="block text-sm font-medium text-gray-700 mb-2">
                     希望支払い方法 <span className="text-red-500">*</span>
-                  </label>
+                  </div>
                   <div className="space-y-3">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
                       <h4 className="font-medium text-blue-900 mb-2">継続プログラム料金</h4>
@@ -542,20 +547,87 @@ export default function ContinueApplicationPage() {
                       <p className="text-sm text-blue-700 mt-1">6ヶ月間・月1回×6回セッション（各30分程度）</p>
                     </div>
                     
-                    <select
-                      id="payment_method"
-                      name="payment_method"
-                      required
-                      className="block w-full rounded-md border-gray-300 shadow-sm focus:border-primary focus:ring-primary"
-                      value={formData.payment_method}
-                      onChange={handleChange}
-                    >
-                      <option value="">選択してください</option>
-                      <option value="credit_card">クレジットカード（即時決済）</option>
-                      <option value="bank_transfer">銀行振込（一括）</option>
-                      <option value="installment_2">分割払い（2回）</option>
-                      <option value="installment_3">分割払い（3回）</option>
-                    </select>
+                    <div className="space-y-4">
+                      <div className="flex items-start">
+                        <input
+                          type="radio"
+                          id="credit_card"
+                          name="payment_method"
+                          value="credit_card"
+                          checked={formData.payment_method === 'credit_card'}
+                          onChange={handleChange}
+                          className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                        />
+                        <div className="ml-3 flex-1">
+                          <label htmlFor="credit_card" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            クレジットカード（即時決済）
+                          </label>
+                          <p className="text-sm text-gray-600">
+                            Stripe決済を使用してすぐにお支払いが完了します
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <input
+                          type="radio"
+                          id="bank_transfer"
+                          name="payment_method"
+                          value="bank_transfer"
+                          checked={formData.payment_method === 'bank_transfer'}
+                          onChange={handleChange}
+                          className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                        />
+                        <div className="ml-3 flex-1">
+                          <label htmlFor="bank_transfer" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            銀行振込（一括払い）
+                          </label>
+                          <p className="text-sm text-gray-600">
+                            お申し込み後、振込先をメールでご案内いたします
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <input
+                          type="radio"
+                          id="installment_2"
+                          name="payment_method"
+                          value="installment_2"
+                          checked={formData.payment_method === 'installment_2'}
+                          onChange={handleChange}
+                          className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                        />
+                        <div className="ml-3 flex-1">
+                          <label htmlFor="installment_2" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            分割払い（2回）
+                          </label>
+                          <p className="text-sm text-gray-600">
+                            ¥107,000 × 2回（詳細は個別にご連絡いたします）
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-start">
+                        <input
+                          type="radio"
+                          id="installment_3"
+                          name="payment_method"
+                          value="installment_3"
+                          checked={formData.payment_method === 'installment_3'}
+                          onChange={handleChange}
+                          className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
+                        />
+                        <div className="ml-3 flex-1">
+                          <label htmlFor="installment_3" className="text-sm font-medium text-gray-900 cursor-pointer">
+                            分割払い（3回）
+                          </label>
+                          <p className="text-sm text-gray-600">
+                            約¥71,300 × 3回（詳細は個別にご連絡いたします）
+                          </p>
+                        </div>
+                      </div>
+                    </div>
                     
                     {formData.payment_method === 'credit_card' && (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-3">
