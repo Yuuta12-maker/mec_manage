@@ -588,79 +588,8 @@ export default function ContinueApplicationPage() {
                         </div>
                       </div>
 
-                      <div className="flex items-start">
-                        <input
-                          type="radio"
-                          id="installment_2"
-                          name="payment_method"
-                          value="installment_2"
-                          checked={formData.payment_method === 'installment_2'}
-                          onChange={handleChange}
-                          className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                        />
-                        <div className="ml-3 flex-1">
-                          <label htmlFor="installment_2" className="text-sm font-medium text-gray-900 cursor-pointer">
-                            分割払い（2回）
-                          </label>
-                          <p className="text-sm text-gray-600">
-                            ¥107,000 × 2回（詳細は個別にご連絡いたします）
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex items-start">
-                        <input
-                          type="radio"
-                          id="installment_3"
-                          name="payment_method"
-                          value="installment_3"
-                          checked={formData.payment_method === 'installment_3'}
-                          onChange={handleChange}
-                          className="mt-1 h-4 w-4 text-primary focus:ring-primary border-gray-300"
-                        />
-                        <div className="ml-3 flex-1">
-                          <label htmlFor="installment_3" className="text-sm font-medium text-gray-900 cursor-pointer">
-                            分割払い（3回）
-                          </label>
-                          <p className="text-sm text-gray-600">
-                            約¥71,300 × 3回（詳細は個別にご連絡いたします）
-                          </p>
-                        </div>
-                      </div>
                     </div>
                     
-                    {formData.payment_method === 'credit_card' && (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                        <div className="flex items-center">
-                          <svg className="h-4 w-4 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                          </svg>
-                          <span className="text-sm text-green-800">クレジットカード決済で即座にお申し込み完了</span>
-                        </div>
-                      </div>
-                    )}
-                    
-                    {formData.payment_method === 'bank_transfer' && (
-                      <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                        <div className="flex items-center">
-                          <svg className="h-4 w-4 text-blue-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                          <span className="text-sm text-blue-800">お申し込み確定後、お振込先情報をメールでお送りいたします（1週間以内にお振込ください）</span>
-                        </div>
-                      </div>
-                    )}
-
-                    {formData.payment_method && !['credit_card', 'bank_transfer'].includes(formData.payment_method) && (
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                        <div className="flex items-center">
-                          <svg className="h-4 w-4 text-yellow-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z" />
-                          </svg>
-                          <span className="text-sm text-yellow-800">お申し込み後、2営業日以内に支払い詳細をご連絡いたします</span>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 </div>
 
