@@ -56,7 +56,25 @@ export default function BookingPage() {
       const isBooked = existingSessions.some(session => {
         const sessionTime = new Date(session.scheduled_date)
         const slotTime = new Date(dateTimeString)
-        return sessionTime.getTime() === slotTime.getTime()
+        
+        // 年月日時分で比較（秒は無視）
+        const sessionYear = sessionTime.getFullYear()
+        const sessionMonth = sessionTime.getMonth()
+        const sessionDay = sessionTime.getDate()
+        const sessionHour = sessionTime.getHours()
+        const sessionMinute = sessionTime.getMinutes()
+        
+        const slotYear = slotTime.getFullYear()
+        const slotMonth = slotTime.getMonth()
+        const slotDay = slotTime.getDate()
+        const slotHour = slotTime.getHours()
+        const slotMinute = slotTime.getMinutes()
+        
+        return sessionYear === slotYear && 
+               sessionMonth === slotMonth && 
+               sessionDay === slotDay && 
+               sessionHour === slotHour && 
+               sessionMinute === slotMinute
       })
 
       timeSlots.push({
@@ -310,26 +328,6 @@ export default function BookingPage() {
       </header>
 
       <main className="max-w-4xl mx-auto py-8 px-4">
-        {/* セッション種別説明 */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-700/50 p-6 mb-8 transition-colors">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">セッション種別</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            <div className="bg-orange-50 rounded-lg p-4 border border-orange-200">
-              <h3 className="font-medium text-orange-900 mb-2">トライアルセッション</h3>
-              <p className="text-orange-800 text-sm mb-2">料金: ¥6,000（税込）</p>
-              <p className="text-orange-700 text-sm">
-                初回の方向けのお試しセッションです。プログラムの内容や進め方をご体験いただけます。
-              </p>
-            </div>
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <h3 className="font-medium text-blue-900 mb-2">通常セッション</h3>
-              <p className="text-blue-800 text-sm mb-2">継続プログラム内</p>
-              <p className="text-blue-700 text-sm">
-                継続プログラムをお申し込みいただいた方向けのセッションです。
-              </p>
-            </div>
-          </div>
-        </div>
 
         {/* 予約フォーム */}
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm dark:shadow-gray-700/50 transition-colors">
@@ -547,7 +545,10 @@ export default function BookingPage() {
                 <ul className="text-sm text-yellow-800 space-y-1">
                   <li>• ご予約確定後、担当者よりご連絡させていただきます</li>
                   <li>• 予約確認メールにGoogleMeetリンクが記載されておりますのでそちらをご確認ください（オンラインの場合）</li>
-                  <li>• やむを得ずキャンセルされる場合は、24時間前までにご連絡ください</li>
+                  <li>• キャンセル・変更について</li>
+                  <li>　- キャンセルはできるだけ早く行っていただければ、可能な限り対応いたします</li>
+                  <li>　- キャンセル料はかかりません</li>
+                  <li>　- 変更・キャンセルのご連絡は返信メールに記載の連絡先までお願いいたします</li>
                   <li>• ご不明な点がございましたら、お気軽にお問い合わせください</li>
                 </ul>
               </div>
