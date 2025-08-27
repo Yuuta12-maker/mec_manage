@@ -346,6 +346,9 @@ export default function ClientDetailPage() {
                             種別
                           </th>
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            回数
+                          </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             ステータス
                           </th>
                         </tr>
@@ -362,6 +365,15 @@ export default function ClientDetailPage() {
                               <Link href={`/sessions/${session.id}`} className="text-primary hover:underline">
                                 {session.type === 'trial' ? 'トライアル' : '通常セッション'}
                               </Link>
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                              {session.session_number ? (
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                  {session.session_number}回目
+                                </span>
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                               <Link href={`/sessions/${session.id}`} className="block">
