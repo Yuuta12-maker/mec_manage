@@ -13,7 +13,7 @@ export default function BookingPage() {
   const [existingSessions, setExistingSessions] = useState<any[]>([])
   const [formData, setFormData] = useState({
     // セッション情報
-    type: 'trial' as 'trial' | 'regular',
+    type: '' as '' | 'trial' | 'regular',
     notes: '',
     // クライアント照合・新規情報
     client_name: '',
@@ -81,6 +81,12 @@ export default function BookingPage() {
 
     if (!selectedDate || !selectedTime) {
       alert('日付と時間を選択してください。')
+      setLoading(false)
+      return
+    }
+
+    if (!formData.type) {
+      alert('セッション種別を選択してください。')
       setLoading(false)
       return
     }
