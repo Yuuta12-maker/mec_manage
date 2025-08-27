@@ -48,7 +48,7 @@ export default function ClientDetailPage() {
       .from('sessions')
       .select('*')
       .eq('client_id', clientId)
-      .order('session_number', { ascending: true, nullsLast: true })
+      .order('session_number', { ascending: true, nullsFirst: false })
       .order('scheduled_date', { ascending: true })
 
     if (sessionData) {
