@@ -43,12 +43,13 @@ export default function ClientDetailPage() {
 
     setClient(clientData)
 
-    // セッション履歴を取得
+    // セッション履歴を取得（古いセッションから新しいセッションの順で表示）
     const { data: sessionData } = await supabase
       .from('sessions')
       .select('*')
       .eq('client_id', clientId)
-      .order('scheduled_date', { ascending: false })
+      .order('session_number', { ascending: true, nullsLast: true })
+      .order('scheduled_date', { ascending: true })
 
     if (sessionData) {
       setSessions(sessionData)
