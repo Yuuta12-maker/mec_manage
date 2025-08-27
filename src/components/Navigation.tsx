@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { useTheme } from '@/contexts/ThemeContext'
 import { useState } from 'react'
@@ -13,14 +13,17 @@ import {
   Settings,
   ExternalLink,
   Menu,
-  X
+  X,
+  Search
 } from 'lucide-react'
 
 export default function Navigation() {
   const { user, signOut } = useAuth()
   const pathname = usePathname()
+  const router = useRouter()
   const { isDarkMode, toggleDarkMode } = useTheme()
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   const navigation = [
     { name: 'ダッシュボード', href: '/dashboard', icon: LayoutDashboard },
@@ -35,6 +38,14 @@ export default function Navigation() {
     { name: 'セッション予約', href: '/booking', external: true },
     { name: '継続申し込み（手動入力）', href: '/apply/continue', external: true },
   ]
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+      setIsSidebarOpen(false)
+    }
+  }
 
   return (
     <>
@@ -76,6 +87,22 @@ export default function Navigation() {
               </div>
               <h1 className="text-lg font-semibold text-white">管理システム</h1>
             </div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="px-4 py-4 border-b border-gray-200">
+            <form onSubmit={handleSearch} className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-4 w-4 text-gray-400" />
+              </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="クライアント、セッションを検索..."
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary text-sm"
+              />
+            </form>
           </div>
 
           {/* Navigation Links */}
