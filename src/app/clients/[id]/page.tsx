@@ -352,15 +352,21 @@ export default function ClientDetailPage() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
                         {sessions.map((session) => (
-                          <tr key={session.id}>
+                          <tr key={session.id} className="hover:bg-gray-50 cursor-pointer">
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {new Date(session.scheduled_date).toLocaleString('ja-JP')}
+                              <Link href={`/sessions/${session.id}`} className="text-primary hover:underline">
+                                {new Date(session.scheduled_date).toLocaleString('ja-JP')}
+                              </Link>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {session.type === 'trial' ? 'トライアル' : '通常セッション'}
+                              <Link href={`/sessions/${session.id}`} className="text-primary hover:underline">
+                                {session.type === 'trial' ? 'トライアル' : '通常セッション'}
+                              </Link>
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              {getSessionStatusLabel(session.status)}
+                              <Link href={`/sessions/${session.id}`} className="block">
+                                {getSessionStatusLabel(session.status)}
+                              </Link>
                             </td>
                           </tr>
                         ))}

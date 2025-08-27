@@ -540,7 +540,7 @@ export default function BookingPage() {
                 <h3 className="text-lg font-medium text-yellow-900 mb-2">ご予約にあたって</h3>
                 <ul className="text-sm text-yellow-800 space-y-1">
                   <li>• ご予約確定後、担当者よりご連絡させていただきます</li>
-                  <li>• セッション開始15分前にGoogle Meetリンクをお送りします（オンラインの場合）</li>
+                  <li>• 予約確認メールにGoogleMeetリンクが記載されておりますのでそちらをご確認ください（オンラインの場合）</li>
                   <li>• やむを得ずキャンセルされる場合は、24時間前までにご連絡ください</li>
                   <li>• ご不明な点がございましたら、お気軽にお問い合わせください</li>
                 </ul>

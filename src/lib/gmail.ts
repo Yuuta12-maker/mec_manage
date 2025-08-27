@@ -399,11 +399,6 @@ ${meetLink ? `💻 オンラインセッションについて：
 ・会場の詳細は別途ご連絡いたします
 ・お時間に余裕をもってお越しください`}
 
-【当日の流れ】
-1. 自己紹介・現状確認（5分）
-2. 課題の整理と目標設定（10分）
-3. 具体的な改善手法のご提案（10分）
-4. 質疑応答・次回以降のご相談（5分）
 
 ${sessionType === 'trial' ? `【トライアル後について】
 セッション後に継続プログラムについてご相談させていただきます。
@@ -809,7 +804,8 @@ export async function sendContinuationPaymentCompletionEmailsWithGmail(
   applicantEmail: string,
   applicantName: string,
   applicationId: string,
-  amount: number
+  amount: number,
+  paymentDate?: Date
 ) {
   try {
     console.log('=== sendContinuationPaymentCompletionEmailsWithGmail called ===')
@@ -825,7 +821,7 @@ export async function sendContinuationPaymentCompletionEmailsWithGmail(
 【決済情報】
 ・決済金額: ¥${amount.toLocaleString()}（税込）
 ・申し込みID: ${applicationId}
-・決済日時: ${new Date().toLocaleDateString('ja-JP')} ${new Date().toLocaleTimeString('ja-JP')}
+・決済日時: ${(paymentDate || new Date()).toLocaleDateString('ja-JP')} ${(paymentDate || new Date()).toLocaleTimeString('ja-JP')}
 
 【プログラム内容】
 ・セッション回数: 6回
@@ -865,7 +861,7 @@ Email: ${adminEmail}
 ・メールアドレス: ${applicantEmail}
 ・申し込みID: ${applicationId}
 ・決済金額: ¥${amount.toLocaleString()}
-・決済日時: ${new Date().toLocaleDateString('ja-JP')} ${new Date().toLocaleTimeString('ja-JP')}
+・決済日時: ${(paymentDate || new Date()).toLocaleDateString('ja-JP')} ${(paymentDate || new Date()).toLocaleTimeString('ja-JP')}
 
 【対応状況】
 ✅ 決済完了

@@ -102,7 +102,7 @@ export default function ContinueApplicationSuccessPage() {
             </p>
             <p>
               {sessionId 
-                ? '近日中に最初のセッション日程についてご連絡いたします。'
+                ? 'お送りした確認メールのリンクからセッション日程をご予約ください。'
                 : '2営業日以内に担当者よりご連絡いたします。'
               }
             </p>
@@ -130,7 +130,7 @@ export default function ContinueApplicationSuccessPage() {
               {sessionId ? (
                 <>
                   <li>1. 決済完了の確認メール送信</li>
-                  <li>2. セッション日程のご連絡（近日中）</li>
+                  <li>2. 確認メールのリンクからセッション予約</li>
                   <li>3. プログラム詳細資料のお送り</li>
                   <li>4. 継続セッション開始</li>
                 </>

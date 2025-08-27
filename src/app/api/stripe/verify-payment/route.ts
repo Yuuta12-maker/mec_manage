@@ -155,11 +155,14 @@ export async function GET(request: NextRequest) {
           if (!error && applicationWithClient?.clients && !Array.isArray(applicationWithClient.clients)) {
             const client = applicationWithClient.clients as { name: string; email: string };
             console.log('Sending continuation payment completion email with booking link from verify-payment API');
+            // Stripeセッションの作成日時を決済日時として使用
+            const paymentDate = new Date(session.created * 1000); // Stripe timestampをDateに変換
             await sendContinuationPaymentCompletionEmailsWithGmail(
               client.email,
               client.name,
               applicationId,
-              session.amount_total || 214000
+              session.amount_total || 214000,
+              paymentDate
             );
           }
         } catch (emailError) {
