@@ -160,13 +160,15 @@ export default function SessionDetailPage() {
       'この操作により：\n' +
       '• セッションステータスが「完了」に変更されます\n' +
       '• 次回予約促進メール送信ボタンが表示されます\n' +
-      '• メール履歴に記録されます\n\n' +
+      '• メール履歴に記録されます\n' +
+      '• 6回完了した場合、クライアントステータスが自動更新されます\n\n' +
       'よろしいですか？'
     )
     
     if (!confirmed) return
     
     await handleAsync(async () => {
+      // セッションを完了に変更
       const { error } = await supabase
         .from('sessions')
         .update({
@@ -177,6 +179,47 @@ export default function SessionDetailPage() {
 
       if (error) {
         throw new Error(`セッションの完了処理に失敗しました: ${error.message}`)
+      }
+
+      // 6回完了チェック：クライアントの完了セッション数を確認
+      const { data: completedSessions, error: countError } = await supabase
+        .from('sessions')
+        .select('id')
+        .eq('client_id', session.client_id)
+        .eq('status', 'completed')
+
+      if (countError) {
+        console.error('完了セッション数の取得に失敗:', countError)
+      } else if (completedSessions && completedSessions.length >= 6) {
+        // クライアントの現在のステータスを確認
+        const { data: client, error: clientError } = await supabase
+          .from('clients')
+          .select('status')
+          .eq('id', session.client_id)
+          .single()
+
+        if (clientError) {
+          console.error('クライアント情報の取得に失敗:', clientError)
+        } else if (client?.status === 'active') {
+          // 6回完了 & activeステータスの場合、completedに変更
+          const { error: updateError } = await supabase
+            .from('clients')
+            .update({ 
+              status: 'completed',
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', session.client_id)
+
+          if (updateError) {
+            console.error('クライアントステータス更新に失敗:', updateError)
+          } else {
+            console.log(`クライアント ${session.client.name} のステータスをcompletedに更新しました（${completedSessions.length}回完了）`)
+            // 成功メッセージを表示
+            setTimeout(() => {
+              alert(`🎉 ${session.client.name}さんは6回のセッションを完了されました！\nクライアントステータスが「完了」に変更されました。`)
+            }, 500)
+          }
+        }
       }
 
       // セッション情報とメール履歴を再取得

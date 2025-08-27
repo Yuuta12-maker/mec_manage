@@ -207,6 +207,11 @@ export default function Calendar({ sessions, onDateClick }: CalendarProps) {
                     >
                       <div className="truncate font-medium">
                         {session.client.name}
+                        {session.session_number && (
+                          <span className="ml-1 text-xs opacity-80">
+                            ({session.session_number}回目)
+                          </span>
+                        )}
                       </div>
                       <div className="truncate">
                         {new Date(session.scheduled_date).toLocaleTimeString('ja-JP', {

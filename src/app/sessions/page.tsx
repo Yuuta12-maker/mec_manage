@@ -247,6 +247,11 @@ export default function SessionsPage() {
                           <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                             {getTypeLabel(session.type)}
                           </span>
+                          {session.session_number && (
+                            <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                              {session.session_number}回目
+                            </span>
+                          )}
                         </div>
                         <div className="mt-1 text-sm text-gray-500">
                           {new Date(session.scheduled_date).toLocaleString('ja-JP')}
