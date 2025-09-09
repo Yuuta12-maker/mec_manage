@@ -20,10 +20,27 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Accept, X-Requested-With',
     'Content-Type': 'application/json',
   };
+  
   try {
+    // Request validation
+    const contentType = request.headers.get('content-type')
+    console.log('📨 Request headers:', {
+      contentType,
+      accept: request.headers.get('accept'),
+      userAgent: request.headers.get('user-agent'),
+      origin: request.headers.get('origin'),
+    })
+    
+    if (!contentType?.includes('application/json')) {
+      console.error('❌ Invalid Content-Type:', contentType)
+      return NextResponse.json(
+        { error: 'Content-Type must be application/json' },
+        { status: 406, headers: corsHeaders }
+      )
+    }
     const stripe = getStripeClient();
     const environment = getCurrentEnvironment();
     
@@ -45,8 +62,22 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
       );
     }
 
-    const body: CreateTrialCheckoutSessionRequest = await request.json();
+    // Parse request body with error handling
+    let body: CreateTrialCheckoutSessionRequest;
+    try {
+      const rawBody = await request.text();
+      console.log('📥 Raw request body:', rawBody);
+      body = JSON.parse(rawBody);
+    } catch (parseError) {
+      console.error('❌ JSON parse error:', parseError);
+      return NextResponse.json(
+        { error: 'Invalid JSON in request body' },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+    
     const { clientId } = body;
+    console.log('🔍 Processing request for client:', clientId);
 
     // バリデーション
     if (!clientId) {

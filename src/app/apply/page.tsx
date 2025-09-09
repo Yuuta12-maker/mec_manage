@@ -158,28 +158,62 @@ export default function ApplyPage() {
       setIsProcessingPayment(true)
       setPaymentError(null)
       
+      console.log('🔄 Initiating Stripe payment for client:', clientId)
+      
       const response = await fetch('/api/stripe/create-trial-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest',
         },
         body: JSON.stringify({
           clientId: clientId,
         }),
       })
 
+      console.log('📡 Response status:', response.status)
+      console.log('📡 Response headers:', Object.fromEntries(response.headers.entries()))
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('❌ Response not OK:', response.status, errorText)
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Network error'}`)
+      }
+      
       const data = await response.json()
+      console.log('✅ Payment session data:', data)
 
       if (data.error) {
         throw new Error(data.error)
       }
+      
+      if (!data.url) {
+        throw new Error('決済URLが取得できませんでした。')
+      }
 
+      console.log('🔗 Redirecting to Stripe checkout:', data.url)
       // Stripe Checkoutページにリダイレクト
       window.location.href = data.url
     } catch (error) {
-      console.error('Payment error:', error)
-      setPaymentError(error instanceof Error ? error.message : '決済処理中にエラーが発生しました。')
+      console.error('💥 Payment error:', error)
+      let errorMessage = '決済処理中にエラーが発生しました。'
+      
+      if (error instanceof Error) {
+        if (error.message.includes('HTTP 406')) {
+          errorMessage = 'リクエスト形式エラーが発生しました。ページを再読み込みして再試行してください。'
+        } else if (error.message.includes('HTTP 500')) {
+          errorMessage = 'サーバーエラーが発生しました。しばらく時間をおいて再試行してください。'
+        } else if (error.message.includes('timeout')) {
+          errorMessage = 'タイムアウトしました。しばらく時間をおいて再試行してください。'
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
+      setPaymentError(errorMessage)
       setIsProcessingPayment(false)
+      setLoading(false)
     }
   }
 
