@@ -44,3 +44,7 @@ Thumbs.db.env.test
 
 .vercel
 .env.production
+
+# Environment files
+.env.vercel
+.env.production
