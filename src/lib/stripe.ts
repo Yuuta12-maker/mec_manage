@@ -8,7 +8,7 @@ if (!stripeSecretKey && process.env.NODE_ENV !== 'production') {
 }
 
 export const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
-  apiVersion: '2024-06-20',
+  apiVersion: '2025-07-30.basil',
   typescript: true,
   maxNetworkRetries: 3,
   timeout: 10000,
