@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DEFAULT_PROGRAM_PRICE } from '@/lib/stripe';
-import { getStripeClient, getCurrentEnvironment } from '@/lib/stripe-test';
+import { getCurrentEnvironment } from '@/lib/stripe-test';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { CreateCheckoutSessionRequest, CreateCheckoutSessionResponse } from '@/types';
 
 export async function POST(request: NextRequest): Promise<NextResponse<CreateCheckoutSessionResponse | { error: string }>> {
   try {
-    const stripe = getStripeClient();
     const environment = getCurrentEnvironment();
     
     console.log(`🔧 Creating checkout session in ${environment} environment`);
     
-    // Check if Stripe is configured
-    if (!stripe) {
+    // Get Stripe API key
+    const stripeSecretKey = environment === 'test' 
+      ? process.env.STRIPE_TEST_SECRET_KEY
+      : process.env.STRIPE_SECRET_KEY;
+    
+    if (!stripeSecretKey) {
+      console.error('❌ No Stripe secret key found for environment:', environment);
       return NextResponse.json(
-        { error: 'Stripe is not configured' },
+        { error: `No Stripe key configured for ${environment} environment` },
         { status: 500 }
       );
     }
@@ -85,15 +89,33 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateChe
 
     if (existingCustomer) {
       stripeCustomerId = existingCustomer.stripe_customer_id;
+      console.log('👤 Using existing customer:', stripeCustomerId);
     } else {
-      const customer = await stripe.customers.create({
-        email: application.clients.email,
-        name: application.clients.name,
-        metadata: {
-          client_id: application.client_id,
+      console.log('👤 Creating new Stripe customer...');
+      
+      const customerResponse = await fetch('https://api.stripe.com/v1/customers', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${stripeSecretKey}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Stripe-Version': '2025-07-30.basil',
         },
+        body: new URLSearchParams({
+          'email': application.clients.email,
+          'name': application.clients.name,
+          'metadata[client_id]': application.client_id,
+        }),
       });
+      
+      if (!customerResponse.ok) {
+        const errorText = await customerResponse.text();
+        console.error('❌ Customer creation failed:', errorText);
+        throw new Error(`Customer creation failed: ${errorText}`);
+      }
+      
+      const customer = await customerResponse.json();
       stripeCustomerId = customer.id;
+      console.log('✅ Customer created:', stripeCustomerId);
 
       // stripe_customersテーブルに保存
       await supabaseAdmin
@@ -106,29 +128,58 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateChe
         });
     }
 
-    // Checkout Session作成
-    const session = await stripe.checkout.sessions.create({
+    // Checkout Session作成 (直接API呼び出し)
+    console.log('💳 Creating Stripe checkout session with params:', {
       customer: stripeCustomerId,
-      payment_method_types: ['card'],
-      line_items: lineItems,
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/continue/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/continue/cancel?application_id=${continuationApplicationId}`,
-      metadata: {
-        continuation_application_id: continuationApplicationId,
-        client_id: application.client_id,
-        client_email: application.clients.email,
-      },
-      customer_update: {
-        address: 'auto',
-      },
-      payment_intent_data: {
-        metadata: {
-          continuation_application_id: continuationApplicationId,
-          client_id: application.client_id,
-        },
-      },
+      amount: DEFAULT_PROGRAM_PRICE,
+      continuationApplicationId,
+      environment
     });
+    
+    const sessionParams = new URLSearchParams({
+      'customer': stripeCustomerId,
+      'payment_method_types[]': 'card',
+      'mode': 'payment',
+      'success_url': `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/continue/success?session_id={CHECKOUT_SESSION_ID}`,
+      'cancel_url': `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/continue/cancel?application_id=${continuationApplicationId}`,
+      'metadata[continuation_application_id]': continuationApplicationId,
+      'metadata[client_id]': application.client_id,
+      'metadata[client_email]': application.clients.email,
+      'customer_update[address]': 'auto',
+      'payment_intent_data[metadata][continuation_application_id]': continuationApplicationId,
+      'payment_intent_data[metadata][client_id]': application.client_id,
+    });
+    
+    // Use price ID or create price data
+    if (priceId && process.env.STRIPE_PRICE_ID) {
+      sessionParams.append('line_items[0][price]', process.env.STRIPE_PRICE_ID);
+      sessionParams.append('line_items[0][quantity]', '1');
+    } else {
+      sessionParams.append('line_items[0][price_data][currency]', 'jpy');
+      sessionParams.append('line_items[0][price_data][product_data][name]', 'MEC 6回継続プログラム');
+      sessionParams.append('line_items[0][price_data][product_data][description]', 'マインドエンジニアリング・コーチング 6回セッション');
+      sessionParams.append('line_items[0][price_data][unit_amount]', DEFAULT_PROGRAM_PRICE.toString());
+      sessionParams.append('line_items[0][quantity]', '1');
+    }
+    
+    const sessionResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeSecretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Stripe-Version': '2025-07-30.basil',
+      },
+      body: sessionParams,
+    });
+    
+    if (!sessionResponse.ok) {
+      const errorText = await sessionResponse.text();
+      console.error('❌ Checkout session creation failed:', errorText);
+      throw new Error(`Checkout session creation failed: ${errorText}`);
+    }
+    
+    const session = await sessionResponse.json();
+    console.log('✅ Stripe session created successfully:', session.id);
 
     // セッションIDをデータベースに保存
     const { error: updateError } = await supabaseAdmin
@@ -153,10 +204,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateChe
       url: session.url || '',
     });
 
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
+  } catch (error: unknown) {
+    console.error('❌ Error creating checkout session:', error);
     
+    // エラーの詳細ログ
     if (error instanceof Error) {
+      console.error('💥 Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.substring(0, 500) + '...'
+      });
+      
       return NextResponse.json(
         { error: `Failed to create checkout session: ${error.message}` },
         { status: 500 }
