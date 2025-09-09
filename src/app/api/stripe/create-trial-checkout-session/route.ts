@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DEFAULT_TRIAL_PRICE } from '@/lib/stripe';
-import { getStripeClient, getCurrentEnvironment } from '@/lib/stripe-test';
+import { getCurrentEnvironment } from '@/lib/stripe-test';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { CreateTrialCheckoutSessionRequest, CreateTrialCheckoutSessionResponse } from '@/types';
 
@@ -41,32 +41,16 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
         { status: 406, headers: corsHeaders }
       )
     }
-    const stripe = getStripeClient();
     const environment = getCurrentEnvironment();
     
     console.log(`🔧 Creating trial checkout session in ${environment} environment`);
-    console.log('🔑 Stripe client initialized:', !!stripe);
     console.log('🌍 Environment variables check:', {
       hasStripeSecretKey: !!process.env.STRIPE_SECRET_KEY,
       hasStripeTestKey: !!process.env.STRIPE_TEST_SECRET_KEY,
       useTestEnv: process.env.STRIPE_USE_TEST,
-      nodeEnv: process.env.NODE_ENV
+      nodeEnv: process.env.NODE_ENV,
+      environment
     });
-    
-    // Check if Stripe is configured
-    if (!stripe) {
-      console.error('❌ Stripe client is null - configuration issue');
-      console.error('🔍 Debug info:', {
-        stripeSecretKey: !!process.env.STRIPE_SECRET_KEY,
-        stripeTestKey: !!process.env.STRIPE_TEST_SECRET_KEY,
-        stripeUseTest: process.env.STRIPE_USE_TEST,
-        environment: getCurrentEnvironment(),
-      });
-      return NextResponse.json(
-        { error: 'Stripe is not configured. Please check server environment variables.' },
-        { status: 500, headers: corsHeaders }
-      );
-    }
 
     // Parse request body with error handling
     let body: CreateTrialCheckoutSessionRequest;
@@ -116,20 +100,51 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
       );
     }
 
-    // Stripe顧客を作成または取得
+    // Get Stripe API key
+    const stripeSecretKey = environment === 'test' 
+      ? process.env.STRIPE_TEST_SECRET_KEY
+      : process.env.STRIPE_SECRET_KEY;
+    
+    if (!stripeSecretKey) {
+      console.error('❌ No Stripe secret key found for environment:', environment);
+      return NextResponse.json(
+        { error: `No Stripe key configured for ${environment} environment` },
+        { status: 500, headers: corsHeaders }
+      );
+    }
+
+    // Stripe顧客を作成または取得 (直接API呼び出し)
     let stripeCustomerId: string;
     if (client.stripe_customer_id) {
       stripeCustomerId = client.stripe_customer_id;
+      console.log('👤 Using existing customer:', stripeCustomerId);
     } else {
-      const customer = await stripe.customers.create({
-        email: client.email,
-        name: client.name,
-        metadata: {
-          client_id: clientId,
-          type: 'trial',
+      console.log('👤 Creating new Stripe customer...');
+      
+      const customerResponse = await fetch('https://api.stripe.com/v1/customers', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${stripeSecretKey}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Stripe-Version': '2025-07-30.basil',
         },
+        body: new URLSearchParams({
+          'email': client.email,
+          'name': client.name,
+          'metadata[client_id]': clientId,
+          'metadata[type]': 'trial',
+        }),
       });
+      
+      if (!customerResponse.ok) {
+        const errorText = await customerResponse.text();
+        console.error('❌ Customer creation failed:', errorText);
+        throw new Error(`Customer creation failed: ${errorText}`);
+      }
+      
+      const customer = await customerResponse.json();
       stripeCustomerId = customer.id;
+      console.log('✅ Customer created:', stripeCustomerId);
 
       // stripe_customer_idをクライアントテーブルに保存
       await supabaseAdmin
@@ -140,47 +155,51 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
         .eq('id', clientId);
     }
 
-    // Checkout Session作成
+    // Checkout Session作成 (直接API呼び出し)
     console.log('💳 Creating Stripe checkout session with params:', {
       customer: stripeCustomerId,
       amount: DEFAULT_TRIAL_PRICE,
       clientId,
-      email: client.email
+      email: client.email,
+      environment
     });
     
-    const session = await stripe.checkout.sessions.create({
-      customer: stripeCustomerId,
-      payment_method_types: ['card'],
-      line_items: [{
-        price_data: {
-          currency: 'jpy',
-          product_data: {
-            name: 'MECトライアルセッション',
-            description: 'マインドエンジニアリング・コーチング トライアルセッション（30分）',
-          },
-          unit_amount: DEFAULT_TRIAL_PRICE,
-        },
-        quantity: 1,
-      }],
-      mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/cancel?client_id=${clientId}`,
-      metadata: {
-        client_id: clientId,
-        type: 'trial',
-        client_email: client.email,
-      },
-      customer_update: {
-        address: 'auto',
-      },
-      payment_intent_data: {
-        metadata: {
-          client_id: clientId,
-          type: 'trial',
-        },
-      },
+    const sessionParams = new URLSearchParams({
+      'customer': stripeCustomerId,
+      'payment_method_types[]': 'card',
+      'line_items[0][price_data][currency]': 'jpy',
+      'line_items[0][price_data][product_data][name]': 'MECトライアルセッション',
+      'line_items[0][price_data][product_data][description]': 'マインドエンジニアリング・コーチング トライアルセッション（30分）',
+      'line_items[0][price_data][unit_amount]': DEFAULT_TRIAL_PRICE.toString(),
+      'line_items[0][quantity]': '1',
+      'mode': 'payment',
+      'success_url': `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/success?session_id={CHECKOUT_SESSION_ID}`,
+      'cancel_url': `${process.env.NEXT_PUBLIC_APP_URL || 'https://mec-manage.vercel.app'}/apply/cancel?client_id=${clientId}`,
+      'metadata[client_id]': clientId,
+      'metadata[type]': 'trial',
+      'metadata[client_email]': client.email,
+      'customer_update[address]': 'auto',
+      'payment_intent_data[metadata][client_id]': clientId,
+      'payment_intent_data[metadata][type]': 'trial',
     });
     
+    const sessionResponse = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${stripeSecretKey}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Stripe-Version': '2025-07-30.basil',
+      },
+      body: sessionParams,
+    });
+    
+    if (!sessionResponse.ok) {
+      const errorText = await sessionResponse.text();
+      console.error('❌ Checkout session creation failed:', errorText);
+      throw new Error(`Checkout session creation failed: ${errorText}`);
+    }
+    
+    const session = await sessionResponse.json();
     console.log('✅ Stripe session created successfully:', session.id);
 
     // セッションIDをデータベースに保存
