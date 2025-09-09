@@ -8,8 +8,11 @@ if (!stripeSecretKey && process.env.NODE_ENV !== 'production') {
 }
 
 export const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
-  apiVersion: '2024-06-20' as any,
+  apiVersion: '2024-06-20',
   typescript: true,
+  maxNetworkRetries: 3,
+  timeout: 10000,
+  telemetry: false,
 }) : null;
 
 export const formatAmountForStripe = (amount: number): number => {
