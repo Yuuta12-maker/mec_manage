@@ -132,21 +132,29 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
       url: session.url || '',
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating trial checkout session:', error);
-    console.error('Error stack:', error.stack);
+    
+    // エラーの型チェックと詳細ログ
+    if (error instanceof Error) {
+      console.error('Error stack:', error.stack);
+      console.error('Error message:', error.message);
+    }
+    
     console.error('Error type:', typeof error);
-    console.error('Error constructor:', error.constructor.name);
     
     // Stripeエラーの詳細情報を取得
-    if (error.type) {
-      console.error('Stripe error type:', error.type);
-    }
-    if (error.code) {
-      console.error('Stripe error code:', error.code);
-    }
-    if (error.decline_code) {
-      console.error('Stripe decline code:', error.decline_code);
+    if (error && typeof error === 'object') {
+      const stripeError = error as any;
+      if (stripeError.type) {
+        console.error('Stripe error type:', stripeError.type);
+      }
+      if (stripeError.code) {
+        console.error('Stripe error code:', stripeError.code);
+      }
+      if (stripeError.decline_code) {
+        console.error('Stripe decline code:', stripeError.decline_code);
+      }
     }
     
     if (error instanceof Error) {
