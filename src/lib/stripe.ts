@@ -10,9 +10,11 @@ if (!stripeSecretKey && process.env.NODE_ENV !== 'production') {
 export const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
   apiVersion: '2025-07-30.basil',
   typescript: true,
-  maxNetworkRetries: 3,
-  timeout: 10000,
+  maxNetworkRetries: 5,
+  timeout: 15000,
   telemetry: false,
+  protocol: 'https',
+  host: 'api.stripe.com',
 }) : null;
 
 export const formatAmountForStripe = (amount: number): number => {

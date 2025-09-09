@@ -11,9 +11,11 @@ const stripeProductionSecretKey = process.env.STRIPE_SECRET_KEY;
 export const stripeTest = stripeTestSecretKey ? new Stripe(stripeTestSecretKey, {
   apiVersion: '2025-07-30.basil',
   typescript: true,
-  maxNetworkRetries: 3,
-  timeout: 10000,
+  maxNetworkRetries: 5,
+  timeout: 15000,
   telemetry: false,
+  protocol: 'https',
+  host: 'api.stripe.com',
 }) : null;
 
 // 動的にStripeクライアントを選択
@@ -29,9 +31,11 @@ export const getStripeClient = () => {
     const stripe = new Stripe(stripeProductionSecretKey, {
       apiVersion: '2025-07-30.basil',
       typescript: true,
-      maxNetworkRetries: 3,
-      timeout: 10000,
+      maxNetworkRetries: 5,
+      timeout: 15000,
       telemetry: false,
+      protocol: 'https',
+      host: 'api.stripe.com',
     });
     return stripe;
   }

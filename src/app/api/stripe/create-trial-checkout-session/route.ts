@@ -10,9 +10,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     const environment = getCurrentEnvironment();
     
     console.log(`🔧 Creating trial checkout session in ${environment} environment`);
+    console.log('🔑 Stripe client initialized:', !!stripe);
+    console.log('🌍 Environment variables check:', {
+      hasStripeSecretKey: !!process.env.STRIPE_SECRET_KEY,
+      hasStripeTestKey: !!process.env.STRIPE_TEST_SECRET_KEY,
+      useTestEnv: process.env.STRIPE_USE_TEST,
+      nodeEnv: process.env.NODE_ENV
+    });
     
     // Check if Stripe is configured
     if (!stripe) {
+      console.error('❌ Stripe client is null - configuration issue');
       return NextResponse.json(
         { error: 'Stripe is not configured' },
         { status: 500 }
@@ -78,6 +86,13 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     }
 
     // Checkout Session作成
+    console.log('💳 Creating Stripe checkout session with params:', {
+      customer: stripeCustomerId,
+      amount: DEFAULT_TRIAL_PRICE,
+      clientId,
+      email: client.email
+    });
+    
     const session = await stripe.checkout.sessions.create({
       customer: stripeCustomerId,
       payment_method_types: ['card'],
@@ -110,6 +125,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
         },
       },
     });
+    
+    console.log('✅ Stripe session created successfully:', session.id);
 
     // セッションIDをデータベースに保存
     const { error: updateError } = await supabaseAdmin
