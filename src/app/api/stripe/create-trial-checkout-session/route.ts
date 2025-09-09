@@ -56,8 +56,14 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     // Check if Stripe is configured
     if (!stripe) {
       console.error('❌ Stripe client is null - configuration issue');
+      console.error('🔍 Debug info:', {
+        stripeSecretKey: !!process.env.STRIPE_SECRET_KEY,
+        stripeTestKey: !!process.env.STRIPE_TEST_SECRET_KEY,
+        stripeUseTest: process.env.STRIPE_USE_TEST,
+        environment: getCurrentEnvironment(),
+      });
       return NextResponse.json(
-        { error: 'Stripe is not configured' },
+        { error: 'Stripe is not configured. Please check server environment variables.' },
         { status: 500, headers: corsHeaders }
       );
     }
