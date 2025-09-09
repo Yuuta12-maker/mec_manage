@@ -134,6 +134,20 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
 
   } catch (error) {
     console.error('Error creating trial checkout session:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error type:', typeof error);
+    console.error('Error constructor:', error.constructor.name);
+    
+    // Stripeエラーの詳細情報を取得
+    if (error.type) {
+      console.error('Stripe error type:', error.type);
+    }
+    if (error.code) {
+      console.error('Stripe error code:', error.code);
+    }
+    if (error.decline_code) {
+      console.error('Stripe decline code:', error.decline_code);
+    }
     
     if (error instanceof Error) {
       return NextResponse.json(
