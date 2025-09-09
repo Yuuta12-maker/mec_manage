@@ -9,7 +9,7 @@ const stripeProductionSecretKey = process.env.STRIPE_SECRET_KEY;
 
 // テスト用Stripeクライアント
 export const stripeTest = stripeTestSecretKey ? new Stripe(stripeTestSecretKey, {
-  apiVersion: '2025-07-30.basil',
+  apiVersion: '2024-06-20',
   typescript: true,
 }) : null;
 
@@ -24,7 +24,7 @@ export const getStripeClient = () => {
   if (stripeProductionSecretKey) {
     console.log('🚀 Using Stripe PRODUCTION environment');
     const stripe = new Stripe(stripeProductionSecretKey, {
-      apiVersion: '2025-07-30.basil',
+      apiVersion: '2024-06-20',
       typescript: true,
     });
     return stripe;
