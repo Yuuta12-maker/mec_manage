@@ -11,10 +11,8 @@ export const stripe = stripeSecretKey ? new Stripe(stripeSecretKey, {
   apiVersion: '2025-07-30.basil',
   typescript: true,
   maxNetworkRetries: 5,
-  timeout: 15000,
+  timeout: 30000,
   telemetry: false,
-  protocol: 'https',
-  host: 'api.stripe.com',
 }) : null;
 
 export const formatAmountForStripe = (amount: number): number => {

@@ -14,10 +14,6 @@ export const stripeTest = stripeTestSecretKey ? new Stripe(stripeTestSecretKey, 
   maxNetworkRetries: 5,
   timeout: 30000,
   telemetry: false,
-  protocol: 'https',
-  host: 'api.stripe.com',
-  port: 443,
-  httpAgent: false,
 }) : null;
 
 // 動的にStripeクライアントを選択
@@ -36,10 +32,6 @@ export const getStripeClient = () => {
       maxNetworkRetries: 5,
       timeout: 30000,
       telemetry: false,
-      protocol: 'https',
-      host: 'api.stripe.com',
-      port: 443,
-      httpAgent: false,
     });
     return stripe;
   }
