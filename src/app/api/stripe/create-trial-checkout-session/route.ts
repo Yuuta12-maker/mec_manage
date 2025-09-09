@@ -150,31 +150,61 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     });
 
   } catch (error: unknown) {
-    console.error('Error creating trial checkout session:', error);
+    console.error('❌ Error creating trial checkout session:', error);
+    
+    // 環境情報の詳細ログ
+    console.error('🌍 Runtime environment:', {
+      nodeEnv: process.env.NODE_ENV,
+      vercelEnv: process.env.VERCEL_ENV,
+      stripeUseTest: process.env.STRIPE_USE_TEST,
+      hasStripeSecret: !!process.env.STRIPE_SECRET_KEY,
+      hasStripeTest: !!process.env.STRIPE_TEST_SECRET_KEY,
+      userAgent: process.env.VERCEL ? 'Vercel' : 'Local',
+    });
     
     // エラーの型チェックと詳細ログ
     if (error instanceof Error) {
-      console.error('Error stack:', error.stack);
-      console.error('Error message:', error.message);
+      console.error('💥 Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack?.substring(0, 500) + '...' // Truncate for readability
+      });
     }
     
-    console.error('Error type:', typeof error);
+    console.error('🔍 Error type:', typeof error);
     
     // Stripeエラーの詳細情報を取得
     if (error && typeof error === 'object') {
       const stripeError = error as any;
-      if (stripeError.type) {
-        console.error('Stripe error type:', stripeError.type);
-      }
-      if (stripeError.code) {
-        console.error('Stripe error code:', stripeError.code);
-      }
-      if (stripeError.decline_code) {
-        console.error('Stripe decline code:', stripeError.decline_code);
-      }
+      console.error('🔴 Stripe error details:', {
+        type: stripeError.type,
+        code: stripeError.code,
+        decline_code: stripeError.decline_code,
+        param: stripeError.param,
+        request_id: stripeError.request_id,
+        charge: stripeError.charge,
+        payment_method: stripeError.payment_method,
+      });
     }
     
+    // Network specific error handling
     if (error instanceof Error) {
+      if (error.message.includes('ENOTFOUND') || error.message.includes('ECONNRESET')) {
+        console.error('🌐 Network connectivity issue detected');
+        return NextResponse.json(
+          { error: 'Network connectivity issue with Stripe. Please try again.' },
+          { status: 503 }
+        );
+      }
+      
+      if (error.message.includes('timeout')) {
+        console.error('⏱️ Timeout issue detected');
+        return NextResponse.json(
+          { error: 'Request timeout. Please try again.' },
+          { status: 408 }
+        );
+      }
+      
       return NextResponse.json(
         { error: `Failed to create trial checkout session: ${error.message}` },
         { status: 500 }
