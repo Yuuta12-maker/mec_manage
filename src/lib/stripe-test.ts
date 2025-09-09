@@ -12,10 +12,12 @@ export const stripeTest = stripeTestSecretKey ? new Stripe(stripeTestSecretKey, 
   apiVersion: '2025-07-30.basil',
   typescript: true,
   maxNetworkRetries: 5,
-  timeout: 15000,
+  timeout: 30000,
   telemetry: false,
   protocol: 'https',
   host: 'api.stripe.com',
+  port: 443,
+  httpAgent: false,
 }) : null;
 
 // 動的にStripeクライアントを選択
@@ -32,10 +34,12 @@ export const getStripeClient = () => {
       apiVersion: '2025-07-30.basil',
       typescript: true,
       maxNetworkRetries: 5,
-      timeout: 15000,
+      timeout: 30000,
       telemetry: false,
       protocol: 'https',
       host: 'api.stripe.com',
+      port: 443,
+      httpAgent: false,
     });
     return stripe;
   }

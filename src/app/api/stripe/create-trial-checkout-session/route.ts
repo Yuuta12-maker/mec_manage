@@ -4,7 +4,25 @@ import { getStripeClient, getCurrentEnvironment } from '@/lib/stripe-test';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { CreateTrialCheckoutSessionRequest, CreateTrialCheckoutSessionResponse } from '@/types';
 
+export async function OPTIONS(request: NextRequest) {
+  return new NextResponse(null, {
+    status: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    },
+  });
+}
+
 export async function POST(request: NextRequest): Promise<NextResponse<CreateTrialCheckoutSessionResponse | { error: string }>> {
+  // CORS headers
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Content-Type': 'application/json',
+  };
   try {
     const stripe = getStripeClient();
     const environment = getCurrentEnvironment();
@@ -23,7 +41,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
       console.error('❌ Stripe client is null - configuration issue');
       return NextResponse.json(
         { error: 'Stripe is not configured' },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       );
     }
 
@@ -34,7 +52,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     if (!clientId) {
       return NextResponse.json(
         { error: 'Client ID is required' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -49,7 +67,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
       console.error('Client not found:', clientError);
       return NextResponse.json(
         { error: 'Client not found' },
-        { status: 404 }
+        { status: 404, headers: corsHeaders }
       );
     }
 
@@ -57,7 +75,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     if (client.trial_payment_status === 'succeeded') {
       return NextResponse.json(
         { error: 'Trial payment already completed' },
-        { status: 400 }
+        { status: 400, headers: corsHeaders }
       );
     }
 
@@ -147,7 +165,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
     return NextResponse.json({
       sessionId: session.id,
       url: session.url || '',
-    });
+    }, { headers: corsHeaders });
 
   } catch (error: unknown) {
     console.error('❌ Error creating trial checkout session:', error);
@@ -193,7 +211,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
         console.error('🌐 Network connectivity issue detected');
         return NextResponse.json(
           { error: 'Network connectivity issue with Stripe. Please try again.' },
-          { status: 503 }
+          { status: 503, headers: corsHeaders }
         );
       }
       
@@ -201,19 +219,19 @@ export async function POST(request: NextRequest): Promise<NextResponse<CreateTri
         console.error('⏱️ Timeout issue detected');
         return NextResponse.json(
           { error: 'Request timeout. Please try again.' },
-          { status: 408 }
+          { status: 408, headers: corsHeaders }
         );
       }
       
       return NextResponse.json(
         { error: `Failed to create trial checkout session: ${error.message}` },
-        { status: 500 }
+        { status: 500, headers: corsHeaders }
       );
     }
     
     return NextResponse.json(
       { error: 'Failed to create trial checkout session' },
-      { status: 500 }
+      { status: 500, headers: corsHeaders }
     );
   }
 }
